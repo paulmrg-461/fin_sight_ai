@@ -1,35 +1,46 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
-import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../../domain/entities/transaction.dart';
+import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../datasources/transaction_local_data_source.dart';
-import '../datasources/transaction_remote_data_source.dart';
 import '../models/transaction_model.dart';
 
-/// Offline-first implementation: local writes are authoritative, remote sync
-/// is best effort.
+/// Local-first implementation of [TransactionRepository].
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl implements TransactionRepository {
-  const TransactionRepositoryImpl(
-    this._localDataSource,
-    this._remoteDataSource,
-  );
+  const TransactionRepositoryImpl(this._localDataSource);
 
   final TransactionLocalDataSource _localDataSource;
-  final TransactionRemoteDataSource _remoteDataSource;
 
   @override
-  ResultFuture<List<Transaction>> getTransactions() async {
+  ResultFuture<TransactionEntity> addTransaction(
+    TransactionEntity transaction,
+  ) async {
+    try {
+      final model = TransactionModel.fromEntity(transaction);
+      await _localDataSource.saveTransaction(model);
+      return Right(model.toEntity());
+    } on CacheException catch (exception) {
+      return Left(_toCacheFailure(exception));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to save the transaction locally.',
+          code: 'cache_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<List<TransactionEntity>> getTransactions() async {
     try {
       final models = await _localDataSource.getTransactions();
-      final transactions =
-          models.map((model) => model.toEntity()).toList(growable: true)
-            ..sort((a, b) => b.date.compareTo(a.date));
-      return Right(transactions);
+      return Right(_toEntities(models));
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
     } catch (_) {
@@ -43,45 +54,49 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  ResultFuture<Transaction> addTransaction(Transaction transaction) async {
-    final pending = TransactionModel.fromEntity(transaction);
-
+  ResultFuture<void> deleteTransaction(String id) async {
     try {
-      await _localDataSource.saveTransaction(pending);
+      await _localDataSource.deleteTransaction(id);
+      return const Right(null);
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
     } catch (_) {
       return const Left(
         CacheFailure(
-          'Unable to save the transaction locally.',
-          code: 'cache_write_failed',
+          'Unable to delete the transaction locally.',
+          code: 'cache_delete_failed',
         ),
       );
     }
-
-    final uploaded = await _upload(pending);
-    if (!uploaded) {
-      return Right(pending.toEntity());
-    }
-
-    final synced = pending.copyWith(isSynced: true);
-    try {
-      await _localDataSource.saveTransaction(synced);
-      return Right(synced.toEntity());
-    } on CacheException {
-      // The backend already accepted the record. Keep it pending locally so the
-      // next sync pass retries idempotently instead of losing the local state.
-      return Right(pending.toEntity());
-    }
   }
 
-  Future<bool> _upload(TransactionModel transaction) async {
+  @override
+  ResultFuture<List<TransactionEntity>> getTransactionsByDateRange({
+    required DateTime start,
+    required DateTime end,
+  }) async {
     try {
-      return await _remoteDataSource.uploadTransaction(transaction);
+      final models = await _localDataSource.getTransactionsByDateRange(
+        start: start,
+        end: end,
+      );
+      return Right(_toEntities(models));
+    } on CacheException catch (exception) {
+      return Left(_toCacheFailure(exception));
     } catch (_) {
-      return false;
+      return const Left(
+        CacheFailure(
+          'Unable to read local transactions.',
+          code: 'cache_read_failed',
+        ),
+      );
     }
   }
+
+  List<TransactionEntity> _toEntities(List<TransactionModel> models) =>
+      List<TransactionEntity>.unmodifiable(
+        models.map((model) => model.toEntity()),
+      );
 
   CacheFailure _toCacheFailure(CacheException exception) =>
       CacheFailure(exception.message, code: exception.code);

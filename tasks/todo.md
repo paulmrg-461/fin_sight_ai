@@ -1,27 +1,37 @@
-# Task List — transactions foundation slice
+# Task List — FinSight AI foundation + features
 
-## Phase 1: Foundation
+## Core infrastructure
 
-- [x] Core failures and exceptions (`test/core/error/failures_test.dart`)
-- [x] `UseCase` contract and `NoParams`
-- [x] `Transaction` entity and `TransactionRepository` contract
+- [x] `Entity` and sealed `Failure` hierarchy
+- [x] GoRouter named routes (`/dashboard`, `/transactions`, `/debts`, `/ocr`, `/ai-coach`)
+- [x] Emerald light/dark themes + `ThemeController`
+- [x] `.env` + `flutter_dotenv` typed through `AppEnv`
+- [x] get_it + injectable graph with Hive boxes
+- [x] DI, routing, theme, env, and app-shell tests
 
-## Phase 2: Data
+## Transactions
 
-- [x] `TransactionModel` JSON mapping
-- [x] `JsonFileTransactionLocalDataSource` persistence + corruption handling
-- [x] `TransactionRepositoryImpl` offline-first fallback
-- [x] `NoopTransactionRemoteDataSource`
+- [x] `TransactionEntity` and repository contract
+- [x] Add / Get / GetByDateRange / Delete use cases
+- [x] `TransactionModel` + JSON round-trip
+- [x] Hive data source + repository implementation
+- [x] `TransactionBloc` + sealed states
+- [x] Screen, form, list, date/category filters
+- [x] Use case, model, data source, repository, and BLoC tests
 
-## Phase 3: Use Cases and Wiring
+## Debts
 
-- [x] `GetTransactionsUseCase`
-- [x] `AddTransactionUseCase` validation
-- [x] get_it + injectable composition root
-- [x] App shell
+- [x] `DebtEntity`, `PaymentRecord`, `DebtPayoffCalculator`
+- [x] Add / Get / MakePayment / Delete / CalculatePayoff use cases
+- [x] `DebtModel` + JSON round-trip
+- [x] Hive data source + repository implementation
+- [x] `DebtBloc` + sealed states
+- [x] List, add, and detail screens with progress and payment history
+- [x] Calculator, use case, model, data source, repository, and BLoC tests
 
 ## Verification
 
-- [x] `flutter analyze`
-- [x] `flutter test --coverage`
-- [x] Domain/data coverage ≥ 90%
+- [x] `flutter analyze` — no issues
+- [x] `flutter test --coverage` — 171 tests passing
+- [x] Domain and data coverage ≥ 90%
+- [x] Commit and push

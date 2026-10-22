@@ -2,28 +2,30 @@ import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/domain/failure.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../entities/transaction.dart';
+import '../../../../core/utils/app_constants.dart';
+import '../entities/transaction_entity.dart';
 import '../repositories/transaction_repository.dart';
 
 /// Untrusted input for [AddTransactionUseCase].
 class AddTransactionParams {
   const AddTransactionParams({
     required this.amount,
-    required this.category,
     required this.type,
+    required this.category,
+    required this.description,
     required this.date,
-    this.note = '',
+    this.receiptImagePath,
     this.id,
   });
 
-  /// Positive magnitude in the user's display currency.
   final double amount;
-  final String category;
   final TransactionType type;
+  final String category;
+  final String description;
   final DateTime date;
-  final String note;
+  final String? receiptImagePath;
 
   /// Optional explicit id; a UUID v4 is generated when omitted.
   final String? id;
@@ -32,16 +34,14 @@ class AddTransactionParams {
 /// Validates and records a new transaction.
 @lazySingleton
 class AddTransactionUseCase
-    implements UseCase<Transaction, AddTransactionParams> {
+    implements UseCase<TransactionEntity, AddTransactionParams> {
   AddTransactionUseCase(this._repository, {this.uuid = const Uuid()});
 
   final TransactionRepository _repository;
   final Uuid uuid;
 
-  static const int _maxNoteLength = 500;
-
   @override
-  Future<Result<Transaction>> call(AddTransactionParams params) async {
+  Future<Result<TransactionEntity>> call(AddTransactionParams params) async {
     if (!params.amount.isFinite || params.amount <= 0) {
       return const Left(
         ValidationFailure(
@@ -58,24 +58,28 @@ class AddTransactionUseCase
       );
     }
 
-    final note = params.note.trim();
-    if (note.length > _maxNoteLength) {
+    final description = params.description.trim();
+    if (description.length > AppConstants.maxNoteLength) {
       return const Left(
         ValidationFailure(
-          'Note must be 500 characters or fewer.',
-          code: 'note_too_long',
+          'Description must be 500 characters or fewer.',
+          code: 'description_too_long',
         ),
       );
     }
 
-    final requestedId = params.id?.trim();
-    final transaction = Transaction(
-      id: requestedId == null || requestedId.isEmpty ? uuid.v4() : requestedId,
+    final receiptImagePath = params.receiptImagePath?.trim();
+
+    final transaction = TransactionEntity(
+      id: params.id?.trim().isNotEmpty == true ? params.id!.trim() : uuid.v4(),
       amount: double.parse(params.amount.toStringAsFixed(2)),
-      date: params.date,
-      category: category,
       type: params.type,
-      note: note,
+      category: category,
+      description: description,
+      date: params.date,
+      receiptImagePath: receiptImagePath == null || receiptImagePath.isEmpty
+          ? null
+          : receiptImagePath,
     );
 
     return _repository.addTransaction(transaction);

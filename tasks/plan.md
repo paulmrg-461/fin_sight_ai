@@ -1,65 +1,53 @@
-# Implementation Plan: transactions foundation slice
+# Implementation Plan: core infrastructure, transactions, debts
 
 ## Overview
 
-Build the clean-architecture skeleton (failures, `Result`, DI) and a complete transactions domain/data slice with strict TDD and a runnable verification gate.
+Deliver the app foundation (DI, routing, theme, environment, domain primitives) and two complete feature slices with TDD coverage.
 
 ## Architecture Decisions
 
-- `Result<T> = Either<Failure, T>` (fpdart) at every use-case/repository boundary.
-- JSON file store behind `TransactionLocalDataSource`; swappable for Isar without domain changes.
-- Local-first writes; remote upload is best effort and never rolls back local state.
-- get_it + injectable composition root, async storage pre-resolved at startup.
-- Pure-Dart domain with manual equality (no `equatable`).
+- Hive CE local storage behind feature data-source interfaces.
+- Sealed + `Equatable` BLoC states for exhaustive UI rendering.
+- `Result<T> = Either<Failure, T>` at every boundary.
+- Named GoRouter routes; providers at app level so pushed routes inherit blocs.
+- `AppEnv` prefers `--dart-define` over `.env` placeholders.
 
 ## Task List
 
-### Phase 1: Foundation
+### Phase 1: Core infrastructure
 
-- [x] Task 1: Write the English `AGENTS.md` and `ARCHITECTURE.md`.
-- [x] Task 2: Add dependencies and analyzer configuration.
-- [x] Task 3: Implement `Failure`/exceptions and the `UseCase` contract with tests.
-- [x] Task 4: Implement the domain entity and repository contract with tests.
+- [x] Base `Entity` and `Failure` in `lib/core/domain/`.
+- [x] `AppRouter`, named routes, and placeholder pages.
+- [x] Emerald light/dark themes and `ThemeController`.
+- [x] `.env` + `flutter_dotenv` via `AppEnv`.
+- [x] get_it + injectable graph with pre-resolved Hive boxes.
 
-### Checkpoint: Foundation
+### Phase 2: Transactions
 
-- [x] Domain compiles without Flutter/infrastructure imports.
-- [x] Core tests pass.
+- [x] Entity, repository contract, and four use cases.
+- [x] `TransactionModel`, Hive data source, repository implementation.
+- [x] BLoC, screen, form, list, date/category filters.
+- [x] Unit, data, and BLoC tests.
 
-### Phase 2: Data Slice
+### Phase 3: Debts
 
-- [x] Task 5: Implement `TransactionModel` JSON mapping with round-trip tests.
-- [x] Task 6: Implement the JSON local data source with persistence and corruption tests.
-- [x] Task 7: Implement the repository with offline fallback tests.
+- [x] Entity, payoff calculator, repository contract, five use cases.
+- [x] `DebtModel`, Hive data source, repository implementation.
+- [x] BLoC, list/add/detail screens, progress and history widgets.
+- [x] Payoff, use case, data, and BLoC tests.
 
-### Checkpoint: Data Slice
+### Phase 4: Verification
 
-- [x] Persistence survives a new instance.
-- [x] Remote failure leaves records unsynced.
-
-### Phase 3: Use Cases & Wiring
-
-- [x] Task 8: Implement `GetTransactionsUseCase` with tests.
-- [x] Task 9: Implement `AddTransactionUseCase` validation with tests.
-- [x] Task 10: Wire get_it + injectable and the app shell.
-- [x] Task 11: Run `flutter analyze` and `flutter test --coverage`.
-
-### Checkpoint: Complete
-
-- [x] All acceptance criteria met.
-- [x] No skipped tests.
-- [x] Analyzer clean.
+- [x] `flutter analyze` clean.
+- [x] `flutter test --coverage` green.
+- [x] Domain/data coverage ≥ 90%.
+- [x] Commit and push.
 
 ## Risks and Mitigations
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Code generation breaks on the Dart beta | High | Manual get_it registration fallback in the composition root |
-| JSON store corruption | Medium | Strict parse → `CacheFailure`; versioned payload; temp-file rename |
-| Concurrent writes lose data | Medium | Async mutex serializes reads/writes |
-| `double` precision in money | Medium | Round to 2 decimals now; migrate to minor units when the ledger slice lands |
-
-## Open Questions
-
-- Adopt integer minor units for amounts?
-- Sync conflict policy (planned last-write-wins on `updatedAt`).
+| Hive box corruption | Medium | Strict JSON parsing → `CacheFailure` |
+| Interest math edge cases | High | Pure calculator with dedicated tests |
+| Pricey UI rebuilds | Low | Scoped `BlocBuilder`/`ListenableBuilder` |
+| Secrets in `.env` | High | Empty placeholders committed; production uses dart-define |

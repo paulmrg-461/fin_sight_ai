@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../error/failures.dart';
+import '../domain/failure.dart';
 
 /// Functional result used across every layer boundary.
 typedef Result<T> = Either<Failure, T>;

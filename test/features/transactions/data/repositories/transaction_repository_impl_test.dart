@@ -1,50 +1,43 @@
+import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
-import 'package:fin_sight_ai/core/error/failures.dart';
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart';
-import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_remote_data_source.dart';
 import 'package:fin_sight_ai/features/transactions/data/models/transaction_model.dart';
 import 'package:fin_sight_ai/features/transactions/data/repositories/transaction_repository_impl.dart';
-import 'package:fin_sight_ai/features/transactions/domain/entities/transaction.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockTransactionLocalDataSource extends Mock
     implements TransactionLocalDataSource {}
 
-class MockTransactionRemoteDataSource extends Mock
-    implements TransactionRemoteDataSource {}
-
 TransactionModel buildModel({
   String id = 'tx-1',
   double amount = 10,
   DateTime? date,
-  bool isSynced = false,
 }) {
   return TransactionModel(
     id: id,
     amount: amount,
-    date: date ?? DateTime.utc(2026, 10, 20, 12),
-    category: 'Coffee',
     type: TransactionType.expense,
-    note: 'Morning',
-    isSynced: isSynced,
+    category: 'Coffee',
+    description: 'Morning',
+    date: date ?? DateTime.utc(2026, 10, 20, 12),
   );
 }
 
-Transaction buildEntity({String id = 'tx-1', DateTime? date}) {
-  return Transaction(
+TransactionEntity buildEntity({String id = 'tx-1'}) {
+  return TransactionEntity(
     id: id,
     amount: 10,
-    date: date ?? DateTime.utc(2026, 10, 20, 12),
-    category: 'Coffee',
     type: TransactionType.expense,
-    note: 'Morning',
+    category: 'Coffee',
+    description: 'Morning',
+    date: DateTime.utc(2026, 10, 20, 12),
   );
 }
 
 void main() {
   late MockTransactionLocalDataSource localDataSource;
-  late MockTransactionRemoteDataSource remoteDataSource;
   late TransactionRepositoryImpl repository;
 
   setUpAll(() {
@@ -53,207 +46,140 @@ void main() {
 
   setUp(() {
     localDataSource = MockTransactionLocalDataSource();
-    remoteDataSource = MockTransactionRemoteDataSource();
-    repository = TransactionRepositoryImpl(localDataSource, remoteDataSource);
-  });
-
-  group('TransactionRepositoryImpl.getTransactions', () {
-    test('sorts transactions newest first', () async {
-      // Arrange
-      final older = buildModel(id: 'older', date: DateTime.utc(2026, 10, 1));
-      final newer = buildModel(id: 'newer', date: DateTime.utc(2026, 10, 20));
-      when(() => localDataSource.getTransactions())
-          .thenAnswer((_) async => [older, newer]);
-
-      // Act
-      final result = await repository.getTransactions();
-
-      // Assert
-      final transactions = result.getOrElse(
-        (failure) => fail('Expected transactions, got $failure'),
-      );
-      expect(transactions.map((transaction) => transaction.id), [
-        'newer',
-        'older',
-      ]);
-    });
-
-    test('returns an empty list when the store is empty', () async {
-      // Arrange
-      when(() => localDataSource.getTransactions()).thenAnswer((_) async => []);
-
-      // Act
-      final result = await repository.getTransactions();
-
-      // Assert
-      expect(result.getOrElse((_) => const <Transaction>[]), isEmpty);
-    });
-
-    test('maps CacheException onto CacheFailure', () async {
-      // Arrange
-      when(() => localDataSource.getTransactions()).thenThrow(
-        const CacheException(
-          'The local store is corrupted.',
-          code: 'cache_corrupted',
-        ),
-      );
-
-      // Act
-      final result = await repository.getTransactions();
-
-      // Assert
-      final failure = result.getLeft().toNullable();
-      expect(failure, isA<CacheFailure>());
-      expect(failure?.message, 'The local store is corrupted.');
-      expect(failure?.code, 'cache_corrupted');
-    });
-
-    test('maps unexpected errors onto a generic CacheFailure', () async {
-      // Arrange
-      when(() => localDataSource.getTransactions())
-          .thenThrow(StateError('unexpected'));
-
-      // Act
-      final result = await repository.getTransactions();
-
-      // Assert
-      final failure = result.getLeft().toNullable();
-      expect(failure, isA<CacheFailure>());
-      expect(failure?.code, 'cache_read_failed');
-    });
+    repository = TransactionRepositoryImpl(localDataSource);
   });
 
   group('TransactionRepositoryImpl.addTransaction', () {
-    test('persists locally and marks the record synced after upload', () async {
-      // Arrange
+    test('persists the model and returns the entity', () async {
       when(() => localDataSource.saveTransaction(any()))
           .thenAnswer((_) async {});
-      when(() => remoteDataSource.uploadTransaction(any()))
-          .thenAnswer((_) async => true);
 
-      // Act
       final result = await repository.addTransaction(buildEntity());
 
-      // Assert
-      final saved = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
-      );
-      expect(saved.isSynced, isTrue);
-
-      final savedModels = verify(
-        () => localDataSource.saveTransaction(captureAny()),
-      ).captured.cast<TransactionModel>();
-      expect(savedModels, hasLength(2));
-      expect(savedModels.first.isSynced, isFalse);
-      expect(savedModels.last.isSynced, isTrue);
-    });
-
-    test('keeps the record pending when the backend rejects it', () async {
-      // Arrange
-      when(() => localDataSource.saveTransaction(any()))
-          .thenAnswer((_) async {});
-      when(() => remoteDataSource.uploadTransaction(any()))
-          .thenAnswer((_) async => false);
-
-      // Act
-      final result = await repository.addTransaction(buildEntity());
-
-      // Assert
-      final saved = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
-      );
-      expect(saved.isSynced, isFalse);
-      verify(() => localDataSource.saveTransaction(any())).called(1);
-    });
-
-    test('keeps the local write when the remote call throws', () async {
-      // Arrange
-      when(() => localDataSource.saveTransaction(any()))
-          .thenAnswer((_) async {});
-      when(() => remoteDataSource.uploadTransaction(any()))
-          .thenThrow(const ServerException('Network down.'));
-
-      // Act
-      final result = await repository.addTransaction(buildEntity());
-
-      // Assert
-      final saved = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
-      );
-      expect(saved.isSynced, isFalse);
-      verify(() => localDataSource.saveTransaction(any())).called(1);
-    });
-
-    test('uploads the pending record, not a pre-synced one', () async {
-      // Arrange
-      when(() => localDataSource.saveTransaction(any()))
-          .thenAnswer((_) async {});
-      when(() => remoteDataSource.uploadTransaction(any()))
-          .thenAnswer((_) async => false);
-
-      // Act
-      await repository.addTransaction(buildEntity());
-
-      // Assert
-      final uploaded =
-          verify(() => remoteDataSource.uploadTransaction(captureAny()))
+      final saved = result.getOrElse((_) => fail('Expected saved entity'));
+      expect(saved.id, 'tx-1');
+      final captured =
+          verify(() => localDataSource.saveTransaction(captureAny()))
                   .captured
                   .single
               as TransactionModel;
-      expect(uploaded.isSynced, isFalse);
+      expect(captured.id, 'tx-1');
     });
 
-    test(
-      'returns CacheFailure and skips upload when the local write fails',
-      () async {
-        // Arrange
-        when(() => localDataSource.saveTransaction(any())).thenThrow(
-          const CacheException('Disk full.', code: 'cache_write_failed'),
-        );
+    test('maps CacheException to CacheFailure', () async {
+      when(() => localDataSource.saveTransaction(any())).thenThrow(
+        const CacheException('Disk full.', code: 'cache_write_failed'),
+      );
 
-        // Act
-        final result = await repository.addTransaction(buildEntity());
-
-        // Assert
-        final failure = result.getLeft().toNullable();
-        expect(failure, isA<CacheFailure>());
-        expect(failure?.code, 'cache_write_failed');
-        verifyNever(() => remoteDataSource.uploadTransaction(any()));
-      },
-    );
-
-    test('maps unexpected local errors onto a generic CacheFailure', () async {
-      // Arrange
-      when(() => localDataSource.saveTransaction(any()))
-          .thenThrow(StateError('unexpected'));
-
-      // Act
       final result = await repository.addTransaction(buildEntity());
 
-      // Assert
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<CacheFailure>());
+      expect(failure?.code, 'cache_write_failed');
+    });
+
+    test('maps unexpected errors to a generic CacheFailure', () async {
+      when(() => localDataSource.saveTransaction(any()))
+          .thenThrow(StateError('boom'));
+
+      final result = await repository.addTransaction(buildEntity());
+
       expect(result.getLeft().toNullable()?.code, 'cache_write_failed');
     });
+  });
 
-    test('returns the pending record when marking it synced fails', () async {
-      // Arrange
-      var saves = 0;
-      when(() => localDataSource.saveTransaction(any())).thenAnswer((_) async {
-        saves += 1;
-        if (saves == 2) {
-          throw const CacheException('Disk full.');
-        }
-      });
-      when(() => remoteDataSource.uploadTransaction(any()))
-          .thenAnswer((_) async => true);
+  group('TransactionRepositoryImpl.getTransactions', () {
+    test('maps stored models to entities', () async {
+      when(() => localDataSource.getTransactions())
+          .thenAnswer((_) async => [buildModel(id: 'a'), buildModel(id: 'b')]);
 
-      // Act
-      final result = await repository.addTransaction(buildEntity());
+      final result = await repository.getTransactions();
 
-      // Assert
-      final saved = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
+      final transactions = result.getOrElse(
+        (_) => fail('Expected transactions'),
       );
-      expect(saved.isSynced, isFalse);
+      expect(transactions.map((t) => t.id), ['a', 'b']);
+      expect(transactions, everyElement(isA<TransactionEntity>()));
+    });
+
+    test('maps CacheException to CacheFailure', () async {
+      when(
+        () => localDataSource.getTransactions(),
+      ).thenThrow(const CacheException('Corrupt.', code: 'cache_read_failed'));
+
+      final result = await repository.getTransactions();
+
+      expect(result.getLeft().toNullable()?.code, 'cache_read_failed');
+    });
+
+    test('maps unexpected errors to a generic CacheFailure', () async {
+      when(() => localDataSource.getTransactions())
+          .thenThrow(StateError('boom'));
+
+      final result = await repository.getTransactions();
+
+      expect(result.getLeft().toNullable()?.code, 'cache_read_failed');
+    });
+  });
+
+  group('TransactionRepositoryImpl.deleteTransaction', () {
+    test('deletes through the data source', () async {
+      when(() => localDataSource.deleteTransaction('tx-1'))
+          .thenAnswer((_) async {});
+
+      final result = await repository.deleteTransaction('tx-1');
+
+      expect(result.isRight(), isTrue);
+      verify(() => localDataSource.deleteTransaction('tx-1')).called(1);
+    });
+
+    test('maps CacheException to CacheFailure', () async {
+      when(() => localDataSource.deleteTransaction(any())).thenThrow(
+        const CacheException('Missing.', code: 'cache_delete_failed'),
+      );
+
+      final result = await repository.deleteTransaction('tx-1');
+
+      expect(result.getLeft().toNullable()?.code, 'cache_delete_failed');
+    });
+  });
+
+  group('TransactionRepositoryImpl.getTransactionsByDateRange', () {
+    final start = DateTime.utc(2026, 10, 1);
+    final end = DateTime.utc(2026, 10, 31);
+
+    test('queries the data source with the range and maps results', () async {
+      when(
+        () =>
+            localDataSource.getTransactionsByDateRange(start: start, end: end),
+      ).thenAnswer((_) async => [buildModel(id: 'in-range')]);
+
+      final result = await repository.getTransactionsByDateRange(
+        start: start,
+        end: end,
+      );
+
+      final transactions = result.getOrElse(
+        (_) => fail('Expected transactions'),
+      );
+      expect(transactions.single.id, 'in-range');
+    });
+
+    test('maps CacheException to CacheFailure', () async {
+      when(
+        () => localDataSource.getTransactionsByDateRange(
+          start: any(named: 'start'),
+          end: any(named: 'end'),
+        ),
+      ).thenThrow(const CacheException('Corrupt.'));
+
+      final result = await repository.getTransactionsByDateRange(
+        start: start,
+        end: end,
+      );
+
+      expect(result.getLeft().toNullable()?.code, isNull);
+      expect(result.getLeft().toNullable(), isA<CacheFailure>());
     });
   });
 }

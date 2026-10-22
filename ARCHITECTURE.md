@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-FinSight AI is an offline-first personal finance application built with Flutter. Local storage is the single source of truth for the UI; Supabase (PostgreSQL + RLS) is the remote system of record and sync target.
+FinSight AI is an offline-first personal finance app built with Flutter. Local storage is the single source of truth for the UI; Supabase (PostgreSQL + RLS) is the remote system of record and sync target.
 
 ```text
 ┌─────────────────────────────┐
@@ -20,7 +20,7 @@ FinSight AI is an offline-first personal finance application built with Flutter.
 └───────┬─────────────┬───────┘
         │             │
 ┌───────▼──────┐ ┌────▼──────────────────┐
-│ Local store  │ │ Supabase (async sync) │
+│ Hive CE      │ │ Supabase (planned)    │
 │ (truth)      │ │ REST / RLS            │
 └──────────────┘ └───────────────────────┘
 ```
@@ -33,62 +33,66 @@ FinSight AI is an offline-first personal finance application built with Flutter.
 
 | Layer | Owns | Must not |
 | --- | --- | --- |
-| `core` | Failures, exceptions, `UseCase` contract, DI composition root, shared services | Contain feature business rules |
-| `domain` | Entities, repository interfaces, use cases | Import Flutter, get_it, databases, HTTP |
-| `data` | DTOs/mappers, data sources, repository implementations | Expose DTOs to presentation |
-| `presentation` | Cubits/BLoCs, screens, widgets | Call data sources or repositories directly |
+| `core` | Base `Entity`/`Failure`, exceptions, `UseCase`/`Result`, DI, routing, theme, utils, storage containers | Contain feature business rules |
+| `domain` | Entities, repository interfaces, use cases, pure calculators | Import Flutter, get_it, databases, HTTP |
+| `data` | DTOs/mappers, Hive data sources, repository implementations | Expose DTOs to presentation |
+| `presentation` | Blocs, screens, widgets | Call data sources or repositories directly |
 
-Error handling is explicit: repositories return `Either<Failure, T>` (`Result<T>`). Exceptions are caught at the data-layer boundary and mapped to `ServerFailure`, `CacheFailure`, or `ValidationFailure`.
+Error handling is explicit: repositories and use cases return `Either<Failure, T>` (`Result<T>`). Exceptions are caught at the data-layer boundary and mapped to `ServerFailure`, `CacheFailure`, or `ValidationFailure`.
 
-## 3. Offline-First Synchronization Flow
+## 3. Offline-First Storage
 
-```text
-[ UI (BLoC) ] ◄── observe ── [ Local Store ] (source of truth)
-                                   ▲
-        Event                      │ local write
-          ▼                        │
-     [ UseCase ] ──► [ RepositoryImpl ] ──┐
-                                           │ async, best effort
-                                           ▼
-                              [ Supabase (PostgreSQL + RLS) ]
-```
+- **Hive CE** boxes (`transactions`, `debts`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
+- Each feature owns a local data source interface with a Hive implementation; the repository depends on the interface.
+- Records are stored as JSON maps keyed by entity id. This keeps boxes schema-agnostic and migrations explicit.
+- Local writes happen before any network call. Remote sync is a later slice; a remote failure must never roll back a local write.
+- Invalid or corrupted entries surface as `CacheFailure` / `CacheException` instead of silently disappearing.
 
-1. **User action:** the user records an expense or scans a receipt.
-2. **Local write:** the transaction is persisted locally before any network call.
-3. **UI update:** the UI reflects the local write immediately.
-4. **Remote sync:** a background worker (later slice) pushes records where `isSynced == false`; successful uploads are marked `isSynced = true`.
+## 4. Feature Slices
 
-**Invariant:** a failed remote call never rolls back a successful local write. The record simply remains pending and is retried.
+### Transactions
 
-### Current slice (transactions)
+- Entity: `id`, `amount`, `type` (`income`/`expense`), `category`, `description`, `date`, `receiptImagePath`.
+- Use cases: `AddTransactionUseCase`, `GetTransactionsUseCase`, `GetTransactionsByDateRangeUseCase`, `DeleteTransactionUseCase`.
+- Repository: `addTransaction`, `getTransactions`, `deleteTransaction`, `getTransactionsByDateRange`.
+- Validation: finite amount `> 0`, trimmed non-empty category, description ≤ 500 characters, UUID v4 ids, amount rounded to 2 decimals.
+- Presentation: `TransactionBloc` with `LoadTransactions`, `AddTransaction`, `DeleteTransaction`, `FilterByDateRange`. Sealed states: initial, loading, loaded, empty, failure. `TransactionScreen` hosts the add form (bottom sheet), date filter, and `TransactionList` with category chips.
 
-- `TransactionLocalDataSource` is an interface. The current implementation is `JsonFileTransactionLocalDataSource`, which stores an atomic JSON document (`version` + `transactions[]`) in the app documents directory.
-- Writes are serialized through an internal async mutex, and the payload is written to a temp file before rename.
-- `NoopTransactionRemoteDataSource` represents an unconfigured Supabase backend: upload returns `false`, so records stay `isSynced = false` and are retried later.
-- The interface isolates persistence from the domain. Swapping JSON for Isar (or Drift) is a data-layer change with no domain or UI impact.
+### Debts
 
-## 4. Transaction Domain Model
+- Entity: `id`, `creditorName`, `totalAmount`, `remainingAmount`, `interestRate`, `minimumPayment`, `dueDate`, `status`, `paymentHistory`.
+- Use cases: `AddDebtUseCase`, `GetDebtsUseCase`, `MakePaymentUseCase`, `DeleteDebtUseCase`, `CalculatePayoffUseCase`.
+- Pure calculator: `DebtPayoffCalculator` compounds monthly interest and returns `null` when the payment cannot cover interest.
+- Payments clamp to the remaining balance, mark the debt paid at zero, and append a `PaymentRecord`.
+- Presentation: `DebtBloc` with `LoadDebts`, `AddDebt`, `MakePayment`, `DeleteDebt`, `CalculatePayoff`. Screens: list with progress bars, add form, detail with payment history and payoff projection.
 
-| Field | Type | Rules |
-| --- | --- | --- |
-| `id` | `String` | UUID v4, immutable |
-| `amount` | `double` | Finite, `> 0`, rounded to 2 decimals |
-| `date` | `DateTime` | UTC in storage, ISO-8601 in JSON |
-| `category` | `String` | Trimmed, non-empty |
-| `type` | `TransactionType` | `income` or `expense` |
-| `note` | `String` | Trimmed, ≤ 500 characters |
-| `isSynced` | `bool` | Local sync flag, never trusted from the client for authorization |
+## 5. Routing and Navigation
 
-`addTransaction` validates input in the use case and returns `ValidationFailure` with a stable `code` (`invalid_amount`, `missing_category`, `note_too_long`). The repository persists locally, then attempts upload. On upload success the local record is marked synced; on failure it is returned unsynced.
+- `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/ocr`, `/ai-coach`.
+- `AppRoutes` centralizes names and paths; `buildRouter()` is a pure function for testability.
+- Feature screens are provided by `FinSightApp` through app-level `MultiBlocProvider`, so pushed routes inherit their blocs.
+- `DebtDetailScreen` and `AddDebtScreen` are pushed with `MaterialPageRoute` and share the debt bloc instance.
 
-## 5. Dependency Injection
+## 6. Theme System
 
-`get_it` is the service locator; `injectable` generates the registration graph.
+- Design tokens in `AppColors`: emerald `#10B981`, dark canvas `#0F172A`, light canvas `#F8FAFC`.
+- `AppTheme.light` / `AppTheme.dark` build Material 3 schemes from the emerald seed.
+- `ThemeController extends ChangeNotifier` owns `ThemeMode`; the app shell listens and swaps `themeMode`.
+- The dashboard exposes an accessible light/dark toggle.
 
-- Composition root: `lib/core/di/injection.dart` → `configureDependencies()`.
-- The generated file is `injection.config.dart` (build_runner).
-- Lifetimes: repositories and use cases are `@lazySingleton`; data sources follow storage lifetime; async storage is `@preResolve` so the app starts with a ready local store.
-- Tests construct collaborators directly (no global container), keeping unit tests deterministic.
+## 7. Configuration and Secrets
+
+- `flutter_dotenv` loads `.env` (asset) at startup. The committed `.env` contains empty placeholders only.
+- `AppEnv` prefers `--dart-define` values and falls back to `.env`; missing configuration degrades to empty strings.
+- Production credentials are injected with `--dart-define=SUPABASE_URL=...` and never committed.
+- Future Groq/Supabase clients consume `AppEnv` through DI.
+
+## 8. Dependency Injection
+
+- `get_it` is the service locator; `injectable` generates the graph into `injection.config.dart`.
+- Composition root: `configureDependencies()` in `lib/core/di/injection.dart`.
+- `StorageModule` pre-resolves Hive boxes; repositories and use cases are `@lazySingleton`; blocs are `@injectable` factories.
+- Tests resolve the graph with a fake `PathProviderPlatform` and a temporary Hive directory.
 
 Regenerate after changing annotations:
 
@@ -96,20 +100,15 @@ Regenerate after changing annotations:
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-## 6. Low-Latency AI Architecture (Groq API) — planned slice
-
-- `GroqApiClient` over `http`/`dio` with a strict 5-second timeout and bounded retries.
-- API keys are injected via `--dart-define`/`flutter_dotenv`; never committed.
-- Prompts enforce JSON-schema responses (Llama-3/Mixtral) for deterministic budget recommendations.
-- AI calls run outside the critical path: cached locally, failure degrades gracefully.
-
-## 7. Testing Strategy
+## 9. Testing Strategy
 
 | Level | Scope | Tooling |
 | --- | --- | --- |
-| Unit | Entities, validation, mappers, use cases | `flutter_test`, `mocktail` |
-| Data integration | JSON store against a temp file system | `flutter_test`, `dart:io` |
-| Widget | Screens and state rendering | `flutter_test`, `bloc_test` (later slice) |
+| Unit | Entities, validation, calculators, mappers, use cases | `flutter_test`, `mocktail` |
+| Data integration | Hive data sources against a temp directory | `flutter_test`, `hive_ce` |
+| State | BLoC transitions and emitted states | `bloc_test`, `mocktail` |
+| Widget | App shell, navigation, theme switching | `flutter_test` |
+| DI | Full graph resolution | `get_it`, fake path provider |
 
 Commands:
 
@@ -118,22 +117,23 @@ flutter analyze
 flutter test --coverage
 ```
 
-Target: ≥ 90% coverage for domain and data layers.
+Domain and data coverage target: ≥ 90%.
 
-## 8. Key Decisions
+## 10. Key Decisions
 
 | Decision | Rationale | Trade-off |
 | --- | --- | --- |
-| `fpdart` `Either` instead of throwing | Explicit failure paths, compile-time exhaustiveness | Slightly more verbose call sites |
-| JSON-file store for the first slice | Zero codegen/plugin risk, fully testable, works on all platforms | Not queryable at scale; replace with Isar/Drift behind the same interface |
-| Local-first writes | Instant UI, resilience to offline/network failures | Requires conflict resolution in the sync slice |
-| Manual entity equality instead of `equatable` | Keeps the domain pure Dart | More boilerplate |
+| `fpdart` `Either` instead of throwing | Explicit failure paths, exhaustiveness | Slightly more verbose call sites |
+| Hive CE for local storage | No native setup, fast, testable, works offline | JSON map schema requires explicit migrations |
+| Local-first writes | Instant UI and offline resilience | Conflict resolution required in the sync slice |
+| Sealed + `Equatable` BLoC states | Exhaustive UI rendering and testable transitions | More classes per feature |
+| Manual entity equality | Keeps domain pure Dart | More boilerplate |
 | Supabase over Firebase | Relational queries, RLS, predictable pricing | Team must own SQL and migrations |
 
-## 9. Roadmap
+## 11. Roadmap
 
-1. Transactions sync with Supabase and conflict resolution (last-write-wins by `updatedAt`).
+1. Supabase sync with conflict resolution and retry/backoff.
 2. Budgets, categories, and dashboard aggregates.
-3. Receipt OCR ingestion.
+3. Receipt OCR ingestion into transactions.
 4. Groq-powered insights with deterministic JSON contracts.
-5. Full presentation layer with four-state UI patterns.
+5. Receipt image picking and local file management.

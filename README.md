@@ -1,36 +1,41 @@
 # FinSight AI
 
-Offline-first personal finance app built with Flutter. Local storage is the single source of truth for the UI; Supabase (PostgreSQL + RLS) is the remote system of record and async sync target.
+Offline-first personal finance app built with Flutter. Local Hive storage is the source of truth for the UI; Supabase (PostgreSQL + RLS) is the planned remote system of record.
 
-This repository currently contains the **foundation slice**: Clean Architecture scaffolding, functional error handling, dependency injection, and the `transactions` domain/data layers with a full test suite.
+## Features
+
+- **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and deletion.
+- **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
+- **Dashboard** — shortcuts to every feature and a light/dark theme toggle.
+- **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, Hive CE, and typed environment configuration.
 
 ## Architecture
 
 ```text
 lib/
-├── app/                         # App shell and theme
+├── app/                         # App shell + BLoC providers
 ├── core/
 │   ├── di/                      # get_it + injectable composition root
-│   ├── error/                   # Failure and exception taxonomy
-│   └── usecase/                 # UseCase / Result contracts
+│   ├── domain/                  # Entity + Failure hierarchy
+│   ├── error/                   # Infrastructure exceptions
+│   ├── routing/                 # GoRouter + named routes
+│   ├── services/                # Hive box container
+│   ├── theme/                   # Tokens, themes, ThemeController
+│   ├── usecase/                 # UseCase / Result contracts
+│   └── utils/                   # Env, clock, constants, formatters
 └── features/
-    └── transactions/
-        ├── domain/              # Transaction entity, repository contract, use cases
-        └── data/                # JSON model, local/remote data sources, repository
+    ├── transactions/{domain,data,presentation}
+    ├── debts/{domain,data,presentation}
+    ├── dashboard/presentation
+    ├── ocr/presentation
+    └── ai_coach/presentation
 ```
 
-- `Result<T> = Either<Failure, T>` (`fpdart`) at every layer boundary.
-- Local-first writes; remote sync is best effort and never rolls back local state.
-- JSON-file store behind `TransactionLocalDataSource`, swappable for Isar/Drift.
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full blueprint and [SPEC-transactions.md](SPEC-transactions.md) for the slice specification.
-
-## Prerequisites
-
-- Flutter 3.50 beta / Dart 3.14 (see `pubspec.yaml`)
-- A connected device or desktop target
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the blueprint and the `SPEC-*.md` files for feature contracts.
 
 ## Setup
+
+Requirements: Flutter 3.50 beta / Dart 3.14.
 
 ```bash
 flutter pub get
@@ -38,10 +43,13 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-Regenerate dependency injection after changing `@injectable` annotations:
+The committed `.env` contains empty placeholders. For production, inject secrets without touching the file:
 
 ```bash
-dart run build_runner build
+flutter run \
+  --dart-define=SUPABASE_URL=https://your-project.supabase.co \
+  --dart-define=SUPABASE_ANON_KEY=your-anon-key \
+  --dart-define=GROQ_API_KEY=your-groq-key
 ```
 
 ## Quality gate
@@ -51,13 +59,23 @@ flutter analyze
 flutter test --coverage
 ```
 
-Current status: analyzer clean, 62 tests passing, 100% domain and 99.3% data coverage.
+Current status: analyzer clean, **171 tests passing**, 100% coverage for transactions domain/data, 98% for debts domain, 100% for debts data, and 93% for core.
 
-## Project conventions
+## Routes
 
-- TDD: red → green → refactor; no behavior without a test.
-- Domain layer stays pure Dart (no Flutter, DI, or I/O imports).
-- Feature-first structure with strict `domain`/`data`/`presentation` boundaries.
-- Conventional commits (`feat:`, `fix:`, `test:`, `docs:`).
+| Name | Path |
+| --- | --- |
+| `dashboard` | `/dashboard` |
+| `transactions` | `/transactions` |
+| `debts` | `/debts` |
+| `ocr` | `/ocr` |
+| `ai-coach` | `/ai-coach` |
+
+## Conventions
+
+- TDD: red → green → refactor; every behavior has a test.
+- Domain stays pure Dart (no Flutter, DI, or I/O imports).
+- Sealed, `Equatable` BLoC states; every screen renders loading, success, empty, and error.
+- Conventional commits; every feature is committed and pushed before it is reported as done.
 
 Operating instructions for agents live in [AGENTS.md](AGENTS.md).

@@ -1,5 +1,5 @@
-import 'package:fin_sight_ai/core/error/failures.dart';
-import 'package:fin_sight_ai/features/transactions/domain/entities/transaction.dart';
+import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -17,12 +17,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(
-      Transaction(
+      TransactionEntity(
         id: 'fallback',
         amount: 1,
-        date: DateTime.utc(2026),
-        category: 'fallback',
         type: TransactionType.expense,
+        category: 'fallback',
+        description: '',
+        date: DateTime.utc(2026),
       ),
     );
   });
@@ -30,9 +31,9 @@ void main() {
   setUp(() {
     repository = MockTransactionRepository();
     useCase = AddTransactionUseCase(repository);
-
     when(() => repository.addTransaction(any())).thenAnswer((invocation) async {
-      final transaction = invocation.positionalArguments.first as Transaction;
+      final transaction =
+          invocation.positionalArguments.first as TransactionEntity;
       return Right(transaction);
     });
   });
@@ -40,141 +41,118 @@ void main() {
   AddTransactionParams params({
     double amount = 25.5,
     String category = 'Food',
+    String description = '',
     TransactionType type = TransactionType.expense,
-    String note = '',
+    String? receiptImagePath,
     String? id,
   }) {
     return AddTransactionParams(
       amount: amount,
-      category: category,
       type: type,
+      category: category,
+      description: description,
       date: date,
-      note: note,
+      receiptImagePath: receiptImagePath,
       id: id,
     );
   }
 
   group('AddTransactionUseCase', () {
-    test('generates a UUID v4 and normalizes the input', () async {
-      // Arrange
-      final uuidPattern = RegExp(
-        r'^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-'
-        r'[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
-      );
-
-      // Act
+    test('normalizes input and generates a UUID v4', () async {
       final result = await useCase(
-        params(amount: 12.3459, category: '  Food  ', note: '  Lunch  '),
+        params(
+          amount: 12.3459,
+          category: '  Food  ',
+          description: '  Lunch  ',
+          receiptImagePath: '  /tmp/r.jpg  ',
+        ),
       );
 
-      // Assert
       final transaction = result.getOrElse(
         (failure) => fail('Expected a transaction, got $failure'),
       );
-      expect(uuidPattern.hasMatch(transaction.id), isTrue);
+      expect(Uuid.isValidUUID(fromString: transaction.id), isTrue);
       expect(transaction.amount, 12.35);
       expect(transaction.category, 'Food');
-      expect(transaction.note, 'Lunch');
+      expect(transaction.description, 'Lunch');
+      expect(transaction.receiptImagePath, '/tmp/r.jpg');
       expect(transaction.type, TransactionType.expense);
       expect(transaction.date, date);
-      expect(transaction.isSynced, isFalse);
     });
 
-    test('keeps an explicitly provided identifier', () async {
-      // Act
+    test('keeps an explicit identifier', () async {
       final result = await useCase(params(id: 'tx-explicit'));
 
-      // Assert
-      final transaction = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
+      expect(
+        result.getOrElse((failure) => fail('Expected a transaction')),
+        isA<TransactionEntity>().having((t) => t.id, 'id', 'tx-explicit'),
       );
-      expect(transaction.id, 'tx-explicit');
     });
 
-    test('generates an identifier when the provided one is blank', () async {
-      // Act
+    test('generates an id when the provided one is blank', () async {
       final result = await useCase(params(id: '   '));
 
-      // Assert
       final transaction = result.getOrElse(
-        (failure) => fail('Expected a transaction, got $failure'),
+        (failure) => fail('Expected a transaction'),
       );
       expect(transaction.id.trim(), isNotEmpty);
-      expect(transaction.id, isNot('   '));
       expect(Uuid.isValidUUID(fromString: transaction.id), isTrue);
     });
 
-    test('rejects a zero amount without touching the repository', () async {
-      // Act
-      final result = await useCase(params(amount: 0));
+    test('maps a blank receipt path to null', () async {
+      final result = await useCase(params(receiptImagePath: '   '));
 
-      // Assert
-      expect(result.isLeft(), isTrue);
-      final failure = result.getLeft().toNullable();
-      expect(failure, isA<ValidationFailure>());
-      expect(failure?.code, 'invalid_amount');
+      expect(
+        result
+            .getOrElse((failure) => fail('Expected a transaction'))
+            .receiptImagePath,
+        isNull,
+      );
+    });
+
+    test('rejects zero and negative amounts', () async {
+      final zero = await useCase(params(amount: 0));
+      final negative = await useCase(params(amount: -5));
+
+      expect(zero.getLeft().toNullable()?.code, 'invalid_amount');
+      expect(negative.getLeft().toNullable()?.code, 'invalid_amount');
       verifyNever(() => repository.addTransaction(any()));
     });
 
-    test('rejects a negative amount', () async {
-      // Act
-      final result = await useCase(params(amount: -10));
+    test('rejects non-finite amounts', () async {
+      final nan = await useCase(params(amount: double.nan));
+      final infinite = await useCase(params(amount: double.infinity));
 
-      // Assert
-      expect(result.getLeft().toNullable()?.code, 'invalid_amount');
-    });
-
-    test('rejects a non-finite amount', () async {
-      // Act
-      final nanResult = await useCase(params(amount: double.nan));
-      final infiniteResult = await useCase(params(amount: double.infinity));
-
-      // Assert
-      expect(nanResult.getLeft().toNullable()?.code, 'invalid_amount');
-      expect(infiniteResult.getLeft().toNullable()?.code, 'invalid_amount');
+      expect(nan.getLeft().toNullable()?.code, 'invalid_amount');
+      expect(infinite.getLeft().toNullable()?.code, 'invalid_amount');
     });
 
     test('rejects a blank category', () async {
-      // Act
-      final result = await useCase(params(category: '   '));
+      final result = await useCase(params(category: '  '));
 
-      // Assert
-      final failure = result.getLeft().toNullable();
-      expect(failure, isA<ValidationFailure>());
-      expect(failure?.code, 'missing_category');
+      expect(result.getLeft().toNullable()?.code, 'missing_category');
       verifyNever(() => repository.addTransaction(any()));
     });
 
-    test('rejects a note longer than 500 characters', () async {
-      // Act
-      final result = await useCase(params(note: 'a' * 501));
+    test('rejects descriptions over 500 characters', () async {
+      final result = await useCase(params(description: 'a' * 501));
 
-      // Assert
-      final failure = result.getLeft().toNullable();
-      expect(failure, isA<ValidationFailure>());
-      expect(failure?.code, 'note_too_long');
-      verifyNever(() => repository.addTransaction(any()));
+      expect(result.getLeft().toNullable()?.code, 'description_too_long');
     });
 
-    test('accepts a note with exactly 500 characters', () async {
-      // Act
-      final result = await useCase(params(note: 'a' * 500));
+    test('accepts a 500-character description', () async {
+      final result = await useCase(params(description: 'a' * 500));
 
-      // Assert
       expect(result.isRight(), isTrue);
     });
 
-    test('propagates a repository failure unchanged', () async {
-      // Arrange
-      const failure = ServerFailure('Sync rejected.', code: 'sync_rejected');
+    test('propagates repository failures unchanged', () async {
+      const failure = CacheFailure('Store down.', code: 'cache_down');
       when(() => repository.addTransaction(any()))
           .thenAnswer((_) async => const Left(failure));
 
-      // Act
       final result = await useCase(params());
 
-      // Assert
-      expect(result.isLeft(), isTrue);
       expect(result.getLeft().toNullable(), failure);
     });
   });

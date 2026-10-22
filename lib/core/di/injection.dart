@@ -1,20 +1,26 @@
-import 'dart:io';
-
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:injectable/injectable.dart';
-import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../features/transactions/data/datasources/json_file_transaction_local_data_source.dart';
+import '../../features/debts/data/datasources/debt_local_data_source.dart';
+import '../../features/debts/data/datasources/hive_debt_local_data_source.dart';
+import '../../features/transactions/data/datasources/hive_transaction_local_data_source.dart';
 import '../../features/transactions/data/datasources/transaction_local_data_source.dart';
+import '../routing/app_router.dart';
+import '../services/app_boxes.dart';
+import '../theme/theme_controller.dart';
+import '../utils/app_constants.dart';
+import '../utils/app_env.dart';
 import 'injection.config.dart';
 
-/// Global service locator. Resolve dependencies only at composition boundaries
-/// (app startup, BLoC factories); never inside domain or data classes.
+/// Global service locator. Resolve dependencies only at composition
+/// boundaries (startup, router factories); never inside domain or data code.
 final GetIt getIt = GetIt.instance;
 
-/// Builds the object graph. Async because the local store is pre-resolved.
+/// Builds the object graph. Async because Hive boxes are pre-resolved.
 @InjectableInit()
 Future<void> configureDependencies({String? environment}) async {
   await getIt.init(environment: environment);
@@ -25,16 +31,45 @@ Future<void> configureDependencies({String? environment}) async {
 abstract class CoreModule {
   @lazySingleton
   Uuid provideUuid() => const Uuid();
+
+  @lazySingleton
+  AppEnv provideAppEnv() => AppEnv.current();
+}
+
+@module
+abstract class StorageModule {
+  @preResolve
+  Future<AppBoxes> provideAppBoxes() async {
+    final directory = await getApplicationDocumentsDirectory();
+    await Hive.initFlutter(directory.path);
+
+    return AppBoxes(
+      transactions: await Hive.openBox<dynamic>(
+        AppConstants.transactionsBoxName,
+      ),
+      debts: await Hive.openBox<dynamic>(AppConstants.debtsBoxName),
+    );
+  }
 }
 
 @module
 abstract class TransactionsModule {
-  @preResolve
-  Future<TransactionLocalDataSource> provideLocalDataSource() async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File(
-      p.join(directory.path, 'fin_sight_ai', 'transactions.json'),
-    );
-    return JsonFileTransactionLocalDataSource(file);
-  }
+  @lazySingleton
+  TransactionLocalDataSource provideTransactionLocalDataSource(
+    AppBoxes boxes,
+  ) => HiveTransactionLocalDataSource(boxes.transactions);
+}
+
+@module
+abstract class DebtsModule {
+  @lazySingleton
+  DebtLocalDataSource provideDebtLocalDataSource(AppBoxes boxes) =>
+      HiveDebtLocalDataSource(boxes.debts);
+}
+
+@module
+abstract class RoutingModule {
+  @lazySingleton
+  GoRouter provideGoRouter(ThemeController themeController) =>
+      buildRouter(themeController: themeController);
 }

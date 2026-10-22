@@ -1,55 +1,47 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Root widget and app-level theme. Feature UI lives inside each feature's
-/// `presentation` layer.
+import '../core/theme/app_theme.dart';
+import '../core/theme/theme_controller.dart';
+import '../core/utils/app_constants.dart';
+import '../features/debts/presentation/bloc/debt_bloc.dart';
+import '../features/transactions/presentation/bloc/transaction_bloc.dart';
+
+/// Root widget: theme binding, routing, and feature-level BLoC providers.
 class FinSightApp extends StatelessWidget {
-  const FinSightApp({super.key});
+  const FinSightApp({
+    super.key,
+    required this.themeController,
+    required this.router,
+    required this.transactionBloc,
+    required this.debtBloc,
+  });
+
+  final ThemeController themeController;
+  final GoRouter router;
+  final TransactionBloc transactionBloc;
+  final DebtBloc debtBloc;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'FinSight AI',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF006C4C)),
-        useMaterial3: true,
-      ),
-      home: const _FoundationHome(),
-    );
-  }
-}
-
-class _FoundationHome extends StatelessWidget {
-  const _FoundationHome();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('FinSight AI')),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 56,
-              color: theme.colorScheme.primary,
-              semanticLabel: 'FinSight AI wallet',
-            ),
-            const SizedBox(height: 16),
-            Text('Foundation ready', style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 8),
-            Text(
-              'Clean Architecture, functional error handling, and offline-first '
-              'persistence are wired. The transactions feature slice is live.',
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
-        ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<TransactionBloc>.value(value: transactionBloc),
+        BlocProvider<DebtBloc>.value(value: debtBloc),
+      ],
+      child: ListenableBuilder(
+        listenable: themeController,
+        builder: (context, _) {
+          return MaterialApp.router(
+            title: AppConstants.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: themeController.themeMode,
+            routerConfig: router,
+          );
+        },
       ),
     );
   }

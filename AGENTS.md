@@ -14,13 +14,16 @@ Every feature inside `lib/features/` keeps a strict, one-directional layer bound
 
 ```text
 lib/
-├── app/                   # App shell, theme, routing
+├── app/                   # App shell and BLoC providers
 ├── core/
 │   ├── di/                # get_it + injectable composition root
-│   ├── error/             # Failures and exceptions
-│   ├── usecase/           # Base UseCase contract
-│   ├── network/           # Supabase / HTTP clients (later slice)
-│   └── services/          # Local storage, Groq client, OCR engine
+│   ├── domain/            # Base Entity and Failure hierarchy
+│   ├── error/             # Infrastructure exceptions
+│   ├── routing/           # GoRouter configuration and named routes
+│   ├── services/          # Shared storage containers (Hive boxes)
+│   ├── theme/             # Design tokens, light/dark themes, controller
+│   ├── usecase/           # Base UseCase contract and Result type
+│   └── utils/             # Clock, env config, constants, formatters
 └── features/
     └── <feature_name>/
         ├── data/          # Models, data sources, repository implementations
@@ -41,6 +44,7 @@ lib/
 ### Error handling
 
 - Every repository method and use case returns `Result<T>` — a type alias for `Either<Failure, T>` from `fpdart`.
+- `lib/core/domain/failure.dart` owns the sealed `Failure` hierarchy; `lib/core/error/` owns infrastructure exceptions only.
 - Exceptions are caught at the data layer boundary and converted into a `Failure`. Exceptions never cross layer boundaries.
 - Failure taxonomy: `ServerFailure`, `CacheFailure`, `ValidationFailure`.
 - A use case returns `Left(ValidationFailure(...))` for invalid input; repositories map storage/transport errors.
@@ -49,13 +53,15 @@ lib/
 
 The local store is the **single source of truth** for the UI. Writes land locally first; remote synchronization happens asynchronously. A remote failure must never discard or block a local write.
 
+Current storage is **Hive CE**, accessed only through a feature-owned local data source interface. Boxes are opened once at startup and injected through the composition root.
+
 ---
 
 ## 3. Testing Mandates (TDD Enforcement)
 
 - **Strict TDD:** write the failing test first (`RED`), implement the minimum (`GREEN`), then refactor with tests green.
 - **Coverage target:** ≥ 90% for domain and data layers.
-- **Isolation:** `mocktail` for collaborators; real implementations for pure logic and file-backed data sources using a temp directory.
+- **Isolation:** `mocktail` for collaborators, `bloc_test` for state transitions, and real implementations for pure logic and Hive data sources using a temporary directory.
 - **Naming:** `test/features/<feature>/<layer>/<file>_test.dart` and `test/core/<area>/<file>_test.dart`.
 - **Structure:** Arrange → Act → Assert. One behavior per test. Test names state the expected behavior.
 - **No skipped tests, no deleted assertions, no `@ts-ignore` equivalents** to force a green build.
@@ -64,7 +70,7 @@ The local store is the **single source of truth** for the UI. Writes land locall
 
 ## 4. Design System & UI Mandates
 
-- Every screen handles four explicit states: **Loading** (shimmer skeleton), **Success**, **Empty** (guidance + CTA), **Error** (safe message + retry).
+- Every screen handles four explicit states via sealed, `Equatable` BLoC states: **Loading**, **Success**, **Empty** (guidance + CTA), **Error** (safe message + retry).
 - Use `Theme.of(context)` tokens exclusively. No hardcoded colors, spacing, or text styles in widgets.
 - Accessibility: minimum 48×48 dp touch targets, semantic labels, contrast ≥ 4.5:1.
 - UI copy is user-facing English; identifiers and code comments are English.

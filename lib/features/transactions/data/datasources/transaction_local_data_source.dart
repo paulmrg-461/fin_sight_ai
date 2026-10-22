@@ -2,11 +2,19 @@ import '../models/transaction_model.dart';
 
 /// Local persistence contract for transactions.
 ///
-/// Implementations must throw `CacheException` on infrastructure failures so
-/// the repository can map them to `CacheFailure`.
+/// Implementations throw `CacheException` on infrastructure failures so the
+/// repository can map them to `CacheFailure`.
 abstract interface class TransactionLocalDataSource {
   Future<List<TransactionModel>> getTransactions();
 
-  /// Inserts [transaction] or replaces the existing record with the same id.
+  /// Inserts [transaction] or replaces the record with the same id.
   Future<void> saveTransaction(TransactionModel transaction);
+
+  Future<void> deleteTransaction(String id);
+
+  /// Returns records inside the inclusive `[start, end]` range.
+  Future<List<TransactionModel>> getTransactionsByDateRange({
+    required DateTime start,
+    required DateTime end,
+  });
 }
