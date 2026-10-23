@@ -12,6 +12,7 @@ import '../../features/transactions/data/datasources/hive_transaction_local_data
 import '../../features/transactions/data/datasources/transaction_local_data_source.dart';
 import '../routing/app_router.dart';
 import '../services/app_boxes.dart';
+import '../services/local_data_scope.dart';
 import '../services/receipt_image_picker.dart';
 import '../theme/theme_controller.dart';
 import '../utils/app_constants.dart';
@@ -68,6 +69,13 @@ abstract class StorageModule {
       ),
     );
   }
+}
+
+@module
+abstract class LocalDataModule {
+  @lazySingleton
+  LocalDataScope provideLocalDataScope(AppBoxes boxes) =>
+      HiveLocalDataScope(boxes);
 }
 
 @module

@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
+import 'package:fin_sight_ai/core/services/app_boxes.dart';
 import 'package:fin_sight_ai/core/services/calendar_migration.dart';
+import 'package:fin_sight_ai/core/services/local_data_scope.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
@@ -26,6 +28,7 @@ import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.d
 import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_state.dart';
 import 'package:fin_sight_ai/features/budgets/data/datasources/hive_budget_local_data_source.dart';
 import 'package:fin_sight_ai/features/budgets/data/repositories/budget_repository_impl.dart';
 import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
@@ -117,6 +120,7 @@ class IntegrationHarness {
   late Box<dynamic> _categoriesBox;
   late Box<dynamic> _scheduledPaymentsBox;
 
+  late LocalDataScope localDataScope;
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
   late ReceiptRepository receiptRepository;
@@ -171,6 +175,21 @@ class IntegrationHarness {
   }
 
   void _wire() {
+    final boxes = AppBoxes(
+      transactions: _transactionsBox,
+      debts: _debtsBox,
+      receipts: _receiptsBox,
+      syncQueue: _syncQueueBox,
+      syncMeta: _syncMetaBox,
+      budgets: _budgetsBox,
+      wallets: _walletsBox,
+      walletTransfers: _walletTransfersBox,
+      settings: _settingsBox,
+      categories: _categoriesBox,
+      scheduledPayments: _scheduledPaymentsBox,
+    );
+    localDataScope = HiveLocalDataScope(boxes);
+
     transactionRepository = TransactionRepositoryImpl(
       HiveTransactionLocalDataSource(_transactionsBox),
     );
@@ -249,7 +268,7 @@ class IntegrationHarness {
     );
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
-    final authRepository = _FakeAuthRepository();
+    final authRepository = _FakeAuthRepository(localDataScope);
     final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
     final budgetLocal = HiveBudgetLocalDataSource(_budgetsBox);
     final syncRepository = SyncRepositoryImpl(
@@ -317,6 +336,21 @@ class IntegrationHarness {
       PayScheduledPaymentUseCase(scheduledPaymentRepository),
       ProcessDueScheduledPaymentsUseCase(scheduledPaymentRepository),
     );
+
+    // Mirrors `main.dart`: sign-out reloads the feature blocs so they render
+    // the erased boxes instead of stale in-memory data.
+    authBloc.stream.listen((state) {
+      if (state is AuthUnauthenticated) {
+        transactionBloc.add(const LoadTransactions());
+        debtBloc.add(const LoadDebts());
+        ocrBloc.add(const LoadReceipts());
+        dashboardBloc.add(const LoadDashboard());
+        budgetBloc.add(const LoadBudgets());
+        walletBloc.add(const LoadWallets());
+        categoryBloc.add(const LoadCategories());
+        scheduledPaymentBloc.add(const LoadScheduledPayments());
+      }
+    });
 
     router = buildRouter(
       themeController: themeController,
@@ -484,6 +518,10 @@ Future<void> pumpUntilGone(
 }
 
 class _FakeAuthRepository implements AuthRepository {
+  _FakeAuthRepository(this._localDataScope);
+
+  final LocalDataScope _localDataScope;
+
   AuthSession? _session;
 
   @override
@@ -513,6 +551,7 @@ class _FakeAuthRepository implements AuthRepository {
       );
     }
     _session = _buildSession(email.trim());
+    await _localDataScope.setOwnerUserId(_session!.userId);
     return Right(_session!);
   }
 
@@ -528,6 +567,8 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   ResultFuture<void> signOut() async {
     _session = null;
+    await _localDataScope.clearAllUserData();
+    await _localDataScope.setOwnerUserId(null);
     return const Right(null);
   }
 }

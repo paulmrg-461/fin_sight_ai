@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/services/local_data_scope.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../domain/entities/auth_session.dart';
@@ -15,12 +16,14 @@ import '../datasources/session_storage.dart';
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(
     this._remoteDataSource,
-    this._storage, {
+    this._storage,
+    this._localDataScope, {
     this.clock = const Clock(),
   });
 
   final AuthRemoteDataSource _remoteDataSource;
   final SessionStorage _storage;
+  final LocalDataScope _localDataScope;
   final Clock clock;
 
   AuthSession? _session;
@@ -43,6 +46,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       await _storage.write(session);
+      await _localDataScope.setOwnerUserId(session.userId);
       _session = session;
       return Right(session);
     } on AuthException catch (exception) {
@@ -67,6 +71,7 @@ class AuthRepositoryImpl implements AuthRepository {
         password: password,
       );
       await _storage.write(session);
+      await _localDataScope.setOwnerUserId(session.userId);
       _session = session;
       return Right(session);
     } on AuthException catch (exception) {
@@ -100,6 +105,7 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final refreshed = await _remoteDataSource.refresh(stored.refreshToken);
         await _storage.write(refreshed);
+        await _localDataScope.setOwnerUserId(refreshed.userId);
         _session = refreshed;
         return Right(refreshed);
       } on AuthException {
@@ -133,7 +139,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _storage.clear();
       _session = null;
-      return const Right(null);
     } catch (_) {
       return const Left(
         AuthFailure(
@@ -142,6 +147,17 @@ class AuthRepositoryImpl implements AuthRepository {
         ),
       );
     }
+
+    try {
+      await _localDataScope.clearAllUserData();
+      await _localDataScope.setOwnerUserId(null);
+    } catch (_) {
+      return const Left(
+        CacheFailure('Could not clear local data.', code: 'local_clear_failed'),
+      );
+    }
+
+    return const Right(null);
   }
 
   AuthFailure _authFailure(AuthException exception) =>

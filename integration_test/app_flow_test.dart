@@ -1,6 +1,7 @@
 import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/core/utils/date_formatters.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
@@ -192,7 +193,64 @@ void main() {
 
     await pumpUntil(tester, find.byIcon(Icons.logout));
     await tester.tap(find.byIcon(Icons.logout));
+    await pumpUntil(tester, find.text('Sign out and erase local data?'));
+    await tester.tap(find.widgetWithText(TextButton, 'Sign out'));
     await pumpUntil(tester, find.byIcon(Icons.person_outline));
+  });
+
+  testWidgets('signing out erases local data before another sign-in', (
+    tester,
+  ) async {
+    Future<void> signIn() async {
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.person_outline));
+      await pumpUntil(tester, find.text('Welcome back'));
+
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), 'user@example.com');
+      await tester.enterText(fields.at(1), 'secret1');
+      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await pumpUntil(tester, find.byIcon(Icons.logout));
+    }
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+
+    await signIn();
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 42,
+        type: TransactionType.income,
+        category: 'Salary',
+        description: 'Private salary',
+        date: DateTime.now(),
+      ),
+    );
+    harness.transactionBloc.add(const LoadTransactions());
+    harness.dashboardBloc.add(const LoadDashboard());
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Private salary'));
+
+    harness.router.goNamed(AppRoutes.dashboardName);
+    await pumpUntil(tester, find.byIcon(Icons.logout));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.logout));
+    await pumpUntil(tester, find.text('Sign out and erase local data?'));
+    await tester.tap(find.widgetWithText(TextButton, 'Sign out'));
+    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+    await pumpUntil(tester, find.text('No transactions yet'));
+
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('No transactions yet'));
+    expect(find.text('Private salary'), findsNothing);
+
+    harness.router.goNamed(AppRoutes.dashboardName);
+    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+    await signIn();
+
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('No transactions yet'));
+    expect(find.text('Private salary'), findsNothing);
   });
 
   testWidgets('filters transactions by date range', (tester) async {

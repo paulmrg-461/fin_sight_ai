@@ -89,6 +89,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get signOutQuestion => 'Sign out and erase local data?';
+
+  @override
+  String get signOutEraseBody =>
+      'Local transactions and pending changes on this device will be deleted. Sync first if you need them.';
+
+  @override
   String get quickActions => 'Quick actions';
 
   @override

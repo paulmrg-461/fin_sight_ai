@@ -30,8 +30,7 @@ class AccountButton extends StatelessWidget {
 
         if (state is AuthAuthenticated) {
           return IconButton(
-            onPressed: () =>
-                context.read<AuthBloc>().add(const SignOutRequested()),
+            onPressed: () => _confirmSignOut(context),
             tooltip: context.l10n.signOutEmail(state.session.email),
             icon: const Icon(Icons.logout),
           );
@@ -44,5 +43,35 @@ class AccountButton extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        return AlertDialog(
+          title: Text(dialogContext.l10n.signOutQuestion),
+          content: Text(dialogContext.l10n.signOutEraseBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(dialogContext.l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.colorScheme.error,
+              ),
+              child: Text(dialogContext.l10n.signOut),
+            ),
+          ],
+        );
+      },
+    );
+
+    if ((confirmed ?? false) && context.mounted) {
+      context.read<AuthBloc>().add(const SignOutRequested());
+    }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/services/local_data_scope.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/session_storage.dart';
@@ -11,6 +12,8 @@ import 'package:mocktail/mocktail.dart';
 class MockAuthRemoteDataSource extends Mock implements AuthRemoteDataSource {}
 
 class MockSessionStorage extends Mock implements SessionStorage {}
+
+class MockLocalDataScope extends Mock implements LocalDataScope {}
 
 class FixedClock extends Clock {
   const FixedClock(this.value);
@@ -26,6 +29,7 @@ void main() {
 
   late MockAuthRemoteDataSource remote;
   late MockSessionStorage storage;
+  late MockLocalDataScope localDataScope;
 
   AuthSession session({DateTime? expiresAt}) {
     return AuthSession(
@@ -38,14 +42,23 @@ void main() {
   }
 
   AuthRepositoryImpl buildRepository() {
-    return AuthRepositoryImpl(remote, storage, clock: FixedClock(now));
+    return AuthRepositoryImpl(
+      remote,
+      storage,
+      localDataScope,
+      clock: FixedClock(now),
+    );
   }
 
   setUp(() {
     remote = MockAuthRemoteDataSource();
     storage = MockSessionStorage();
+    localDataScope = MockLocalDataScope();
     when(() => storage.write(any())).thenAnswer((_) async {});
     when(() => storage.clear()).thenAnswer((_) async {});
+    when(() => localDataScope.getOwnerUserId()).thenAnswer((_) async => null);
+    when(() => localDataScope.setOwnerUserId(any())).thenAnswer((_) async {});
+    when(() => localDataScope.clearAllUserData()).thenAnswer((_) async {});
   });
 
   setUpAll(() {
@@ -74,6 +87,7 @@ void main() {
 
       expect(result.getOrElse((_) => fail('Expected session')), expected);
       verify(() => storage.write(expected)).called(1);
+      verify(() => localDataScope.setOwnerUserId('user-1')).called(1);
       expect(repository.accessToken, 'access');
       expect(repository.isAuthenticated, isTrue);
     });
@@ -149,6 +163,7 @@ void main() {
 
       expect(result.getOrElse((_) => null), refreshed);
       verify(() => storage.write(refreshed)).called(1);
+      verify(() => localDataScope.setOwnerUserId('user-1')).called(1);
     });
 
     test('clears the session when refresh fails', () async {
@@ -191,12 +206,38 @@ void main() {
       expect(repository.isAuthenticated, isFalse);
     });
 
-    test('maps storage clear failures', () async {
+    test('erases local data and the stored owner', () async {
+      final repository = buildRepository();
+
+      final result = await repository.signOut();
+
+      expect(result.isRight(), isTrue);
+      verify(() => localDataScope.clearAllUserData()).called(1);
+      verify(() => localDataScope.setOwnerUserId(null)).called(1);
+      expect(repository.isAuthenticated, isFalse);
+    });
+
+    test('reports local data clear failures as CacheFailure', () async {
+      when(() => localDataScope.clearAllUserData())
+          .thenThrow(Exception('hive'));
+      final repository = buildRepository();
+
+      final result = await repository.signOut();
+
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<CacheFailure>());
+      expect(failure?.code, 'local_clear_failed');
+      verifyNever(() => localDataScope.setOwnerUserId(null));
+      expect(repository.isAuthenticated, isFalse);
+    });
+
+    test('maps storage clear failures without erasing local data', () async {
       when(() => storage.clear()).thenThrow(Exception('storage'));
 
       final result = await buildRepository().signOut();
 
       expect(result.getLeft().toNullable()?.code, 'auth_storage_failed');
+      verifyNever(() => localDataScope.clearAllUserData());
     });
   });
 
@@ -213,6 +254,7 @@ void main() {
       );
 
       expect(result.getOrElse((_) => fail('Expected session')), expected);
+      verify(() => localDataScope.setOwnerUserId('user-1')).called(1);
       expect(repository.accessToken, 'access');
     });
   });

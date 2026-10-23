@@ -6,6 +6,7 @@ import 'core/services/app_boxes.dart';
 import 'core/services/calendar_migration.dart';
 import 'features/debts/presentation/bloc/debt_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'features/auth/data/services/account_scope_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
@@ -40,6 +41,9 @@ import 'features/transactions/presentation/bloc/transaction_event.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
+
+  // Wipe another account's data before any service reads local storage.
+  await getIt<AccountScopeService>().ensure();
 
   // Rewrite pre-plan calendar dates before any BLoC reads local storage.
   await CalendarMigrationService(
@@ -76,6 +80,18 @@ Future<void> main() async {
   authBloc.stream.listen((state) {
     if (state is AuthAuthenticated) {
       syncBloc.add(const SyncNow());
+    }
+    if (state is AuthUnauthenticated) {
+      // Reads now see the erased boxes, so feature views fall back to their
+      // empty states without recreating the blocs.
+      transactionBloc.add(const LoadTransactions());
+      debtBloc.add(const LoadDebts());
+      ocrBloc.add(const LoadReceipts());
+      dashboardBloc.add(const LoadDashboard());
+      budgetBloc.add(const LoadBudgets());
+      walletBloc.add(const LoadWallets());
+      categoryBloc.add(const LoadCategories());
+      scheduledPaymentBloc.add(const LoadScheduledPayments());
     }
   });
   syncBloc.add(const SyncNow());

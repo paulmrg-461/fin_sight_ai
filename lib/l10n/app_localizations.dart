@@ -248,6 +248,18 @@ abstract class AppLocalizations {
   /// **'Sign out ({email})'**
   String signOutEmail(String email);
 
+  /// No description provided for @signOutQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and erase local data?'**
+  String get signOutQuestion;
+
+  /// No description provided for @signOutEraseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Local transactions and pending changes on this device will be deleted. Sync first if you need them.'**
+  String get signOutEraseBody;
+
   /// No description provided for @quickActions.
   ///
   /// In en, this message translates to:

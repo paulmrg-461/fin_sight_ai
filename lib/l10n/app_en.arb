@@ -32,6 +32,8 @@
       }
     }
   },
+  "signOutQuestion": "Sign out and erase local data?",
+  "signOutEraseBody": "Local transactions and pending changes on this device will be deleted. Sync first if you need them.",
   "quickActions": "Quick actions",
   "transactions": "Transactions",
   "debts": "Debts",

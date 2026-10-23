@@ -89,6 +89,13 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get signOutQuestion => '¿Cerrar sesión y borrar los datos locales?';
+
+  @override
+  String get signOutEraseBody =>
+      'Las transacciones locales y los cambios pendientes de este dispositivo se eliminarán. Sincroniza primero si los necesitas.';
+
+  @override
   String get quickActions => 'Acciones rápidas';
 
   @override

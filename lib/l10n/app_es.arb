@@ -25,6 +25,8 @@
   "showPassword": "Mostrar contraseña",
   "hidePassword": "Ocultar contraseña",
   "signOutEmail": "Cerrar sesión ({email})",
+  "signOutQuestion": "¿Cerrar sesión y borrar los datos locales?",
+  "signOutEraseBody": "Las transacciones locales y los cambios pendientes de este dispositivo se eliminarán. Sincroniza primero si los necesitas.",
   "quickActions": "Acciones rápidas",
   "transactions": "Transacciones",
   "debts": "Deudas",
