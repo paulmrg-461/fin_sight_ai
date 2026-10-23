@@ -17,6 +17,9 @@ jobs:
           channel: beta
           cache: true
 
+      - name: Bootstrap local env
+        run: cp example.env .env
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -59,6 +62,9 @@ jobs:
         with:
           channel: beta
           cache: true
+
+      - name: Bootstrap local env
+        run: cp example.env .env
 
       - name: Install dependencies
         run: flutter pub get

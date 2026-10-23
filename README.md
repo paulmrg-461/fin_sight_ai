@@ -55,12 +55,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and the [specs](specs/) directory for fea
 Requirements: Flutter 3.50 beta / Dart 3.14. OCR runs on Android/iOS via Google ML Kit; integration tests replace OCR, Groq, image picking, and auth with fakes.
 
 ```bash
+cp example.env .env   # then fill your local credentials (never commit .env)
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-The committed `.env` contains empty placeholders. Inject real secrets at build time:
+The committed `example.env` contains empty placeholders; `.env` is gitignored. Inject real secrets at build time:
 
 ```bash
 flutter run \
