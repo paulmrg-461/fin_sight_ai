@@ -54,6 +54,7 @@ import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:fin_sight_ai/features/transactions/presentation/screens/transaction_screen.dart';
 import 'package:fin_sight_ai/features/wallets/domain/entities/wallet_entity.dart';
 import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
 import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
@@ -369,20 +370,33 @@ void main() {
 
     expect(find.text('FinSight AI'), findsOneWidget);
     expect(find.text('No transactions yet'), findsOneWidget);
-    expect(find.text('Transactions'), findsOneWidget);
-    expect(find.text('Debts'), findsOneWidget);
-    expect(find.text('Scan receipt'), findsOneWidget);
-    expect(find.text('AI coach'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'Transactions'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'Debts'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'Scan receipt'), findsOneWidget);
+    expect(find.widgetWithText(ActionChip, 'AI coach'), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Money'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('navigates to the transactions feature', (tester) async {
     await pumpReady(tester);
 
-    await tester.tap(find.text('Transactions'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Transactions'),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('Transactions'), findsOneWidget);
+    expect(find.byType(TransactionScreen), findsOneWidget);
     expect(find.text('No transactions yet'), findsNothing);
   });
 
@@ -424,13 +438,24 @@ void main() {
 
     expect(app().themeMode, ThemeMode.system);
 
-    await tester.tap(find.byIcon(Icons.dark_mode_outlined));
+    await tester.tap(find.byTooltip('Open menu'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byType(SwitchListTile),
+      120,
+      scrollable: find.descendant(
+        of: find.byType(Drawer),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
 
     expect(themeController.themeMode, ThemeMode.dark);
     expect(app().themeMode, ThemeMode.dark);
 
-    await tester.tap(find.byIcon(Icons.light_mode_outlined));
+    await tester.tap(find.byType(SwitchListTile));
     await tester.pumpAndSettle();
 
     expect(themeController.themeMode, ThemeMode.light);

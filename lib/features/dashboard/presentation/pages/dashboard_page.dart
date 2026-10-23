@@ -2,9 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
@@ -16,13 +16,15 @@ import '../../../auth/presentation/widgets/account_button.dart';
 import '../../../sync/presentation/widgets/sync_status_chip.dart';
 import '../widgets/summary_cards.dart';
 
-/// Analytics dashboard with navigation shortcuts and theme toggle.
+/// Analytics dashboard with navigation shortcuts.
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key, required this.themeController});
-
-  final ThemeController themeController;
+  const DashboardPage({super.key});
 
   Future<void> _openFeature(BuildContext context, String route) async {
+    final shell = ShellScope.maybeOf(context);
+    if (shell != null && shell.goToPrimary(route)) {
+      return;
+    }
     final bloc = context.read<DashboardBloc>();
     await context.pushNamed(route);
     bloc.add(const RefreshData());
@@ -54,108 +56,81 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: themeController,
-      builder: (context, _) {
-        final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Text(context.l10n.appName),
-            actions: [
-              const AccountButton(),
-              const SyncStatusChip(),
-              IconButton(
-                onPressed: () => _pickRange(context),
-                tooltip: context.l10n.changePeriod,
-                icon: const Icon(Icons.date_range_outlined),
-              ),
-              IconButton(
-                onPressed: () => context.pushNamed(AppRoutes.settingsName),
-                tooltip: context.l10n.settings,
-                icon: const Icon(Icons.settings_outlined),
-              ),
-              IconButton(
-                onPressed: themeController.toggle,
-                tooltip: isDark
-                    ? context.l10n.switchToLight
-                    : context.l10n.switchToDark,
-                icon: Icon(
-                  isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-                ),
-              ),
-            ],
+    return Scaffold(
+      appBar: AppBar(
+        leading: const AppMenuButton(),
+        title: Text(context.l10n.appName),
+        actions: [
+          const AccountButton(),
+          const SyncStatusChip(),
+          IconButton(
+            onPressed: () => _pickRange(context),
+            tooltip: context.l10n.changePeriod,
+            icon: const Icon(Icons.date_range_outlined),
           ),
-          body: BlocBuilder<DashboardBloc, DashboardState>(
-            builder: (context, state) {
-              return switch (state) {
-                DashboardInitial() || DashboardLoading() => Center(
-                  child: CircularProgressIndicator(
-                    semanticsLabel: context.l10n.loading,
-                  ),
+        ],
+      ),
+      body: BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
+          return switch (state) {
+            DashboardInitial() || DashboardLoading() => Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: context.l10n.loading,
+              ),
+            ),
+            DashboardFailure(:final message) => _DashboardError(
+              message: message,
+              onRetry: () =>
+                  context.read<DashboardBloc>().add(const LoadDashboard()),
+            ),
+            DashboardEmpty(:final start, :final end) => ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                _PeriodLabel(start: start, end: end),
+                const SizedBox(height: 16),
+                _EmptyDashboard(
+                  onAddTransaction: () =>
+                      _openFeature(context, AppRoutes.transactionsName),
                 ),
-                DashboardFailure(:final message) => _DashboardError(
-                  message: message,
-                  onRetry: () =>
-                      context.read<DashboardBloc>().add(const LoadDashboard()),
-                ),
-                DashboardEmpty(:final start, :final end) => ListView(
+                const SizedBox(height: 24),
+                _QuickActions(onOpen: (route) => _openFeature(context, route)),
+              ],
+            ),
+            DashboardLoaded(
+              :final summary,
+              :final breakdown,
+              :final comparison,
+              :final recentTransactions,
+              :final start,
+              :final end,
+            ) =>
+              RefreshIndicator(
+                onRefresh: () async {
+                  final bloc = context.read<DashboardBloc>();
+                  bloc.add(const RefreshData());
+                  await Future<void>.delayed(const Duration(milliseconds: 500));
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   children: [
                     _PeriodLabel(start: start, end: end),
                     const SizedBox(height: 16),
-                    _EmptyDashboard(
-                      onAddTransaction: () =>
-                          _openFeature(context, AppRoutes.transactionsName),
-                    ),
-                    const SizedBox(height: 24),
+                    SummaryCards(summary: summary),
+                    CategoryPieChart(breakdown: breakdown),
+                    MonthlyComparisonChart(comparison: comparison),
+                    RecentTransactionsList(transactions: recentTransactions),
+                    const SizedBox(height: 16),
                     _QuickActions(
                       onOpen: (route) => _openFeature(context, route),
                     ),
+                    const SizedBox(height: 24),
                   ],
                 ),
-                DashboardLoaded(
-                  :final summary,
-                  :final breakdown,
-                  :final comparison,
-                  :final recentTransactions,
-                  :final start,
-                  :final end,
-                ) =>
-                  RefreshIndicator(
-                    onRefresh: () async {
-                      final bloc = context.read<DashboardBloc>();
-                      bloc.add(const RefreshData());
-                      await Future<void>.delayed(
-                        const Duration(milliseconds: 500),
-                      );
-                    },
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        _PeriodLabel(start: start, end: end),
-                        const SizedBox(height: 16),
-                        SummaryCards(summary: summary),
-                        CategoryPieChart(breakdown: breakdown),
-                        MonthlyComparisonChart(comparison: comparison),
-                        RecentTransactionsList(
-                          transactions: recentTransactions,
-                        ),
-                        const SizedBox(height: 16),
-                        _QuickActions(
-                          onOpen: (route) => _openFeature(context, route),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
-              };
-            },
-          ),
-        );
-      },
+              ),
+          };
+        },
+      ),
     );
   }
 }

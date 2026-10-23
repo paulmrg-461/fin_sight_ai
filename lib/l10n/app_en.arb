@@ -1,6 +1,11 @@
 {
   "@@locale": "en",
   "appName": "FinSight AI",
+  "dashboard": "Dashboard",
+  "mainMenu": "Main menu",
+  "more": "More",
+  "preferences": "Preferences",
+  "openMenu": "Open menu",
   "save": "Save",
   "cancel": "Cancel",
   "delete": "Delete",

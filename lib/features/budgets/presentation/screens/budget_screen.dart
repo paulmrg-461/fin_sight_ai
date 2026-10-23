@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -39,7 +40,10 @@ class BudgetScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.budgets)),
+      appBar: AppBar(
+        leading: const AppMenuButton(),
+        title: Text(context.l10n.budgets),
+      ),
       body: BlocBuilder<BudgetBloc, BudgetState>(
         builder: (context, state) {
           return switch (state) {

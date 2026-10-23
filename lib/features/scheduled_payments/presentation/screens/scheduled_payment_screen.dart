@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
@@ -57,6 +58,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
     final l10n = context.l10n;
     return Scaffold(
       appBar: AppBar(
+        leading: const AppMenuButton(),
         title: Text(l10n.scheduledPayments),
         actions: [
           IconButton(

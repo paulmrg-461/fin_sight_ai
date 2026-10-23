@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 
+import '../../app/main_shell.dart';
 import '../../features/ai_coach/presentation/screens/ai_coach_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../core/currency/presentation/screens/settings_screen.dart';
@@ -24,16 +25,58 @@ GoRouter buildRouter({
   return GoRouter(
     initialLocation: AppRoutes.dashboardPath,
     routes: [
-      GoRoute(
-        path: AppRoutes.dashboardPath,
-        name: AppRoutes.dashboardName,
-        builder: (context, state) =>
-            DashboardPage(themeController: themeController),
-      ),
-      GoRoute(
-        path: AppRoutes.transactionsPath,
-        name: AppRoutes.transactionsName,
-        builder: (context, state) => const TransactionScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => MainShell(
+          navigationShell: navigationShell,
+          themeController: themeController,
+        ),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.dashboardPath,
+                name: AppRoutes.dashboardName,
+                builder: (context, state) => const DashboardPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.transactionsPath,
+                name: AppRoutes.transactionsName,
+                builder: (context, state) => const TransactionScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.budgetsPath,
+                name: AppRoutes.budgetsName,
+                builder: (context, state) => const BudgetScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.scheduledPaymentsPath,
+                name: AppRoutes.scheduledPaymentsName,
+                builder: (context, state) => const ScheduledPaymentScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.moneyPath,
+                name: AppRoutes.moneyName,
+                builder: (context, state) => const WalletScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.debtsPath,
@@ -56,16 +99,6 @@ GoRouter buildRouter({
         builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
-        path: AppRoutes.budgetsPath,
-        name: AppRoutes.budgetsName,
-        builder: (context, state) => const BudgetScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.moneyPath,
-        name: AppRoutes.moneyName,
-        builder: (context, state) => const WalletScreen(),
-      ),
-      GoRoute(
         path: AppRoutes.settingsPath,
         name: AppRoutes.settingsName,
         builder: (context, state) => const SettingsScreen(),
@@ -74,11 +107,6 @@ GoRouter buildRouter({
         path: AppRoutes.categoriesPath,
         name: AppRoutes.categoriesName,
         builder: (context, state) => const CategoriesScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.scheduledPaymentsPath,
-        name: AppRoutes.scheduledPaymentsName,
-        builder: (context, state) => const ScheduledPaymentScreen(),
       ),
     ],
   );

@@ -61,9 +61,20 @@ void main() {
       find.byTooltip('Sync offline: Supabase is not configured'),
       findsOneWidget,
     );
-    expect(find.text('Transactions'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Transactions'),
+      ),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.text('Transactions'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Transactions'),
+      ),
+    );
     await pumpUntil(tester, find.text('Add'));
 
     await tester.tap(find.text('Add'));
@@ -78,7 +89,15 @@ void main() {
     await tester.tap(find.text('Save transaction'));
 
     await pumpUntil(tester, find.text('Monthly pay'));
-    await tester.pageBack();
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Dashboard'),
+      ),
+    );
+    await tester.pump();
+    harness.dashboardBloc.add(const LoadDashboard());
     await pumpUntil(tester, find.text(money(120)));
 
     expect(find.text('Income'), findsOneWidget);
@@ -313,8 +332,19 @@ void main() {
     );
 
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('Transactions'));
-    await tester.tap(find.text('Transactions'));
+    await pumpUntil(
+      tester,
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Transactions'),
+      ),
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Transactions'),
+      ),
+    );
     await pumpUntil(tester, find.text('January salary'));
     expect(find.text('December shopping'), findsOneWidget);
 
@@ -372,6 +402,46 @@ void main() {
     harness.router.goNamed(AppRoutes.moneyName);
     await pumpUntil(tester, find.text(usdBalance));
     expect(find.text(usdBalance), findsWidgets);
+  });
+
+  testWidgets('switches to money and opens settings from the drawer', (
+    tester,
+  ) async {
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('No transactions yet'));
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Money'),
+      ),
+    );
+    await pumpUntil(tester, find.text('Total available'));
+    expect(find.byType(WalletScreen), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Open menu'));
+    await tester.pumpAndSettle();
+    expect(find.text('Main menu'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.widgetWithText(ListTile, 'Settings'),
+      120,
+      scrollable: find.descendant(
+        of: find.byType(Drawer),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(ListTile, 'Settings'));
+    await pumpUntil(tester, find.text('Currency'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.pageBack();
+    await pumpUntil(tester, find.byType(NavigationBar));
+    expect(find.byType(Drawer), findsNothing);
+    expect(find.text('Total available'), findsOneWidget);
   });
 
   testWidgets('refreshes wallet balances after a new expense', (tester) async {
@@ -497,6 +567,8 @@ void main() {
     await tester.enterText(fields.at(1), '800');
     await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await pumpUntil(tester, find.text('Rent').last);
+    await tester.ensureVisible(find.text('Rent').last);
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Rent').last);
     await tester.pumpAndSettle();
 
@@ -512,9 +584,10 @@ void main() {
     expect(find.text('Rent payment'), findsOneWidget);
 
     harness.router.goNamed(AppRoutes.transactionsName);
-    await pumpUntil(tester, find.text('Transactions'));
+    await pumpUntil(tester, find.text('Add'));
+    harness.transactionBloc.add(const LoadTransactions());
     await pumpUntil(tester, find.text('Rent payment'));
-    expect(find.text(money(800)), findsWidgets);
+    expect(find.text(signedMoney(-800)), findsWidgets);
 
     harness.router.goNamed(AppRoutes.scheduledPaymentsName);
     await pumpUntil(tester, find.text('Scheduled payments'));

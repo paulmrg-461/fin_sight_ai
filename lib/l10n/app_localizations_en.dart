@@ -13,6 +13,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'FinSight AI';
 
   @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get mainMenu => 'Main menu';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get preferences => 'Preferences';
+
+  @override
+  String get openMenu => 'Open menu';
+
+  @override
   String get save => 'Save';
 
   @override

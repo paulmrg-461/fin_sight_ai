@@ -1,0 +1,500 @@
+import 'package:fin_sight_ai/app/app.dart';
+import 'package:fin_sight_ai/core/currency/app_currency.dart';
+import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_state.dart';
+import 'package:fin_sight_ai/core/currency/presentation/screens/settings_screen.dart';
+import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_state.dart';
+import 'package:fin_sight_ai/core/routing/app_router.dart';
+import 'package:fin_sight_ai/core/routing/app_routes.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
+import 'package:fin_sight_ai/core/theme/theme_controller.dart';
+import 'package:fin_sight_ai/core/usecase/usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
+import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fin_sight_ai/features/auth/presentation/screens/login_screen.dart';
+import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_state.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/screens/budget_screen.dart';
+import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart'
+    as categories;
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_state.dart';
+import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
+import 'package:fin_sight_ai/features/debts/domain/usecases/calculate_payoff_usecase.dart';
+import 'package:fin_sight_ai/features/debts/domain/usecases/delete_debt_usecase.dart';
+import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.dart';
+import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase.dart';
+import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
+import 'package:fin_sight_ai/features/debts/presentation/screens/debt_list_screen.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_state.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
+import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
+import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_state.dart';
+import 'package:fin_sight_ai/features/transactions/presentation/screens/transaction_screen.dart';
+import 'package:fin_sight_ai/features/wallets/domain/entities/wallet_entity.dart';
+import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_state.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/screens/wallet_screen.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
+
+class MockAddTransaction extends Mock implements AddTransactionUseCase {}
+
+class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
+
+class MockGetByDateRange extends Mock
+    implements GetTransactionsByDateRangeUseCase {}
+
+class MockGetDebts extends Mock implements GetDebtsUseCase {}
+
+class MockAddDebt extends Mock implements AddDebtUseCase {}
+
+class MockMakePayment extends Mock implements MakePaymentUseCase {}
+
+class MockDeleteDebt extends Mock implements DeleteDebtUseCase {}
+
+class MockCalculatePayoff extends Mock implements CalculatePayoffUseCase {}
+
+class MockCategoryCatalog extends Mock
+    implements categories.GetCategoryCatalogUseCase {}
+
+class MockAddCategory extends Mock implements categories.AddCategoryUseCase {}
+
+class MockRenameCategory extends Mock
+    implements categories.RenameCategoryUseCase {}
+
+class MockArchiveCategory extends Mock
+    implements categories.SetCategoryArchivedUseCase {}
+
+class MockGetScheduledPayments extends Mock
+    implements GetScheduledPaymentsUseCase {}
+
+class MockAddScheduledPayment extends Mock
+    implements AddScheduledPaymentUseCase {}
+
+class MockSetScheduledPaymentActive extends Mock
+    implements SetScheduledPaymentActiveUseCase {}
+
+class MockDeleteScheduledPayment extends Mock
+    implements DeleteScheduledPaymentUseCase {}
+
+class MockPayScheduledPayment extends Mock
+    implements PayScheduledPaymentUseCase {}
+
+class MockProcessDuePayments extends Mock
+    implements ProcessDueScheduledPaymentsUseCase {}
+
+class MockScanReceipt extends Mock implements ScanReceiptUseCase {}
+
+class MockSaveReceipt extends Mock implements SaveReceiptUseCase {}
+
+class MockGetReceipts extends Mock implements GetReceiptsUseCase {}
+
+class MockGetInsights extends Mock implements GetInsightsUseCase {}
+
+class MockAnalyzeSpending extends Mock implements AnalyzeSpendingUseCase {}
+
+class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
+
+class MockGetSummary extends Mock implements GetDashboardSummaryUseCase {}
+
+class MockGetBreakdown extends Mock implements GetCategoryBreakdownUseCase {}
+
+class MockGetComparison extends Mock implements GetMonthlyComparisonUseCase {}
+
+class MockSyncNow extends Mock implements SyncNowUseCase {}
+
+class MockGetSyncStatus extends Mock implements GetSyncStatusUseCase {}
+
+class MockSignIn extends Mock implements SignInUseCase {}
+
+class MockSignUp extends Mock implements SignUpUseCase {}
+
+class MockSignOut extends Mock implements SignOutUseCase {}
+
+class MockRestoreSession extends Mock implements RestoreSessionUseCase {}
+
+class MockAddBudget extends Mock implements AddBudgetUseCase {}
+
+class MockDeleteBudget extends Mock implements DeleteBudgetUseCase {}
+
+class MockGetBudgetProgress extends Mock implements GetBudgetProgressUseCase {}
+
+class MockGetCategories extends Mock implements GetCategoriesUseCase {}
+
+class MockGetWalletBalances extends Mock implements GetWalletBalancesUseCase {}
+
+class MockSetWalletBalance extends Mock implements SetWalletBalanceUseCase {}
+
+class MockTransferBetweenWallets extends Mock
+    implements TransferBetweenWalletsUseCase {}
+
+class MockGetCurrency extends Mock implements GetCurrencyUseCase {}
+
+class MockSetCurrency extends Mock implements SetCurrencyUseCase {}
+
+class MockGetLocale extends Mock implements GetLocaleUseCase {}
+
+class MockSetLocale extends Mock implements SetLocaleUseCase {}
+
+class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
+
+class _FakeReceiptImagePicker implements ReceiptImagePicker {
+  @override
+  Future<String?> pick(ReceiptImageSource source) async => null;
+}
+
+AuthSession _session() => AuthSession(
+  accessToken: 'access',
+  refreshToken: 'refresh',
+  userId: 'user-1',
+  email: 'user@example.com',
+  expiresAt: DateTime.now().add(const Duration(days: 1)),
+);
+
+void main() {
+  late ThemeController themeController;
+  late GoRouter router;
+  late TransactionBloc transactionBloc;
+  late DebtBloc debtBloc;
+  late OcrBloc ocrBloc;
+  late AiCoachBloc aiCoachBloc;
+  late DashboardBloc dashboardBloc;
+  late SyncBloc syncBloc;
+  late AuthBloc authBloc;
+  late BudgetBloc budgetBloc;
+  late WalletBloc walletBloc;
+  late CurrencyBloc currencyBloc;
+  late LocaleBloc localeBloc;
+  late CategoryBloc categoryBloc;
+  late ScheduledPaymentBloc scheduledPaymentBloc;
+
+  setUpAll(() {
+    registerFallbackValue(const NoParams());
+  });
+
+  setUp(() {
+    themeController = ThemeController();
+    final getWalletBalances = MockGetWalletBalances();
+    when(() => getWalletBalances(any()))
+        .thenAnswer((_) async => const Right(<WalletBalance>[]));
+
+    final getTransactions = MockGetTransactions();
+    final addTransaction = MockAddTransaction();
+
+    transactionBloc = TransactionBloc(
+      getTransactions,
+      addTransaction,
+      MockDeleteTransaction(),
+      MockGetByDateRange(),
+    );
+    debtBloc = DebtBloc(
+      MockGetDebts(),
+      MockAddDebt(),
+      MockMakePayment(),
+      MockDeleteDebt(),
+      MockCalculatePayoff(),
+    );
+    ocrBloc = OcrBloc(
+      MockScanReceipt(),
+      MockSaveReceipt(),
+      MockGetReceipts(),
+      addTransaction,
+      MockReceiptImageStore(),
+    );
+    aiCoachBloc = AiCoachBloc(
+      MockGetInsights(),
+      MockAnalyzeSpending(),
+      MockGetSavings(),
+      getTransactions,
+    );
+    dashboardBloc = DashboardBloc(
+      MockGetSummary(),
+      MockGetBreakdown(),
+      MockGetComparison(),
+      MockGetByDateRange(),
+    );
+    syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
+    authBloc = AuthBloc(
+      MockSignIn(),
+      MockSignUp(),
+      MockSignOut(),
+      MockRestoreSession(),
+    );
+    budgetBloc = BudgetBloc(
+      MockAddBudget(),
+      MockDeleteBudget(),
+      MockGetBudgetProgress(),
+      MockGetCategories(),
+    );
+    walletBloc = WalletBloc(
+      getWalletBalances,
+      MockSetWalletBalance(),
+      MockTransferBetweenWallets(),
+    );
+    currencyBloc = CurrencyBloc(MockGetCurrency(), MockSetCurrency());
+    localeBloc = LocaleBloc(MockGetLocale(), MockSetLocale());
+    categoryBloc = CategoryBloc(
+      MockCategoryCatalog(),
+      MockAddCategory(),
+      MockRenameCategory(),
+      MockArchiveCategory(),
+    );
+    scheduledPaymentBloc = ScheduledPaymentBloc(
+      MockGetScheduledPayments(),
+      MockAddScheduledPayment(),
+      MockSetScheduledPaymentActive(),
+      MockDeleteScheduledPayment(),
+      MockPayScheduledPayment(),
+      MockProcessDuePayments(),
+    );
+
+    router = buildRouter(
+      themeController: themeController,
+      receiptImagePicker: _FakeReceiptImagePicker(),
+    );
+  });
+
+  Widget buildApp() {
+    return FinSightApp(
+      themeController: themeController,
+      router: router,
+      transactionBloc: transactionBloc,
+      debtBloc: debtBloc,
+      ocrBloc: ocrBloc,
+      aiCoachBloc: aiCoachBloc,
+      dashboardBloc: dashboardBloc,
+      syncBloc: syncBloc,
+      authBloc: authBloc,
+      budgetBloc: budgetBloc,
+      walletBloc: walletBloc,
+      currencyBloc: currencyBloc,
+      localeBloc: localeBloc,
+      categoryBloc: categoryBloc,
+      scheduledPaymentBloc: scheduledPaymentBloc,
+    );
+  }
+
+  Future<void> pumpReady(WidgetTester tester) async {
+    dashboardBloc.emit(
+      DashboardEmpty(start: DateTime.now(), end: DateTime.now()),
+    );
+    transactionBloc.emit(const TransactionEmpty());
+    syncBloc.emit(
+      const SyncIdle(
+        SyncStatusEntity(
+          pendingCount: 0,
+          isConfigured: true,
+          isAuthenticated: true,
+        ),
+      ),
+    );
+    authBloc.emit(const AuthUnauthenticated());
+    budgetBloc.emit(const BudgetEmpty(categories: []));
+    categoryBloc.emit(const CategoryEmpty());
+    scheduledPaymentBloc.emit(const ScheduledPaymentEmpty());
+    walletBloc.emit(const WalletLoaded([]));
+    currencyBloc.emit(const CurrencyLoaded(AppCurrency.cop));
+    localeBloc.emit(const LocaleLoaded(Locale('en')));
+    await tester.pumpWidget(buildApp());
+    await tester.pump();
+  }
+
+  Future<void> tapDestination(WidgetTester tester, String label) async {
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text(label),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
+  Future<void> openDrawer(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Open menu'));
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> scrollDrawerTo(WidgetTester tester, Finder finder) async {
+    await tester.scrollUntilVisible(
+      finder,
+      120,
+      scrollable: find.descendant(
+        of: find.byType(Drawer),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  int selectedIndex(WidgetTester tester) =>
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex;
+
+  testWidgets('switches among the five primary destinations', (tester) async {
+    await pumpReady(tester);
+
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(DashboardPage), findsOneWidget);
+    expect(selectedIndex(tester), 0);
+
+    await tapDestination(tester, 'Transactions');
+    expect(find.byType(TransactionScreen), findsOneWidget);
+    expect(selectedIndex(tester), 1);
+
+    await tapDestination(tester, 'Budgets');
+    expect(find.byType(BudgetScreen), findsOneWidget);
+    expect(selectedIndex(tester), 2);
+
+    await tapDestination(tester, 'Scheduled payments');
+    expect(find.byType(ScheduledPaymentScreen), findsOneWidget);
+    expect(selectedIndex(tester), 3);
+
+    await tapDestination(tester, 'Money');
+    expect(find.byType(WalletScreen), findsOneWidget);
+    expect(selectedIndex(tester), 4);
+
+    await tapDestination(tester, 'Dashboard');
+    expect(find.byType(DashboardPage), findsOneWidget);
+    expect(selectedIndex(tester), 0);
+  });
+
+  testWidgets('selects the destination for a deep link', (tester) async {
+    await pumpReady(tester);
+
+    router.goNamed(AppRoutes.moneyName);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byType(WalletScreen), findsOneWidget);
+    expect(selectedIndex(tester), 4);
+  });
+
+  testWidgets('opens the drawer from every primary screen', (tester) async {
+    await pumpReady(tester);
+
+    for (final label in const [
+      'Dashboard',
+      'Transactions',
+      'Budgets',
+      'Scheduled payments',
+      'Money',
+    ]) {
+      await tapDestination(tester, label);
+      await openDrawer(tester);
+
+      expect(find.byType(Drawer), findsOneWidget);
+      expect(find.text('Main menu'), findsOneWidget);
+
+      await tester.tapAt(const Offset(780, 300));
+      await tester.pumpAndSettle();
+    }
+  });
+
+  testWidgets('pushes debts over the shell and returns on back', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+    await openDrawer(tester);
+
+    await scrollDrawerTo(tester, find.widgetWithText(ListTile, 'Debts'));
+    await tester.tap(find.widgetWithText(ListTile, 'Debts'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(DebtListScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.pageBack();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(DashboardPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('opens settings from the drawer without the bottom bar', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+    await openDrawer(tester);
+
+    await scrollDrawerTo(tester, find.widgetWithText(ListTile, 'Settings'));
+    await tester.tap(find.widgetWithText(ListTile, 'Settings'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+
+  testWidgets('toggles the theme from the drawer', (tester) async {
+    await pumpReady(tester);
+    expect(themeController.themeMode, ThemeMode.system);
+
+    await openDrawer(tester);
+    await scrollDrawerTo(tester, find.byType(SwitchListTile));
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    expect(themeController.themeMode, ThemeMode.dark);
+
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+    expect(themeController.themeMode, ThemeMode.light);
+  });
+
+  testWidgets('shows the signed-in email in the drawer header', (tester) async {
+    await pumpReady(tester);
+    authBloc.emit(AuthAuthenticated(_session()));
+
+    await openDrawer(tester);
+
+    expect(find.text('user@example.com'), findsOneWidget);
+  });
+
+  testWidgets('keeps login outside the shell', (tester) async {
+    await pumpReady(tester);
+
+    router.goNamed(AppRoutes.loginName);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+  });
+}

@@ -104,6 +104,36 @@ abstract class AppLocalizations {
   /// **'FinSight AI'**
   String get appName;
 
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @mainMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Main menu'**
+  String get mainMenu;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @openMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Open menu'**
+  String get openMenu;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

@@ -1,10 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
-import '../../../../core/routing/app_routes.dart';
 import '../../domain/entities/wallet_entity.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
@@ -82,14 +81,8 @@ class _WalletScreenState extends State<WalletScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const AppMenuButton(),
         title: Text(context.l10n.moneyTitle),
-        actions: [
-          IconButton(
-            onPressed: () => context.pushNamed(AppRoutes.settingsName),
-            tooltip: context.l10n.settings,
-            icon: const Icon(Icons.settings_outlined),
-          ),
-        ],
       ),
       body: BlocBuilder<WalletBloc, WalletState>(
         builder: (context, state) {
