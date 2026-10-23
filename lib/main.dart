@@ -2,13 +2,19 @@ import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
 import 'core/di/injection.dart';
+import 'core/services/app_boxes.dart';
+import 'core/services/calendar_migration.dart';
 import 'features/debts/presentation/bloc/debt_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
+import 'features/budgets/data/datasources/budget_local_data_source.dart';
+import 'features/budgets/domain/repositories/budget_repository.dart';
 import 'features/budgets/presentation/bloc/budget_bloc.dart';
 import 'features/budgets/presentation/bloc/budget_event.dart';
+import 'features/transactions/data/datasources/transaction_local_data_source.dart';
+import 'features/transactions/domain/repositories/transaction_repository.dart';
 import 'features/wallets/presentation/bloc/wallet_bloc.dart';
 import 'features/wallets/presentation/bloc/wallet_event.dart';
 import 'core/currency/presentation/bloc/currency_bloc.dart';
@@ -34,6 +40,15 @@ import 'features/transactions/presentation/bloc/transaction_event.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await configureDependencies();
+
+  // Rewrite pre-plan calendar dates before any BLoC reads local storage.
+  await CalendarMigrationService(
+    settings: getIt<AppBoxes>().settings,
+    transactionDataSource: getIt<TransactionLocalDataSource>(),
+    budgetDataSource: getIt<BudgetLocalDataSource>(),
+    transactionRepository: getIt<TransactionRepository>(),
+    budgetRepository: getIt<BudgetRepository>(),
+  ).migrate();
 
   // Materialize due expenses before the dashboard and wallets read storage.
   final startupPayments = await getIt<ProcessDueScheduledPaymentsUseCase>()(

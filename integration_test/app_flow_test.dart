@@ -1,5 +1,6 @@
 import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
+import 'package:fin_sight_ai/core/utils/date_formatters.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
@@ -444,6 +445,30 @@ void main() {
 
     harness.router.goNamed(AppRoutes.ocrName);
     await pumpUntil(tester, find.text('Persisted Store'));
+  });
+
+  testWidgets('records a late-evening transaction on the selected day', (
+    tester,
+  ) async {
+    final today = DateTime.now();
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 18,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Late dinner',
+        date: DateTime(today.year, today.month, today.day, 20, 30),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Late dinner'));
+
+    final expected = formatDisplayDate(today);
+    expect(find.text('Food • $expected'), findsOneWidget);
+    final tomorrow = formatDisplayDate(today.add(const Duration(days: 1)));
+    expect(find.text('Food • $tomorrow'), findsNothing);
   });
 
   testWidgets('benchmarks launch and screen render times', (tester) async {

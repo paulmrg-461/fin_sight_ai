@@ -28,6 +28,8 @@ class TransactionEntity extends Entity {
   final TransactionType type;
   final String category;
   final String description;
+
+  /// Calendar day stored as UTC noon; never an instant with a meaningful time.
   final DateTime date;
 
   /// Local path to an attached receipt image, when available.

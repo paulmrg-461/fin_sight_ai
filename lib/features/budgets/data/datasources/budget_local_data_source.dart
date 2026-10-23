@@ -9,6 +9,10 @@ abstract interface class BudgetLocalDataSource {
   /// Returns active and soft-deleted records (used by sync merges).
   Future<List<BudgetModel>> getAllBudgetsIncludingDeleted();
 
+  /// Returns every stored budget whose persisted month still uses the legacy
+  /// UTC-instant convention, normalized to the calendar-month convention.
+  Future<List<BudgetModel>> getLegacyCalendarBudgets();
+
   Future<void> saveBudget(BudgetModel budget);
 
   Future<void> deleteBudget(String id);

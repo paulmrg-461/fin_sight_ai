@@ -18,7 +18,7 @@ class BudgetEntity extends Entity {
   final String category;
   final double monthlyLimit;
 
-  /// Normalized to the first day of the month at midnight (local time).
+  /// Normalized to the first day of the month as UTC noon for stable storage.
   final DateTime month;
   final DateTime? updatedAt;
 

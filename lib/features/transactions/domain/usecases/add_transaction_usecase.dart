@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/domain/failure.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/app_constants.dart';
+import '../../../../core/utils/calendar_date.dart';
 import '../entities/transaction_entity.dart';
 import '../repositories/transaction_repository.dart';
 
@@ -25,6 +26,8 @@ class AddTransactionParams {
   final TransactionType type;
   final String category;
   final String description;
+
+  /// Calendar day selected by the user; the time of day is ignored.
   final DateTime date;
   final String? receiptImagePath;
 
@@ -80,7 +83,7 @@ class AddTransactionUseCase
       type: params.type,
       category: category,
       description: description,
-      date: params.date,
+      date: calendarDate(params.date),
       walletId: params.walletId?.trim().isEmpty == true
           ? null
           : params.walletId?.trim(),

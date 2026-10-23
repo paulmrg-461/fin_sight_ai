@@ -1,6 +1,7 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/utils/calendar_date.dart';
 import '../../domain/usecases/budget_usecases.dart';
 import '../models/budget_model.dart';
 import 'budget_local_data_source.dart';
@@ -54,6 +55,35 @@ class HiveBudgetLocalDataSource implements BudgetLocalDataSource {
           throw const FormatException('Invalid budget entry.');
         }
         budgets.add(BudgetModel.fromJson(Map<String, dynamic>.from(value)));
+      }
+      budgets.sort((a, b) => a.category.compareTo(b.category));
+      return List<BudgetModel>.unmodifiable(budgets);
+    } catch (_) {
+      throw const CacheException(
+        'Unable to read budgets from local storage.',
+        code: 'cache_read_failed',
+      );
+    }
+  }
+
+  @override
+  Future<List<BudgetModel>> getLegacyCalendarBudgets() async {
+    try {
+      final budgets = <BudgetModel>[];
+      for (final value in _box.values) {
+        if (value is! Map) {
+          throw const FormatException('Invalid budget entry.');
+        }
+        final json = Map<String, dynamic>.from(value);
+        final rawMonth = json['month'];
+        if (rawMonth is! String) {
+          continue;
+        }
+        final parsed = DateTime.tryParse(rawMonth);
+        if (parsed == null || isCalendarDate(parsed)) {
+          continue;
+        }
+        budgets.add(BudgetModel.fromJson(json));
       }
       budgets.sort((a, b) => a.category.compareTo(b.category));
       return List<BudgetModel>.unmodifiable(budgets);

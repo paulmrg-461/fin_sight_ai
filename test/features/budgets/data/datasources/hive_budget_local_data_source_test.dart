@@ -125,6 +125,24 @@ void main() {
       expect(box.containsKey('active'), isTrue);
     });
 
+    test('returns legacy calendar months normalized to UTC noon', () async {
+      final legacyMonth = DateTime(2026, 10).toUtc().toIso8601String();
+      await box.put('legacy', {
+        'id': 'legacy',
+        'category': 'Food',
+        'monthlyLimit': 100,
+        'month': legacyMonth,
+      });
+      await dataSource.saveBudget(
+        buildModel(id: 'current', month: DateTime.utc(2026, 11, 1, 12)),
+      );
+
+      final legacy = await dataSource.getLegacyCalendarBudgets();
+
+      expect(legacy.map((budget) => budget.id), ['legacy']);
+      expect(legacy.single.month, DateTime.utc(2026, 10, 1, 12));
+    });
+
     test('deletes a budget', () async {
       await dataSource.saveBudget(buildModel());
 

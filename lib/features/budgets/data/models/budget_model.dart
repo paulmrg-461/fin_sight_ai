@@ -1,3 +1,4 @@
+import '../../../../core/utils/calendar_date.dart';
 import '../../domain/entities/budget_entity.dart';
 
 /// JSON representation of [BudgetEntity].
@@ -46,11 +47,17 @@ class BudgetModel extends BudgetEntity {
       throw const FormatException('Budget month is missing.');
     }
 
+    final parsedMonth = DateTime.parse(month);
+
     return BudgetModel(
       id: id,
       category: category,
       monthlyLimit: monthlyLimit.toDouble(),
-      month: DateTime.parse(month),
+      // Rows written before the UTC-noon convention stored a local month
+      // converted to UTC, so recover the local parts before normalizing.
+      month: isCalendarDate(parsedMonth)
+          ? parsedMonth
+          : calendarMonth(parsedMonth.toLocal()),
       updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
       isSynced: isSynced is bool ? isSynced : false,
       deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
@@ -62,7 +69,7 @@ class BudgetModel extends BudgetEntity {
       'id': id,
       'category': category,
       'monthlyLimit': monthlyLimit,
-      'month': month.toUtc().toIso8601String(),
+      'month': calendarMonth(month).toIso8601String(),
       'updatedAt': updatedAt?.toUtc().toIso8601String(),
       'isSynced': isSynced,
       'deletedAt': deletedAt?.toUtc().toIso8601String(),

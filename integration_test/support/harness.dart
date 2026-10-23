@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
+import 'package:fin_sight_ai/core/services/calendar_migration.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
@@ -150,6 +151,7 @@ class IntegrationHarness {
     final harness = IntegrationHarness._(directory);
     await harness._openStorage();
     harness._wire();
+    await harness._runCalendarMigration();
     return harness;
   }
 
@@ -375,6 +377,20 @@ class IntegrationHarness {
     await Hive.close();
     await _openStorage();
     _wire();
+    await _runCalendarMigration();
+  }
+
+  Future<void> _runCalendarMigration() async {
+    await CalendarMigrationService(
+      settings: _settingsBox,
+      transactionDataSource: HiveTransactionLocalDataSource(_transactionsBox),
+      budgetDataSource: HiveBudgetLocalDataSource(_budgetsBox),
+      transactionRepository: transactionRepository,
+      budgetRepository: BudgetRepositoryImpl(
+        HiveBudgetLocalDataSource(_budgetsBox),
+        transactionRepository,
+      ),
+    ).migrate();
   }
 
   Future<void> _closeBlocs() async {

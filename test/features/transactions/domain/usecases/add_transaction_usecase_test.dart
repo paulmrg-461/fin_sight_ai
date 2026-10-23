@@ -10,7 +10,8 @@ import 'package:uuid/uuid.dart';
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 
 void main() {
-  final date = DateTime.utc(2026, 10, 20, 9);
+  final date = DateTime(2026, 10, 20, 20, 30);
+  final calendarDay = DateTime.utc(2026, 10, 20, 12);
 
   late MockTransactionRepository repository;
   late AddTransactionUseCase useCase;
@@ -88,7 +89,22 @@ void main() {
       expect(transaction.description, 'Lunch');
       expect(transaction.receiptImagePath, '/tmp/r.jpg');
       expect(transaction.type, TransactionType.expense);
-      expect(transaction.date, date);
+      expect(transaction.date, calendarDay);
+    });
+
+    test('stores the selected calendar day as UTC noon', () async {
+      final result = await useCase(params());
+
+      final transaction = result.getOrElse(
+        (failure) => fail('Expected a transaction, got $failure'),
+      );
+      expect(transaction.date, DateTime.utc(2026, 10, 20, 12));
+      expect(transaction.date.isUtc, isTrue);
+      expect(transaction.date.hour, 12);
+      expect(transaction.date.minute, 0);
+      expect(transaction.date.year, 2026);
+      expect(transaction.date.month, 10);
+      expect(transaction.date.day, 20);
     });
 
     test('keeps an explicit identifier', () async {

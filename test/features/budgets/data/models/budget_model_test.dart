@@ -5,7 +5,7 @@ import 'package:fin_sight_ai/features/budgets/domain/entities/budget_entity.dart
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final month = DateTime.utc(2026, 10);
+  final month = DateTime.utc(2026, 10, 1, 12);
 
   BudgetModel buildModel() => BudgetModel(
     id: 'budget-1',
@@ -39,6 +39,40 @@ void main() {
       final restored = BudgetModel.fromJson(decoded as Map<String, dynamic>);
 
       expect(restored.toEntity(), model.toEntity());
+    });
+
+    test('round-trips a local calendar month', () {
+      final model = BudgetModel(
+        id: 'budget-2',
+        category: 'Travel',
+        monthlyLimit: 250,
+        month: DateTime(2026, 11),
+      );
+
+      final restored = BudgetModel.fromJson(
+        jsonDecode(jsonEncode(model.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(restored.month.year, 2026);
+      expect(restored.month.month, 11);
+      expect(restored.month.day, 1);
+      expect(restored.month.isUtc, isTrue);
+      expect(restored.month.hour, 12);
+    });
+
+    test('normalizes a legacy local month stored as a UTC instant', () {
+      final legacyMonth = DateTime(2026, 11).toUtc().toIso8601String();
+
+      final restored = BudgetModel.fromJson({
+        'id': 'budget-3',
+        'category': 'Travel',
+        'monthlyLimit': 250,
+        'month': legacyMonth,
+      });
+
+      expect(restored.month.year, 2026);
+      expect(restored.month.month, 11);
+      expect(restored.month, DateTime.utc(2026, 11, 1, 12));
     });
 
     test('rejects invalid fields', () {
