@@ -34,6 +34,17 @@
 - [x] Summary cards, pie/bar charts, recent activity, quick actions, pull-to-refresh
 - [x] Calculation, repository, use case, and BLoC tests
 
+## Sync
+
+- [x] SyncOperation + SyncQueue port
+- [x] Hive queue + last-sync metadata
+- [x] Supabase PostgREST datasource
+- [x] Push/pull + last-write-wins conflicts
+- [x] Offline reports and queue retries
+- [x] SyncBloc + dashboard status chip + startup sync
+- [x] Postgres schema + RLS migration
+- [x] Queue, HTTP, repository, use case, BLoC, and enqueue tests
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -45,7 +56,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 324 tests passing
+- [x] `flutter test --coverage` — 374 tests passing
 - [x] Integration tests — 7 passing
 - [x] Domain and data coverage ≥ 90%
-- [ ] Commit and push
+- [x] Commit and push

@@ -12,6 +12,8 @@ class DebtModel extends DebtEntity {
     required super.dueDate,
     super.status,
     super.paymentHistory,
+    super.updatedAt,
+    super.isSynced,
   });
 
   factory DebtModel.fromEntity(DebtEntity debt) {
@@ -25,6 +27,8 @@ class DebtModel extends DebtEntity {
       dueDate: debt.dueDate,
       status: debt.status,
       paymentHistory: debt.paymentHistory,
+      updatedAt: debt.updatedAt,
+      isSynced: debt.isSynced,
     );
   }
 
@@ -38,6 +42,8 @@ class DebtModel extends DebtEntity {
     final dueDate = json['dueDate'];
     final status = json['status'];
     final history = json['paymentHistory'];
+    final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Debt id is missing or invalid.');
@@ -84,6 +90,8 @@ class DebtModel extends DebtEntity {
       dueDate: DateTime.parse(dueDate),
       status: parsedStatus,
       paymentHistory: List<PaymentRecord>.unmodifiable(paymentHistory),
+      updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
+      isSynced: isSynced is bool ? isSynced : false,
     );
   }
 
@@ -119,6 +127,8 @@ class DebtModel extends DebtEntity {
       'minimumPayment': minimumPayment,
       'dueDate': dueDate.toUtc().toIso8601String(),
       'status': status.name,
+      'updatedAt': updatedAt?.toUtc().toIso8601String(),
+      'isSynced': isSynced,
       'paymentHistory': paymentHistory
           .map(
             (payment) => <String, dynamic>{
@@ -142,6 +152,8 @@ class DebtModel extends DebtEntity {
       dueDate: dueDate,
       status: status,
       paymentHistory: paymentHistory,
+      updatedAt: updatedAt,
+      isSynced: isSynced,
     );
   }
 }

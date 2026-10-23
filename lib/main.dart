@@ -10,6 +10,8 @@ import 'features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'features/debts/presentation/bloc/debt_event.dart';
 import 'features/ocr/presentation/bloc/ocr_bloc.dart';
 import 'features/ocr/presentation/bloc/ocr_event.dart';
+import 'features/sync/presentation/bloc/sync_bloc.dart';
+import 'features/sync/presentation/bloc/sync_event.dart';
 import 'features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'features/transactions/presentation/bloc/transaction_event.dart';
 
@@ -23,6 +25,7 @@ Future<void> main() async {
   final debtBloc = getIt<DebtBloc>()..add(const LoadDebts());
   final ocrBloc = getIt<OcrBloc>()..add(const LoadReceipts());
   final dashboardBloc = getIt<DashboardBloc>()..add(const LoadDashboard());
+  final syncBloc = getIt<SyncBloc>()..add(const SyncNow());
 
   runApp(
     FinSightApp(
@@ -33,6 +36,7 @@ Future<void> main() async {
       ocrBloc: ocrBloc,
       aiCoachBloc: getIt<AiCoachBloc>(),
       dashboardBloc: dashboardBloc,
+      syncBloc: syncBloc,
     ),
   );
 }

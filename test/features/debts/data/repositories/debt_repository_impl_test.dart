@@ -1,5 +1,7 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
+import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
 import 'package:fin_sight_ai/features/debts/data/repositories/debt_repository_impl.dart';
@@ -8,6 +10,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockDebtLocalDataSource extends Mock implements DebtLocalDataSource {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
+
+class FixedClock extends Clock {
+  const FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime now() => value;
+}
 
 DebtModel buildModel({
   String id = 'debt-1',
@@ -43,6 +56,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(buildModel());
+    registerFallbackValue(
+      SyncOperation.delete(
+        entityType: SyncEntityType.debt,
+        entityId: 'fallback',
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -164,6 +184,67 @@ void main() {
       );
 
       expect(result.getOrElse((_) => DateTime(2000)), isNull);
+    });
+  });
+
+  group('sync queue integration', () {
+    final now = DateTime.utc(2026, 10, 22, 15);
+    late MockSyncQueue queue;
+
+    setUp(() {
+      queue = MockSyncQueue();
+      when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    });
+
+    test('enqueues an upsert with sync metadata', () async {
+      when(() => localDataSource.saveDebt(any())).thenAnswer((_) async {});
+      final repository = DebtRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.addDebt(buildEntity());
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.entityType, SyncEntityType.debt);
+      expect(operation.operationType, SyncOperationType.upsert);
+      expect(operation.entityId, 'debt-1');
+      expect(operation.payload['isSynced'], isFalse);
+      expect(operation.payload['updatedAt'], now.toUtc().toIso8601String());
+    });
+
+    test('enqueues a delete', () async {
+      when(() => localDataSource.deleteDebt('debt-1')).thenAnswer((_) async {});
+      final repository = DebtRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.deleteDebt('debt-1');
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.operationType, SyncOperationType.delete);
+      expect(operation.entityId, 'debt-1');
+    });
+
+    test('a queue failure does not fail the local write', () async {
+      when(() => localDataSource.saveDebt(any())).thenAnswer((_) async {});
+      when(() => queue.enqueue(any())).thenThrow(Exception('queue down'));
+      final repository = DebtRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      final result = await repository.addDebt(buildEntity());
+
+      expect(result.isRight(), isTrue);
     });
   });
 }

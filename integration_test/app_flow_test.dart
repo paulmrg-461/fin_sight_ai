@@ -31,6 +31,10 @@ void main() {
     await pumpUntil(tester, find.text('No transactions yet'));
 
     expect(find.text('FinSight AI'), findsOneWidget);
+    expect(
+      find.byTooltip('Sync offline: Supabase is not configured'),
+      findsOneWidget,
+    );
     expect(find.text('Transactions'), findsOneWidget);
 
     await tester.tap(find.text('Transactions'));

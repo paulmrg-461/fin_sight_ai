@@ -13,6 +13,7 @@
 import 'package:fin_sight_ai/core/di/injection.dart' as _i1015;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
+import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
 import 'package:fin_sight_ai/core/utils/clock.dart' as _i956;
@@ -77,6 +78,21 @@ import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.d
     as _i826;
 import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart'
     as _i1031;
+import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart'
+    as _i995;
+import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart'
+    as _i921;
+import 'package:fin_sight_ai/features/sync/data/datasources/sync_remote_data_source.dart'
+    as _i984;
+import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart'
+    as _i1020;
+import 'package:fin_sight_ai/features/sync/data/sync_module.dart' as _i273;
+import 'package:fin_sight_ai/features/sync/domain/repositories/sync_repository.dart'
+    as _i271;
+import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart'
+    as _i558;
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart'
+    as _i470;
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart'
     as _i228;
 import 'package:fin_sight_ai/features/transactions/data/repositories/transaction_repository_impl.dart'
@@ -88,7 +104,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart'
     as _i69;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart'
-    as _i271;
+    as _i272;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart'
     as _i1051;
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart'
@@ -111,6 +127,7 @@ extension GetItInjectableX on _i174.GetIt {
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
     final ocrModule = _$OcrModule();
+    final syncModule = _$SyncModule();
     final routingModule = _$RoutingModule();
     await gh.factoryAsync<_i422.AppBoxes>(
       () => storageModule.provideAppBoxes(),
@@ -127,6 +144,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i147.ReceiptImagePicker>(
       () => _i147.ImagePickerReceiptImagePicker(),
     );
+    gh.lazySingleton<_i984.SyncRemoteDataSource>(
+      () => _i995.SupabaseRestSyncDataSource(
+        gh<_i519.Client>(),
+        gh<_i1042.AppEnv>(),
+      ),
+    );
     gh.lazySingleton<_i323.AiCoachDatasource>(
       () => _i369.GroqApiDatasource(gh<_i519.Client>(), gh<_i1042.AppEnv>()),
     );
@@ -140,6 +163,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i783.ReceiptLocalDataSource>(
       () => ocrModule.provideReceiptLocalDataSource(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i921.SyncLocalDataSource>(
+      () => syncModule.provideSyncLocalDataSource(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i583.GoRouter>(
       () => routingModule.provideGoRouter(
@@ -166,10 +192,35 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i271.SyncRepository>(
+      () => _i1020.SyncRepositoryImpl(
+        gh<_i921.SyncLocalDataSource>(),
+        gh<_i984.SyncRemoteDataSource>(),
+        gh<_i228.TransactionLocalDataSource>(),
+        gh<_i1035.DebtLocalDataSource>(),
+        gh<_i1042.AppEnv>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i558.SyncNowUseCase>(
+      () => _i558.SyncNowUseCase(gh<_i271.SyncRepository>()),
+    );
+    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
+      () => _i558.GetSyncStatusUseCase(gh<_i271.SyncRepository>()),
+    );
+    gh.lazySingleton<_i588.SyncQueue>(
+      () => syncModule.provideSyncQueue(gh<_i921.SyncLocalDataSource>()),
+    );
     gh.lazySingleton<_i268.DebtRepository>(
-      () => _i140.DebtRepositoryImpl(gh<_i1035.DebtLocalDataSource>()),
+      () => _i140.DebtRepositoryImpl(
+        gh<_i1035.DebtLocalDataSource>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        clock: gh<_i956.Clock>(),
+      ),
     );
     gh.lazySingleton<_i864.DashboardRepository>(
       () => _i366.DashboardRepositoryImpl(gh<_i544.TransactionRepository>()),
@@ -185,8 +236,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i69.DeleteTransactionUseCase>(
       () => _i69.DeleteTransactionUseCase(gh<_i544.TransactionRepository>()),
     );
-    gh.lazySingleton<_i271.GetTransactionsByDateRangeUseCase>(
-      () => _i271.GetTransactionsByDateRangeUseCase(
+    gh.lazySingleton<_i272.GetTransactionsByDateRangeUseCase>(
+      () => _i272.GetTransactionsByDateRangeUseCase(
         gh<_i544.TransactionRepository>(),
       ),
     );
@@ -220,7 +271,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i905.GetDashboardSummaryUseCase>(),
         gh<_i905.GetCategoryBreakdownUseCase>(),
         gh<_i905.GetMonthlyComparisonUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i272.GetTransactionsByDateRangeUseCase>(),
       ),
     );
     gh.lazySingleton<_i144.AddDebtUseCase>(
@@ -234,7 +285,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1051.GetTransactionsUseCase>(),
         gh<_i361.AddTransactionUseCase>(),
         gh<_i69.DeleteTransactionUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i272.GetTransactionsByDateRangeUseCase>(),
+      ),
+    );
+    gh.factory<_i470.SyncBloc>(
+      () => _i470.SyncBloc(
+        gh<_i558.SyncNowUseCase>(),
+        gh<_i558.GetSyncStatusUseCase>(),
       ),
     );
     gh.lazySingleton<_i1045.CalculatePayoffUseCase>(
@@ -296,5 +353,7 @@ class _$TransactionsModule extends _i1015.TransactionsModule {}
 class _$DebtsModule extends _i1015.DebtsModule {}
 
 class _$OcrModule extends _i600.OcrModule {}
+
+class _$SyncModule extends _i273.SyncModule {}
 
 class _$RoutingModule extends _i1015.RoutingModule {}

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
+import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
@@ -37,11 +38,18 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/hive_sync_local_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
+import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'fakes.dart';
@@ -60,6 +68,8 @@ class IntegrationHarness {
   late Box<dynamic> _transactionsBox;
   late Box<dynamic> _debtsBox;
   late Box<dynamic> _receiptsBox;
+  late Box<dynamic> _syncQueueBox;
+  late Box<dynamic> _syncMetaBox;
 
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
@@ -76,6 +86,7 @@ class IntegrationHarness {
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
+  late SyncBloc syncBloc;
   late GoRouter router;
 
   static Future<IntegrationHarness> create() async {
@@ -93,6 +104,8 @@ class IntegrationHarness {
     _transactionsBox = await Hive.openBox<dynamic>('transactions');
     _debtsBox = await Hive.openBox<dynamic>('debts');
     _receiptsBox = await Hive.openBox<dynamic>('receipts');
+    _syncQueueBox = await Hive.openBox<dynamic>('sync_queue');
+    _syncMetaBox = await Hive.openBox<dynamic>('sync_meta');
   }
 
   void _wire() {
@@ -159,6 +172,19 @@ class IntegrationHarness {
       getTransactionsByDateRange,
     );
 
+    const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
+    final syncRepository = SyncRepositoryImpl(
+      HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox),
+      SupabaseRestSyncDataSource(http.Client(), appEnv),
+      HiveTransactionLocalDataSource(_transactionsBox),
+      HiveDebtLocalDataSource(_debtsBox),
+      appEnv,
+    );
+    syncBloc = SyncBloc(
+      SyncNowUseCase(syncRepository),
+      GetSyncStatusUseCase(syncRepository),
+    );
+
     router = buildRouter(
       themeController: themeController,
       receiptImagePicker: imagePicker,
@@ -174,6 +200,7 @@ class IntegrationHarness {
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
+      syncBloc: syncBloc,
     );
   }
 
@@ -183,6 +210,7 @@ class IntegrationHarness {
     debtBloc.add(const LoadDebts());
     ocrBloc.add(const LoadReceipts());
     dashboardBloc.add(const LoadDashboard());
+    syncBloc.add(const LoadSyncStatus());
     await tester.pump();
   }
 
@@ -191,6 +219,8 @@ class IntegrationHarness {
     await _transactionsBox.close();
     await _debtsBox.close();
     await _receiptsBox.close();
+    await _syncQueueBox.close();
+    await _syncMetaBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -202,6 +232,7 @@ class IntegrationHarness {
     await ocrBloc.close();
     await aiCoachBloc.close();
     await dashboardBloc.close();
+    await syncBloc.close();
   }
 
   Future<void> dispose() async {
@@ -214,6 +245,12 @@ class IntegrationHarness {
     }
     if (_receiptsBox.isOpen) {
       await _receiptsBox.close();
+    }
+    if (_syncQueueBox.isOpen) {
+      await _syncQueueBox.close();
+    }
+    if (_syncMetaBox.isOpen) {
+      await _syncMetaBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {

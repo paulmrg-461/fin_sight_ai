@@ -41,7 +41,17 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] Summary cards, pie chart, bar chart, recent activity, pull-to-refresh, quick actions.
 - [x] Calculation, repository, use case, and BLoC tests.
 
-### Phase 4: Integration and delivery
+### Phase 4: Supabase sync
+
+- [x] `SyncOperation` + `SyncQueue` port and queue/meta Hive storage.
+- [x] `updatedAt`/`isSynced` on transactions and debts; repositories enqueue upserts/deletes.
+- [x] Supabase PostgREST remote data source with snake_case mapping.
+- [x] `SyncRepositoryImpl` push/pull, last-write-wins conflicts, offline reports, retries.
+- [x] `SyncBloc` + dashboard `SyncStatusChip`; startup auto-sync.
+- [x] Postgres schema + RLS migration.
+- [x] Queue, HTTP, sync repository, use case, BLoC, and repository-enqueue tests.
+
+### Phase 5: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.

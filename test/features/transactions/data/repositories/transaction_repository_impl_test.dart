@@ -1,5 +1,7 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
+import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart';
 import 'package:fin_sight_ai/features/transactions/data/models/transaction_model.dart';
 import 'package:fin_sight_ai/features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -9,6 +11,17 @@ import 'package:mocktail/mocktail.dart';
 
 class MockTransactionLocalDataSource extends Mock
     implements TransactionLocalDataSource {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
+
+class FixedClock extends Clock {
+  const FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime now() => value;
+}
 
 TransactionModel buildModel({
   String id = 'tx-1',
@@ -42,6 +55,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(buildModel());
+    registerFallbackValue(
+      SyncOperation.delete(
+        entityType: SyncEntityType.transaction,
+        entityId: 'fallback',
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -180,6 +200,70 @@ void main() {
 
       expect(result.getLeft().toNullable()?.code, isNull);
       expect(result.getLeft().toNullable(), isA<CacheFailure>());
+    });
+  });
+
+  group('sync queue integration', () {
+    final now = DateTime.utc(2026, 10, 22, 15);
+    late MockSyncQueue queue;
+
+    setUp(() {
+      queue = MockSyncQueue();
+      when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    });
+
+    test('enqueues an upsert with sync metadata', () async {
+      when(() => localDataSource.saveTransaction(any()))
+          .thenAnswer((_) async {});
+      final repository = TransactionRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.addTransaction(buildEntity());
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.entityType, SyncEntityType.transaction);
+      expect(operation.operationType, SyncOperationType.upsert);
+      expect(operation.entityId, 'tx-1');
+      expect(operation.payload['isSynced'], isFalse);
+      expect(operation.payload['updatedAt'], now.toUtc().toIso8601String());
+    });
+
+    test('enqueues a delete', () async {
+      when(() => localDataSource.deleteTransaction('tx-1'))
+          .thenAnswer((_) async {});
+      final repository = TransactionRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.deleteTransaction('tx-1');
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.operationType, SyncOperationType.delete);
+      expect(operation.entityId, 'tx-1');
+    });
+
+    test('a queue failure does not fail the local write', () async {
+      when(() => localDataSource.saveTransaction(any()))
+          .thenAnswer((_) async {});
+      when(() => queue.enqueue(any())).thenThrow(Exception('queue down'));
+      final repository = TransactionRepositoryImpl(
+        localDataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      final result = await repository.addTransaction(buildEntity());
+
+      expect(result.isRight(), isTrue);
     });
   });
 }

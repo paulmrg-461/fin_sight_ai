@@ -9,6 +9,7 @@ import '../features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
+import '../features/sync/presentation/bloc/sync_bloc.dart';
 import '../features/transactions/presentation/bloc/transaction_bloc.dart';
 
 /// Root widget: theme binding, routing, and feature-level BLoC providers.
@@ -22,6 +23,7 @@ class FinSightApp extends StatelessWidget {
     required this.ocrBloc,
     required this.aiCoachBloc,
     required this.dashboardBloc,
+    required this.syncBloc,
   });
 
   final ThemeController themeController;
@@ -31,6 +33,7 @@ class FinSightApp extends StatelessWidget {
   final OcrBloc ocrBloc;
   final AiCoachBloc aiCoachBloc;
   final DashboardBloc dashboardBloc;
+  final SyncBloc syncBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<OcrBloc>.value(value: ocrBloc),
         BlocProvider<AiCoachBloc>.value(value: aiCoachBloc),
         BlocProvider<DashboardBloc>.value(value: dashboardBloc),
+        BlocProvider<SyncBloc>.value(value: syncBloc),
       ],
       child: ListenableBuilder(
         listenable: themeController,

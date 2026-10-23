@@ -6,9 +6,13 @@ class AppBoxes {
     required this.transactions,
     required this.debts,
     required this.receipts,
+    required this.syncQueue,
+    required this.syncMeta,
   });
 
   final Box<dynamic> transactions;
   final Box<dynamic> debts;
   final Box<dynamic> receipts;
+  final Box<dynamic> syncQueue;
+  final Box<dynamic> syncMeta;
 }

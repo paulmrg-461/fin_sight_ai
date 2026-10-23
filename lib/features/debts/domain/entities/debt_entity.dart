@@ -43,6 +43,8 @@ class DebtEntity extends Entity {
     required this.dueDate,
     this.status = DebtStatus.active,
     this.paymentHistory = const [],
+    this.updatedAt,
+    this.isSynced = false,
   });
 
   @override
@@ -61,6 +63,14 @@ class DebtEntity extends Entity {
   final DateTime dueDate;
   final DebtStatus status;
   final List<PaymentRecord> paymentHistory;
+
+  /// Last local modification, used for last-write-wins merges.
+  final DateTime? updatedAt;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  DateTime get lastModified => updatedAt ?? dueDate;
 
   double get paidAmount =>
       (totalAmount - remainingAmount).clamp(0, totalAmount).toDouble();
@@ -81,6 +91,8 @@ class DebtEntity extends Entity {
     DateTime? dueDate,
     DebtStatus? status,
     List<PaymentRecord>? paymentHistory,
+    DateTime? updatedAt,
+    bool? isSynced,
   }) {
     return DebtEntity(
       id: id ?? this.id,
@@ -92,6 +104,8 @@ class DebtEntity extends Entity {
       dueDate: dueDate ?? this.dueDate,
       status: status ?? this.status,
       paymentHistory: paymentHistory ?? this.paymentHistory,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 
@@ -107,6 +121,8 @@ class DebtEntity extends Entity {
           other.minimumPayment == minimumPayment &&
           other.dueDate == dueDate &&
           other.status == status &&
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
           _sameHistory(other.paymentHistory, paymentHistory);
 
   @override
@@ -119,6 +135,8 @@ class DebtEntity extends Entity {
     minimumPayment,
     dueDate,
     status,
+    updatedAt,
+    isSynced,
     Object.hashAll(paymentHistory),
   );
 

@@ -119,6 +119,7 @@ flutter test -d linux integration_test/app_flow_test.dart
 - Stage deliberately (`git status`, `git diff --staged`); never commit secrets, `.env` files, build output, or `coverage/`.
 - If no remote is configured, stop and ask the human for the repository URL. Never create or guess a remote repository.
 - Report the commit hash and push result when closing a task.
+- Keep `MEMORY.md` updated at every meaningful checkpoint so a fresh session can resume without re-discovery.
 
 ---
 

@@ -11,6 +11,7 @@ import '../bloc/dashboard_state.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
+import '../../../sync/presentation/widgets/sync_status_chip.dart';
 import '../widgets/summary_cards.dart';
 
 /// Analytics dashboard with navigation shortcuts and theme toggle.
@@ -61,6 +62,7 @@ class DashboardPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('FinSight AI'),
             actions: [
+              const SyncStatusChip(),
               IconButton(
                 onPressed: () => _pickRange(context),
                 tooltip: 'Change period',

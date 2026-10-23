@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/core/di/injection.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
@@ -40,6 +41,14 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/hive_sync_local_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/sync_remote_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart';
+import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
+import 'package:fin_sight_ai/features/sync/domain/repositories/sync_repository.dart';
+import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -134,6 +143,14 @@ GROQ_API_KEY=groq-key
 
     expect(getIt<DashboardRepository>(), isA<DashboardRepositoryImpl>());
     expect(getIt<DashboardBloc>(), isA<DashboardBloc>());
+
+    expect(getIt<SyncLocalDataSource>(), isA<HiveSyncLocalDataSource>());
+    expect(getIt<SyncQueue>(), getIt<SyncLocalDataSource>());
+    expect(getIt<SyncRemoteDataSource>(), isA<SupabaseRestSyncDataSource>());
+    expect(getIt<SyncRepository>(), isA<SyncRepositoryImpl>());
+    expect(getIt<SyncNowUseCase>(), isNotNull);
+    expect(getIt<GetSyncStatusUseCase>(), isNotNull);
+    expect(getIt<SyncBloc>(), isA<SyncBloc>());
   });
 
   test('resolving before configuration throws', () async {

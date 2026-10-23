@@ -3,7 +3,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/clock.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../datasources/transaction_local_data_source.dart';
@@ -12,17 +14,35 @@ import '../models/transaction_model.dart';
 /// Local-first implementation of [TransactionRepository].
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl implements TransactionRepository {
-  const TransactionRepositoryImpl(this._localDataSource);
+  const TransactionRepositoryImpl(
+    this._localDataSource, {
+    this.syncQueue,
+    this.clock = const Clock(),
+  });
 
   final TransactionLocalDataSource _localDataSource;
+  final SyncQueue? syncQueue;
+  final Clock clock;
 
   @override
   ResultFuture<TransactionEntity> addTransaction(
     TransactionEntity transaction,
   ) async {
     try {
-      final model = TransactionModel.fromEntity(transaction);
+      final pending = transaction.copyWith(
+        updatedAt: clock.now(),
+        isSynced: false,
+      );
+      final model = TransactionModel.fromEntity(pending);
       await _localDataSource.saveTransaction(model);
+      await _enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.transaction,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -57,6 +77,13 @@ class TransactionRepositoryImpl implements TransactionRepository {
   ResultFuture<void> deleteTransaction(String id) async {
     try {
       await _localDataSource.deleteTransaction(id);
+      await _enqueue(
+        SyncOperation.delete(
+          entityType: SyncEntityType.transaction,
+          entityId: id,
+          queuedAt: clock.now(),
+        ),
+      );
       return const Right(null);
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -100,4 +127,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   CacheFailure _toCacheFailure(CacheException exception) =>
       CacheFailure(exception.message, code: exception.code);
+
+  Future<void> _enqueue(SyncOperation operation) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(operation);
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
+    }
+  }
 }

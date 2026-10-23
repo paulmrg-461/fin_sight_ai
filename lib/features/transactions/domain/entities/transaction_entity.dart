@@ -13,6 +13,8 @@ class TransactionEntity extends Entity {
     required this.description,
     required this.date,
     this.receiptImagePath,
+    this.updatedAt,
+    this.isSynced = false,
   });
 
   @override
@@ -29,6 +31,14 @@ class TransactionEntity extends Entity {
   /// Local path to an attached receipt image, when available.
   final String? receiptImagePath;
 
+  /// Last local modification, used for last-write-wins merges.
+  final DateTime? updatedAt;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  DateTime get lastModified => updatedAt ?? date;
+
   bool get isIncome => type == TransactionType.income;
 
   bool get isExpense => type == TransactionType.expense;
@@ -44,6 +54,8 @@ class TransactionEntity extends Entity {
     String? description,
     DateTime? date,
     String? receiptImagePath,
+    DateTime? updatedAt,
+    bool? isSynced,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
@@ -53,6 +65,8 @@ class TransactionEntity extends Entity {
       description: description ?? this.description,
       date: date ?? this.date,
       receiptImagePath: receiptImagePath ?? this.receiptImagePath,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 
@@ -66,7 +80,9 @@ class TransactionEntity extends Entity {
           other.category == category &&
           other.description == description &&
           other.date == date &&
-          other.receiptImagePath == receiptImagePath;
+          other.receiptImagePath == receiptImagePath &&
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced;
 
   @override
   int get hashCode => Object.hash(
@@ -77,6 +93,8 @@ class TransactionEntity extends Entity {
     description,
     date,
     receiptImagePath,
+    updatedAt,
+    isSynced,
   );
 
   @override

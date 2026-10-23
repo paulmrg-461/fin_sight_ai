@@ -3,7 +3,9 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/clock.dart';
 import '../../domain/entities/debt_entity.dart';
 import '../../domain/repositories/debt_repository.dart';
 import '../../domain/services/debt_payoff_calculator.dart';
@@ -13,9 +15,15 @@ import '../models/debt_model.dart';
 /// Local-first implementation of [DebtRepository].
 @LazySingleton(as: DebtRepository)
 class DebtRepositoryImpl implements DebtRepository {
-  const DebtRepositoryImpl(this._localDataSource);
+  const DebtRepositoryImpl(
+    this._localDataSource, {
+    this.syncQueue,
+    this.clock = const Clock(),
+  });
 
   final DebtLocalDataSource _localDataSource;
+  final SyncQueue? syncQueue;
+  final Clock clock;
 
   @override
   ResultFuture<DebtEntity> addDebt(DebtEntity debt) =>
@@ -29,6 +37,13 @@ class DebtRepositoryImpl implements DebtRepository {
   ResultFuture<void> deleteDebt(String id) async {
     try {
       await _localDataSource.deleteDebt(id);
+      await _enqueue(
+        SyncOperation.delete(
+          entityType: SyncEntityType.debt,
+          entityId: id,
+          queuedAt: clock.now(),
+        ),
+      );
       return const Right(null);
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -78,8 +93,17 @@ class DebtRepositoryImpl implements DebtRepository {
     required String failureCode,
   }) async {
     try {
-      final model = DebtModel.fromEntity(debt);
+      final pending = debt.copyWith(updatedAt: clock.now(), isSynced: false);
+      final model = DebtModel.fromEntity(pending);
       await _localDataSource.saveDebt(model);
+      await _enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.debt,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -92,4 +116,16 @@ class DebtRepositoryImpl implements DebtRepository {
 
   CacheFailure _toCacheFailure(CacheException exception) =>
       CacheFailure(exception.message, code: exception.code);
+
+  Future<void> _enqueue(SyncOperation operation) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(operation);
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
+    }
+  }
 }

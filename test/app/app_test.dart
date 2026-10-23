@@ -28,6 +28,10 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transa
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
+import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -72,6 +76,10 @@ class MockGetBreakdown extends Mock implements GetCategoryBreakdownUseCase {}
 
 class MockGetComparison extends Mock implements GetMonthlyComparisonUseCase {}
 
+class MockSyncNow extends Mock implements SyncNowUseCase {}
+
+class MockGetSyncStatus extends Mock implements GetSyncStatusUseCase {}
+
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
   @override
   Future<String?> pick(ReceiptImageSource source) async => null;
@@ -85,6 +93,7 @@ void main() {
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
+  late SyncBloc syncBloc;
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -158,6 +167,8 @@ void main() {
       getComparison,
       getByRange,
     );
+
+    syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
   });
 
   Widget buildApp() {
@@ -169,12 +180,16 @@ void main() {
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
+      syncBloc: syncBloc,
     );
   }
 
   Future<void> pumpReady(WidgetTester tester) async {
     dashboardBloc.emit(
       DashboardEmpty(start: DateTime.now(), end: DateTime.now()),
+    );
+    syncBloc.emit(
+      const SyncIdle(SyncStatusEntity(pendingCount: 0, isConfigured: true)),
     );
     await tester.pumpWidget(buildApp());
     await tester.pump();

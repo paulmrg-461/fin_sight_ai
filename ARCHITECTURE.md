@@ -42,7 +42,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 3. Offline-First Storage
 
-- **Hive CE** boxes (`transactions`, `debts`, `receipts`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
+- **Hive CE** boxes (`transactions`, `debts`, `receipts`, `sync_queue`, `sync_meta`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
 - Each feature owns a local data source interface with a Hive implementation; the repository depends on the interface.
 - Records are stored as JSON maps keyed by entity id. This keeps boxes schema-agnostic and migrations explicit.
 - Local writes happen before any network call. Remote sync is a later slice; a remote failure must never roll back a local write.
@@ -89,6 +89,15 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - `DashboardBloc` supports `LoadDashboard`, `RefreshData`, and `ChangeDateRange`; the default period is the current month.
 - `DashboardPage` combines summary cards, fl_chart pie/bar charts, recent activity, pull-to-refresh, a date-range picker, theme toggle, and quick actions.
 
+### Sync
+
+- Transactions and debts stamp `updatedAt` / `isSynced`, persist locally, and enqueue a `SyncOperation` (`<entityType>:<entityId>`).
+- `HiveSyncLocalDataSource` stores the queue and `lastSyncedAt` in Hive; repeated edits collapse into the latest operation.
+- `SupabaseRestSyncDataSource` talks to PostgREST over `http.Client`, mapping camelCase models to snake_case columns.
+- `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows, and persists `lastSyncedAt`.
+- `SyncBloc` + `SyncStatusChip` expose pending count, offline/configured state, and manual sync. Startup runs an automatic pass.
+- Receipts remain local-only; remote deletions are not pulled until tombstones exist. Supabase Auth/RLS is required for real sync (see `supabase/migrations/0001_init.sql`).
+
 ## 5. Routing and Navigation
 
 - `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/ocr`, `/ai-coach`.
@@ -117,6 +126,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - Composition root: `configureDependencies()` in `lib/core/di/injection.dart`.
 - `StorageModule` pre-resolves Hive boxes; feature modules provide data sources; repositories and use cases are `@lazySingleton`; blocs are `@injectable` factories.
 - `CoreModule` provides the shared `http.Client`, `Uuid`, `Clock`, and `AppEnv`.
+- `SyncModule` binds the Hive sync queue to the `SyncQueue` port injected into the transactions and debts repositories.
 - Tests resolve the graph with a fake `PathProviderPlatform` and a temporary Hive directory.
 
 Regenerate after changing annotations:
@@ -135,6 +145,7 @@ dart run build_runner build --delete-conflicting-outputs
 | Widget | App shell, navigation, theme switching | `flutter_test` |
 | DI | Full graph resolution | `get_it`, fake path provider |
 | Integration | Full user flows, persistence, navigation, benchmarks | `integration_test`, real Hive, fake OCR/Groq/image picker |
+| Sync | Queue, PostgREST mapping, push/pull, conflicts, offline mode | `mocktail`, `http/testing.dart`, real Hive queue |
 
 Commands:
 
@@ -159,11 +170,13 @@ Domain and data coverage target: ≥ 90%. Integration benchmarks print launch an
 | Google ML Kit for OCR | No bundled trained data, fast on-device text recognition | Android/iOS only; other platforms surface a handled failure |
 | Groq over on-device LLM | Fast, cheap hosted inference with JSON prompts | Network dependency and API-key management |
 | fl_chart for analytics | Lightweight, themeable Flutter charts | Limited advanced chart types |
+| PostgREST over `http.Client` | No heavy Supabase SDK, fully mockable HTTP layer | Manual row mapping and auth headers |
+| Last-write-wins by `updatedAt` | Simple, deterministic conflict policy | Loses concurrent non-conflicting edits |
 
 ## 11. Roadmap
 
-1. Supabase sync with conflict resolution and retry/backoff.
-2. Budgets and category management.
-3. Receipt image storage and cleanup policies.
-4. Streaming AI responses and conversation memory.
+1. Supabase Auth (anonymous/email) + RLS verification against a real project.
+2. Tombstones so remote deletions propagate.
+3. Budgets and category management.
+4. Receipt image storage and cleanup policies.
 5. CI pipelines for unit, integration, and screenshot tests.

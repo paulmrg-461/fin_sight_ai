@@ -1,0 +1,243 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
+
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/utils/app_env.dart';
+import 'sync_remote_data_source.dart';
+
+/// Supabase PostgREST implementation of [SyncRemoteDataSource].
+@LazySingleton(as: SyncRemoteDataSource)
+class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
+  SupabaseRestSyncDataSource(this._client, this._env);
+
+  static const Duration timeout = Duration(seconds: 15);
+
+  final http.Client _client;
+  final AppEnv _env;
+
+  Map<String, String> get _headers => <String, String>{
+    'apikey': _env.supabaseAnonKey,
+    'Authorization': 'Bearer ${_env.supabaseAnonKey}',
+    'Content-Type': 'application/json',
+  };
+
+  void _ensureConfigured() {
+    if (!_env.hasSupabase) {
+      throw const ServerException(
+        'Supabase is not configured.',
+        code: 'supabase_not_configured',
+      );
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchTransaction(String id) async {
+    final rows = await _fetch('transactions', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _transactionFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchTransactions({
+    DateTime? updatedAfter,
+  }) async {
+    final rows = await _fetch('transactions', _updatedQuery(updatedAfter));
+    return rows.map(_transactionFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertTransaction(Map<String, dynamic> json) async {
+    await _upsert('transactions', _transactionToRow(json));
+  }
+
+  @override
+  Future<void> deleteTransaction(String id) async {
+    await _delete('transactions', id);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchDebt(String id) async {
+    final rows = await _fetch('debts', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _debtFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchDebts({
+    DateTime? updatedAfter,
+  }) async {
+    final rows = await _fetch('debts', _updatedQuery(updatedAfter));
+    return rows.map(_debtFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertDebt(Map<String, dynamic> json) async {
+    await _upsert('debts', _debtToRow(json));
+  }
+
+  @override
+  Future<void> deleteDebt(String id) async {
+    await _delete('debts', id);
+  }
+
+  Map<String, String> _updatedQuery(DateTime? updatedAfter) {
+    return <String, String>{
+      'select': '*',
+      if (updatedAfter != null)
+        'updated_at': 'gt.${updatedAfter.toUtc().toIso8601String()}',
+      if (updatedAfter != null) 'order': 'updated_at.asc',
+    };
+  }
+
+  Future<List<Map<String, dynamic>>> _fetch(
+    String table,
+    Map<String, String> query,
+  ) async {
+    _ensureConfigured();
+    final response = await _send(
+      () => _client.get(_uri(table, query), headers: _headers).timeout(timeout),
+    );
+    _ensureSuccess(response, const {200});
+
+    final decoded = jsonDecode(response.body);
+    if (decoded is! List) {
+      throw const ServerException(
+        'Supabase returned an invalid payload.',
+        code: 'supabase_invalid_response',
+      );
+    }
+    return decoded
+        .whereType<Map>()
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList(growable: false);
+  }
+
+  Future<void> _upsert(String table, Map<String, dynamic> row) async {
+    _ensureConfigured();
+    final response = await _send(
+      () => _client
+          .post(
+            _uri(table, {'on_conflict': 'id'}),
+            headers: {
+              ..._headers,
+              'Prefer': 'resolution=merge-duplicates,return=minimal',
+            },
+            body: jsonEncode(row),
+          )
+          .timeout(timeout),
+    );
+    _ensureSuccess(response, const {200, 201, 204});
+  }
+
+  Future<void> _delete(String table, String id) async {
+    _ensureConfigured();
+    final response = await _send(
+      () => _client
+          .delete(_uri(table, {'id': 'eq.$id'}), headers: _headers)
+          .timeout(timeout),
+    );
+    _ensureSuccess(response, const {200, 204});
+  }
+
+  Future<http.Response> _send(Future<http.Response> Function() request) async {
+    try {
+      return await request();
+    } on ServerException {
+      rethrow;
+    } on TimeoutException {
+      throw const ServerException(
+        'The sync request timed out.',
+        code: 'supabase_timeout',
+      );
+    } on http.ClientException {
+      throw const ServerException(
+        'Could not reach Supabase.',
+        code: 'supabase_network_error',
+      );
+    } catch (_) {
+      throw const ServerException(
+        'Could not reach Supabase.',
+        code: 'supabase_network_error',
+      );
+    }
+  }
+
+  void _ensureSuccess(http.Response response, Set<int> allowed) {
+    if (!allowed.contains(response.statusCode)) {
+      throw ServerException(
+        'Supabase request failed.',
+        code: 'supabase_http_${response.statusCode}',
+      );
+    }
+  }
+
+  Uri _uri(String table, Map<String, String> query) {
+    return Uri.parse('${_env.supabaseUrl}/rest/v1/$table')
+        .replace(queryParameters: query);
+  }
+
+  Map<String, dynamic> _transactionToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'amount': json['amount'],
+      'type': json['type'],
+      'category': json['category'],
+      'description': json['description'],
+      'date': json['date'],
+      'receipt_image_path': json['receiptImagePath'],
+      'updated_at': json['updatedAt'] ?? json['date'],
+    };
+  }
+
+  Map<String, dynamic> _transactionFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'amount': row['amount'],
+      'type': row['type'],
+      'category': row['category'],
+      'description': row['description'],
+      'date': row['date'],
+      'receiptImagePath': row['receipt_image_path'],
+      'updatedAt': row['updated_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _debtToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'creditor_name': json['creditorName'],
+      'total_amount': json['totalAmount'],
+      'remaining_amount': json['remainingAmount'],
+      'interest_rate': json['interestRate'],
+      'minimum_payment': json['minimumPayment'],
+      'due_date': json['dueDate'],
+      'status': json['status'],
+      'payment_history': json['paymentHistory'] ?? const [],
+      'updated_at': json['updatedAt'] ?? json['dueDate'],
+    };
+  }
+
+  Map<String, dynamic> _debtFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'creditorName': row['creditor_name'],
+      'totalAmount': row['total_amount'],
+      'remainingAmount': row['remaining_amount'],
+      'interestRate': row['interest_rate'],
+      'minimumPayment': row['minimum_payment'],
+      'dueDate': row['due_date'],
+      'status': row['status'],
+      'paymentHistory': row['payment_history'] ?? const [],
+      'updatedAt': row['updated_at'],
+      'isSynced': true,
+    };
+  }
+}
