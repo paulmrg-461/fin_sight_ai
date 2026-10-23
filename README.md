@@ -65,10 +65,10 @@ Requirements: Flutter 3.50 beta / Dart 3.14. OCR runs on Android/iOS via Google 
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 cp example.env .env   # local development; fill in your credentials
-flutter run --dart-define-from-file=.env
+./tool/run_dev.sh     # runs flutter with --dart-define-from-file=.env
 ```
 
-`example.env` contains empty placeholders. Copy it to `.env` only for local development: `.env` is gitignored, local-only, and must never be declared as a Flutter asset. Localizations are generated with `flutter gen-l10n` (also triggered by `flutter run`/`flutter test`); their sources are `lib/l10n/app_en.arb` and `lib/l10n/app_es.arb`. Inject real secrets at build time (CI and release builds do not need `.env`):
+`example.env` contains empty placeholders. Copy it to `.env` only for local development: `.env` is gitignored, local-only, and must never be declared as a Flutter asset. `./tool/run_dev.sh` passes the file to Flutter for you; do not store a `flutter run` command inside `.env` (a missing line continuation silently drops later `--dart-define` flags). Localizations are generated with `flutter gen-l10n` (also triggered by `flutter run`/`flutter test`); their sources are `lib/l10n/app_en.arb` and `lib/l10n/app_es.arb`. Inject real secrets at build time (CI and release builds do not need `.env`):
 
 ```bash
 flutter run \
