@@ -141,6 +141,7 @@
   "extractingData": "Extracting receipt data…",
   "savingReceipt": "Saving receipt…",
   "finishingUp": "Finishing up…",
+  "receiptSavedExpenseFailed": "Receipt saved, but the expense could not be recorded.",
   "receiptPreview": "Receipt preview",
   "merchant": "Merchant",
   "currency": "Currency",

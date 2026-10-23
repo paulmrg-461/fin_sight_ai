@@ -6,6 +6,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../categories/presentation/bloc/category_bloc.dart';
+import '../../../categories/presentation/bloc/category_state.dart';
+import '../../../categories/presentation/widgets/category_dropdown.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../bloc/ocr_bloc.dart';
 import '../bloc/ocr_event.dart';
@@ -35,6 +38,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
   late final TextEditingController _totalController;
   late DateTime _date;
   late List<ReceiptItem> _items;
+  String? _category;
 
   @override
   void initState() {
@@ -48,6 +52,26 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
     );
     _date = widget.receipt.date;
     _items = [...widget.receipt.items];
+    _category = _defaultCategory();
+  }
+
+  String? _defaultCategory() {
+    final state = context.read<CategoryBloc>().state;
+    if (state is! CategoryLoaded) {
+      return null;
+    }
+    final active = state.categories
+        .where((category) => !category.isArchived)
+        .toList();
+    if (active.isEmpty) {
+      return null;
+    }
+    for (final category in active) {
+      if (category.name == 'Other' || category.name == 'Otros') {
+        return category.name;
+      }
+    }
+    return active.first.name;
   }
 
   @override
@@ -197,7 +221,11 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
     );
 
     context.read<OcrBloc>().add(
-      SaveReceipt(receipt, createTransaction: widget.createTransaction),
+      SaveReceipt(
+        receipt,
+        createTransaction: widget.createTransaction,
+        category: _category,
+      ),
     );
   }
 
@@ -206,6 +234,11 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
     return BlocConsumer<OcrBloc, OcrState>(
       listener: (context, state) {
         if (state is OcrSaved) {
+          Navigator.of(context).pop(true);
+        } else if (state is OcrTransactionFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.receiptSavedExpenseFailed)),
+          );
           Navigator.of(context).pop(true);
         } else if (state is OcrFailure) {
           ScaffoldMessenger.of(context)
@@ -347,6 +380,13 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                         ],
                       ),
                     ),
+                if (widget.createTransaction) ...[
+                  CategoryDropdown(
+                    value: _category,
+                    onChanged: (value) => setState(() => _category = value),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: isSaving ? null : _save,

@@ -384,6 +384,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get finishingUp => 'Finalizando…';
 
   @override
+  String get receiptSavedExpenseFailed =>
+      'Recibo guardado, pero no se pudo registrar el gasto.';
+
+  @override
   String get receiptPreview => 'Vista previa del recibo';
 
   @override

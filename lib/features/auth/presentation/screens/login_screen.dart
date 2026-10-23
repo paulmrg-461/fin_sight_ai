@@ -63,7 +63,11 @@ class _LoginScreenState extends State<LoginScreen> {
         final theme = Theme.of(context);
 
         return Scaffold(
-          appBar: AppBar(title: Text(_isSignUp ? 'Create account' : 'Sign in')),
+          appBar: AppBar(
+            title: Text(
+              _isSignUp ? context.l10n.createAccount : context.l10n.signIn,
+            ),
+          ),
           body: Form(
             key: _formKey,
             child: ListView(

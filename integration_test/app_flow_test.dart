@@ -7,6 +7,7 @@ import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/screens/wallet_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -79,6 +80,15 @@ void main() {
     await pumpUntil(tester, find.text('Receipt preview'));
 
     expect(find.text('ACME MARKET'), findsOneWidget);
+
+    final categoryDropdown = find.byType(DropdownButtonFormField<String>);
+    await tester.ensureVisible(categoryDropdown);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(categoryDropdown);
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Groceries').last);
+    await tester.pump(const Duration(milliseconds: 300));
+
     await tester.ensureVisible(find.text('Save receipt'));
     await tester.tap(find.text('Save receipt'));
     await pumpUntilGone(tester, find.text('Receipt preview'));
@@ -91,7 +101,7 @@ void main() {
     final transactions = result.getOrElse((_) => const <TransactionEntity>[]);
     final receiptExpense = transactions.where(
       (transaction) =>
-          transaction.amount == 25.5 && transaction.category == 'Receipts',
+          transaction.amount == 25.5 && transaction.category == 'Groceries',
     );
     expect(receiptExpense, hasLength(1));
     expect(receiptExpense.single.description, 'ACME MARKET');
@@ -265,6 +275,38 @@ void main() {
     harness.router.goNamed(AppRoutes.moneyName);
     await pumpUntil(tester, find.text(usdBalance));
     expect(find.text(usdBalance), findsWidgets);
+  });
+
+  testWidgets('refreshes wallet balances after a new expense', (tester) async {
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('No transactions yet'));
+
+    harness.router.goNamed(AppRoutes.moneyName);
+    await pumpUntil(tester, find.text('Total available'));
+    expect(find.text(money(0)), findsWidgets);
+
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 25,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Lunch',
+        date: DateTime.now(),
+      ),
+    );
+
+    await tester.fling(
+      find.descendant(
+        of: find.byType(WalletScreen),
+        matching: find.byType(ListView),
+      ),
+      const Offset(0, 320),
+      1000,
+    );
+    await tester.pump();
+    await pumpUntil(tester, find.text(money(-25)));
+
+    expect(find.text(money(-25)), findsWidgets);
   });
 
   testWidgets('switches between English and Spanish', (tester) async {

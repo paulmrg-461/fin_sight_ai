@@ -122,7 +122,8 @@ class OcrScreen extends StatelessWidget {
       OcrScanning() => _BusyState(message: context.l10n.extractingData),
       OcrSaving() => _BusyState(message: context.l10n.savingReceipt),
       OcrScanSuccess() ||
-      OcrSaved() => _BusyState(message: context.l10n.finishingUp),
+      OcrSaved() ||
+      OcrTransactionFailure() => _BusyState(message: context.l10n.finishingUp),
       OcrFailure(:final message) => _ErrorState(
         message: message,
         onRetry: () => context.read<OcrBloc>().add(const LoadReceipts()),

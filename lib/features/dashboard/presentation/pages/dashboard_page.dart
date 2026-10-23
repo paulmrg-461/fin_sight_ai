@@ -79,8 +79,8 @@ class DashboardPage extends StatelessWidget {
               IconButton(
                 onPressed: themeController.toggle,
                 tooltip: isDark
-                    ? 'Switch to light mode'
-                    : 'Switch to dark mode',
+                    ? context.l10n.switchToLight
+                    : context.l10n.switchToDark,
                 icon: Icon(
                   isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                 ),

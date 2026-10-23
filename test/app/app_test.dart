@@ -436,6 +436,24 @@ void main() {
     expect(themeController.themeMode, ThemeMode.light);
     expect(app().themeMode, ThemeMode.light);
   });
+
+  testWidgets('localizes the login app bar when the locale changes', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+
+    router.goNamed(AppRoutes.loginName);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.widgetWithText(AppBar, 'Sign in'), findsOneWidget);
+
+    localeBloc.emit(const LocaleLoaded(Locale('es')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.widgetWithText(AppBar, 'Iniciar sesión'), findsOneWidget);
+  });
 }
 
 const _zeroSummary = DashboardSummaryEntity(

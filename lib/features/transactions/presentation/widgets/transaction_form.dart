@@ -8,6 +8,7 @@ import '../../../categories/presentation/widgets/category_dropdown.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
+import '../../../wallets/presentation/widgets/wallet_display_name.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../bloc/transaction_bloc.dart';
@@ -161,7 +162,9 @@ class _TransactionFormState extends State<TransactionForm> {
                         for (final balance in balances)
                           DropdownMenuItem(
                             value: balance.wallet.id,
-                            child: Text(balance.name),
+                            child: Text(
+                              walletDisplayName(context, balance.wallet),
+                            ),
                           ),
                       ],
                       onChanged: (value) => setState(() => _walletId = value),

@@ -57,6 +57,17 @@ final class OcrSaved extends OcrState {
   List<Object?> get props => [receipt];
 }
 
+/// Receipt persisted, but creating the linked expense failed.
+final class OcrTransactionFailure extends OcrState {
+  const OcrTransactionFailure(this.receipt, this.message);
+
+  final ReceiptEntity receipt;
+  final String message;
+
+  @override
+  List<Object?> get props => [receipt, message];
+}
+
 final class OcrFailure extends OcrState {
   const OcrFailure(this.message);
 

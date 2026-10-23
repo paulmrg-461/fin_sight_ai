@@ -9,10 +9,42 @@ import '../../domain/entities/wallet_entity.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
 import '../bloc/wallet_state.dart';
+import '../widgets/wallet_display_name.dart';
 
 /// Bank/cash balances, reconciliation, and transfers.
-class WalletScreen extends StatelessWidget {
+class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
+
+  @override
+  State<WalletScreen> createState() => _WalletScreenState();
+}
+
+class _WalletScreenState extends State<WalletScreen>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    context.read<WalletBloc>().add(const LoadWallets());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<WalletBloc>().add(const LoadWallets());
+    }
+  }
+
+  Future<void> _refresh() async {
+    context.read<WalletBloc>().add(const LoadWallets());
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+  }
 
   Future<void> _setBalance(BuildContext context, WalletBalance balance) async {
     final target = await showDialog<double>(
@@ -72,23 +104,27 @@ class WalletScreen extends StatelessWidget {
               onRetry: () =>
                   context.read<WalletBloc>().add(const LoadWallets()),
             ),
-            WalletLoaded(:final balances) => ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-              children: [
-                _TotalCard(total: state.total),
-                const SizedBox(height: 16),
-                for (final balance in balances)
-                  _WalletCard(
-                    balance: balance,
-                    onSetBalance: () => _setBalance(context, balance),
+            WalletLoaded(:final balances) => RefreshIndicator(
+              onRefresh: _refresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+                children: [
+                  _TotalCard(total: state.total),
+                  const SizedBox(height: 16),
+                  for (final balance in balances)
+                    _WalletCard(
+                      balance: balance,
+                      onSetBalance: () => _setBalance(context, balance),
+                    ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _transfer(context, balances),
+                    icon: const Icon(Icons.swap_horiz),
+                    label: Text(context.l10n.transferBetweenWallets),
                   ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: () => _transfer(context, balances),
-                  icon: const Icon(Icons.swap_horiz),
-                  label: Text(context.l10n.transferBetweenWallets),
-                ),
-              ],
+                ],
+              ),
             ),
           };
         },
@@ -152,6 +188,8 @@ class _WalletCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isBank = balance.type == WalletType.bank;
+    final displayName = walletDisplayName(context, balance.wallet);
+    final typeLabel = isBank ? context.l10n.bankAccount : context.l10n.cash;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -176,11 +214,9 @@ class _WalletCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(balance.name, style: theme.textTheme.titleMedium),
-                  Text(
-                    isBank ? context.l10n.bankAccount : context.l10n.cash,
-                    style: theme.textTheme.bodySmall,
-                  ),
+                  Text(displayName, style: theme.textTheme.titleMedium),
+                  if (displayName != typeLabel)
+                    Text(typeLabel, style: theme.textTheme.bodySmall),
                 ],
               ),
             ),
@@ -265,7 +301,11 @@ class _SetBalanceDialogState extends State<_SetBalanceDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(context.l10n.setBalanceTitle(widget.balance.name)),
+      title: Text(
+        context.l10n.setBalanceTitle(
+          walletDisplayName(context, widget.balance.wallet),
+        ),
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -388,7 +428,7 @@ class _TransferDialogState extends State<_TransferDialog> {
                 for (final balance in widget.balances)
                   DropdownMenuItem(
                     value: balance.wallet.id,
-                    child: Text(balance.name),
+                    child: Text(walletDisplayName(context, balance.wallet)),
                   ),
               ],
               onChanged: (value) {
@@ -405,7 +445,7 @@ class _TransferDialogState extends State<_TransferDialog> {
                 for (final balance in widget.balances)
                   DropdownMenuItem(
                     value: balance.wallet.id,
-                    child: Text(balance.name),
+                    child: Text(walletDisplayName(context, balance.wallet)),
                   ),
               ],
               onChanged: (value) {

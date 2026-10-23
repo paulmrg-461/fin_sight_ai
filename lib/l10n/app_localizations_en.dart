@@ -384,6 +384,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get finishingUp => 'Finishing up…';
 
   @override
+  String get receiptSavedExpenseFailed =>
+      'Receipt saved, but the expense could not be recorded.';
+
+  @override
   String get receiptPreview => 'Receipt preview';
 
   @override

@@ -9,6 +9,7 @@ import '../../../categories/presentation/widgets/category_dropdown.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
+import '../../../wallets/presentation/widgets/wallet_display_name.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
 import '../../domain/usecases/scheduled_payment_usecases.dart';
 import '../bloc/scheduled_payment_bloc.dart';
@@ -207,7 +208,9 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
                         for (final balance in balances)
                           DropdownMenuItem(
                             value: balance.wallet.id,
-                            child: Text(balance.name),
+                            child: Text(
+                              walletDisplayName(context, balance.wallet),
+                            ),
                           ),
                       ],
                       onChanged: (value) => setState(() => _walletId = value),

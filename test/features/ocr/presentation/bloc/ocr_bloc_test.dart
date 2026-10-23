@@ -50,7 +50,7 @@ void main() {
       AddTransactionParams(
         amount: 1,
         type: TransactionType.expense,
-        category: 'Receipts',
+        category: 'Other',
         description: '',
         date: DateTime.utc(2026),
       ),
@@ -182,7 +182,40 @@ void main() {
               id: receipt.id,
               amount: receipt.totalAmount,
               type: TransactionType.expense,
-              category: 'Receipts',
+              category: 'Groceries',
+              description: receipt.merchantName,
+              date: receipt.date,
+            ),
+          ),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        SaveReceipt(receipt, createTransaction: true, category: 'Groceries'),
+      ),
+      expect: () => [const OcrSaving(), OcrSaved(receipt)],
+      verify: (_) {
+        final captured =
+            verify(() => addTransaction(captureAny())).captured.single
+                as AddTransactionParams;
+        expect(captured.amount, 11.5);
+        expect(captured.type, TransactionType.expense);
+        expect(captured.category, 'Groceries');
+        expect(captured.description, 'ACME');
+      },
+    );
+
+    blocTest<OcrBloc, OcrState>(
+      'falls back to the Other category when none is selected',
+      setUp: () {
+        when(() => saveReceipt(any())).thenAnswer((_) async => Right(receipt));
+        when(() => addTransaction(any())).thenAnswer(
+          (_) async => Right(
+            TransactionEntity(
+              id: receipt.id,
+              amount: receipt.totalAmount,
+              type: TransactionType.expense,
+              category: 'Other',
               description: receipt.merchantName,
               date: receipt.date,
             ),
@@ -196,11 +229,26 @@ void main() {
         final captured =
             verify(() => addTransaction(captureAny())).captured.single
                 as AddTransactionParams;
-        expect(captured.amount, 11.5);
-        expect(captured.type, TransactionType.expense);
-        expect(captured.category, 'Receipts');
-        expect(captured.description, 'ACME');
+        expect(captured.category, 'Other');
       },
+    );
+
+    blocTest<OcrBloc, OcrState>(
+      'reports a transaction failure after saving the receipt',
+      setUp: () {
+        when(() => saveReceipt(any())).thenAnswer((_) async => Right(receipt));
+        when(() => addTransaction(any())).thenAnswer(
+          (_) async => const Left(ValidationFailure('Invalid amount.')),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        SaveReceipt(receipt, createTransaction: true, category: 'Groceries'),
+      ),
+      expect: () => [
+        const OcrSaving(),
+        OcrTransactionFailure(receipt, 'Invalid amount.'),
+      ],
     );
 
     blocTest<OcrBloc, OcrState>(

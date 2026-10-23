@@ -78,17 +78,22 @@ class OcrBloc extends Bloc<OcrEvent, OcrState> {
 
     final saved = result.getOrElse((_) => event.receipt);
     if (event.createTransaction) {
-      await _addTransaction(
+      final created = await _addTransaction(
         AddTransactionParams(
           id: saved.id,
           amount: saved.totalAmount,
           type: TransactionType.expense,
-          category: 'Receipts',
+          category: event.category ?? 'Other',
           description: saved.merchantName,
           date: saved.date,
           receiptImagePath: saved.imagePath,
         ),
       );
+      final failure = created.getLeft().toNullable();
+      if (failure != null) {
+        emit(OcrTransactionFailure(saved, failure.message));
+        return;
+      }
     }
 
     emit(OcrSaved(saved));

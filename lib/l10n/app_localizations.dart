@@ -818,6 +818,12 @@ abstract class AppLocalizations {
   /// **'Finishing up…'**
   String get finishingUp;
 
+  /// No description provided for @receiptSavedExpenseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt saved, but the expense could not be recorded.'**
+  String get receiptSavedExpenseFailed;
+
   /// No description provided for @receiptPreview.
   ///
   /// In en, this message translates to:

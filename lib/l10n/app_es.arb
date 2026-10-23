@@ -120,6 +120,7 @@
   "extractingData": "Extrayendo datos del recibo…",
   "savingReceipt": "Guardando recibo…",
   "finishingUp": "Finalizando…",
+  "receiptSavedExpenseFailed": "Recibo guardado, pero no se pudo registrar el gasto.",
   "receiptPreview": "Vista previa del recibo",
   "merchant": "Comercio",
   "currency": "Moneda",

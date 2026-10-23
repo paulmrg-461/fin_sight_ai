@@ -28,13 +28,18 @@ final class ScanReceipt extends OcrEvent {
 /// Persists an edited or scanned receipt.
 ///
 /// When [createTransaction] is true, an expense transaction is created from
-/// the receipt total.
+/// the receipt total using the catalog [category].
 final class SaveReceipt extends OcrEvent {
-  const SaveReceipt(this.receipt, {this.createTransaction = false});
+  const SaveReceipt(
+    this.receipt, {
+    this.createTransaction = false,
+    this.category,
+  });
 
   final ReceiptEntity receipt;
   final bool createTransaction;
+  final String? category;
 
   @override
-  List<Object?> get props => [receipt, createTransaction];
+  List<Object?> get props => [receipt, createTransaction, category];
 }

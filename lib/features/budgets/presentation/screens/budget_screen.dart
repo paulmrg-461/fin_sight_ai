@@ -164,7 +164,7 @@ class _BudgetCard extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  overBudget ? 'Over budget by ' : '',
+                  overBudget ? context.l10n.overBudgetBy : '',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: overBudget ? AppColors.danger : null,
                   ),
@@ -313,7 +313,7 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(labelText: context.l10n.category),
               validator: (value) => (value?.trim().isEmpty ?? true)
-                  ? 'Category is required.'
+                  ? context.l10n.categoryRequired
                   : null,
             ),
             if (widget.categories.isNotEmpty) ...[
