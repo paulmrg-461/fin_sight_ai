@@ -35,6 +35,7 @@ grant usage on schema public to authenticated;
 grant select, insert, update, delete on table public.transactions
   to authenticated;
 revoke all on table public.transactions from anon;
+revoke truncate, references, trigger on table public.transactions from authenticated;
 
 create table if not exists public.debts (
   id text primary key,
@@ -65,3 +66,4 @@ create policy "debts_owner_all"
 grant select, insert, update, delete on table public.debts
   to authenticated;
 revoke all on table public.debts from anon;
+revoke truncate, references, trigger on table public.debts from authenticated;

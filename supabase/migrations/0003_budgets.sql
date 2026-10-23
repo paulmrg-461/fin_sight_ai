@@ -28,3 +28,4 @@ create policy "budgets_owner_all"
 grant select, insert, update, delete on table public.budgets
   to authenticated;
 revoke all on table public.budgets from anon;
+revoke truncate, references, trigger on table public.budgets from authenticated;
