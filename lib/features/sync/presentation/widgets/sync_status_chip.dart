@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../../../../core/routing/app_routes.dart';
 
 import '../bloc/sync_bloc.dart';
 import '../bloc/sync_event.dart';
@@ -25,10 +28,15 @@ class SyncStatusChip extends StatelessWidget {
           SyncSuccess(:final report) => report.isConfigured,
           _ => true,
         };
+        final authenticated = switch (state) {
+          SyncIdle(:final status) => status.isAuthenticated,
+          SyncSuccess(:final report) => report.isAuthenticated,
+          _ => true,
+        };
 
         final icon = isSyncing
             ? Icons.cloud_sync_outlined
-            : hasFailure || !configured
+            : hasFailure || !configured || !authenticated
             ? Icons.cloud_off_outlined
             : pending > 0
             ? Icons.cloud_upload_outlined
@@ -38,6 +46,8 @@ class SyncStatusChip extends StatelessWidget {
             ? 'Synchronizing…'
             : !configured
             ? 'Sync offline: Supabase is not configured'
+            : !authenticated
+            ? 'Sign in to sync'
             : hasFailure
             ? 'Sync failed. Tap to retry'
             : pending > 0
@@ -47,7 +57,13 @@ class SyncStatusChip extends StatelessWidget {
         return IconButton(
           onPressed: isSyncing
               ? null
-              : () => context.read<SyncBloc>().add(const SyncNow()),
+              : () {
+                  if (configured && !authenticated) {
+                    context.pushNamed(AppRoutes.loginName);
+                  } else {
+                    context.read<SyncBloc>().add(const SyncNow());
+                  }
+                },
           tooltip: tooltip,
           icon: isSyncing
               ? const SizedBox(

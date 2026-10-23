@@ -58,6 +58,24 @@ void main() {
       expect(retried.operationType, operation.operationType);
     });
 
+    test('round-trips retry backoff metadata', () {
+      final operation =
+          SyncOperation.upsert(
+            entityType: SyncEntityType.transaction,
+            entityId: 'tx-1',
+            payload: const {'id': 'tx-1'},
+            queuedAt: queuedAt,
+          ).copyWith(
+            attempts: 2,
+            nextAttemptAt: queuedAt.add(const Duration(minutes: 4)),
+          );
+
+      final restored = SyncOperation.fromJson(operation.toJson());
+
+      expect(restored, operation);
+      expect(restored.nextAttemptAt, queuedAt.add(const Duration(minutes: 4)));
+    });
+
     test('rejects invalid JSON', () {
       expect(
         () => SyncOperation.fromJson(const {'id': ''}),

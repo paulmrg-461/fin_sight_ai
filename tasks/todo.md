@@ -56,6 +56,15 @@
 - [x] GitHub Actions CI
 - [x] Unit + integration tests updated
 
+## Production polish
+
+- [x] Persistent receipt images + orphan cleanup
+- [x] Sync exponential backoff
+- [x] Tombstone compaction (30 days)
+- [x] Coverage gate script + CI step
+- [x] Login/sync-chip UX polish
+- [x] Widget/service tests for the new behavior
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -67,7 +76,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 467 tests passing
+- [x] `flutter test --coverage` — 478 tests passing
 - [x] Integration tests — 9 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push

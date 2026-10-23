@@ -72,6 +72,36 @@ class HiveTransactionLocalDataSource implements TransactionLocalDataSource {
     }
   }
 
+  @override
+  Future<int> purgeTombstones(DateTime before) async {
+    try {
+      final keys = <dynamic>[];
+      for (final key in _box.keys) {
+        final value = _box.get(key);
+        if (value is! Map) {
+          continue;
+        }
+        final model = TransactionModel.fromJson(
+          Map<String, dynamic>.from(value),
+        );
+        final deletedAt = model.deletedAt;
+        if (deletedAt != null && deletedAt.isBefore(before)) {
+          keys.add(key);
+        }
+      }
+      if (keys.isEmpty) {
+        return 0;
+      }
+      await _box.deleteAll(keys);
+      return keys.length;
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge transaction tombstones.',
+        code: 'cache_purge_failed',
+      );
+    }
+  }
+
   List<TransactionModel> _readAll() {
     final transactions = <TransactionModel>[];
     for (final value in _box.values) {

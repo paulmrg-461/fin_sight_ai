@@ -66,7 +66,7 @@ Current storage is **Hive CE**, accessed only through a feature-owned local data
 - **Structure:** Arrange → Act → Assert. One behavior per test. Test names state the expected behavior.
 - **Integration coverage:** critical user flows (add transaction, scan receipt, add debt, AI insights, date filtering, restart persistence) run through `integration_test/` with real local storage and faked external services.
 - **Performance smoke checks:** integration tests record launch and screen render timings with explicit upper bounds.
-- **CI gate:** `.github/workflows/ci.yml` runs format checks, analyze, unit coverage, and Linux integration tests; keep it green.
+- **CI gate:** `.github/workflows/ci.yml` runs format checks, analyze, unit coverage, `dart run tool/check_coverage.dart`, and Linux integration tests; keep it green.
 - **No skipped tests, no deleted assertions, no `@ts-ignore` equivalents** to force a green build.
 
 ---

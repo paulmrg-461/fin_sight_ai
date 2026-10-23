@@ -51,9 +51,10 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 3. For each operation:
    - Delete → remote delete, remove from queue.
    - Upsert → fetch remote row. If remote `updatedAt` is newer, write remote locally (conflict), remove from queue. Otherwise upsert and mark the local record `isSynced = true`.
-   - On remote failure, increment `attempts`, keep the operation, and return `ServerFailure`.
+   - On remote failure, increment `attempts`, set `nextAttemptAt` with exponential backoff (1s, 2s, 4s… capped at 1h), keep the operation, and return `ServerFailure`.
 4. Pull transactions and debts updated since `lastSyncedAt`, merging only newer remote rows.
 5. Persist `lastSyncedAt`.
+6. Purge local tombstones older than 30 days (best effort).
 
 ## Presentation
 
@@ -75,6 +76,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 - Push, pull, conflict, delete, requeue, and invalid payload paths with mocked data sources.
 - Repository enqueue integration for transactions and debts, including tombstones.
 - `SyncBloc` transitions and authenticated/unauthenticated reports.
+- Backoff scheduling and tombstone purge behavior.
 - Auth datasource/repository/BLoC tests (GoTrue REST + secure storage).
 
 ## Verification

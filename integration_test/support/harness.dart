@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
@@ -175,7 +176,13 @@ class IntegrationHarness {
       deleteDebt,
       calculatePayoff,
     );
-    ocrBloc = OcrBloc(scanReceipt, saveReceipt, getReceipts, addTransaction);
+    ocrBloc = OcrBloc(
+      scanReceipt,
+      saveReceipt,
+      getReceipts,
+      addTransaction,
+      const _FakeReceiptImageStore(),
+    );
     aiCoachBloc = AiCoachBloc(
       getInsights,
       analyzeSpending,
@@ -384,4 +391,14 @@ class _FakeAuthRepository implements AuthRepository {
     _session = null;
     return const Right(null);
   }
+}
+
+class _FakeReceiptImageStore implements ReceiptImageStore {
+  const _FakeReceiptImageStore();
+
+  @override
+  Future<String> persist(String sourcePath) async => sourcePath;
+
+  @override
+  Future<void> delete(String path) async {}
 }

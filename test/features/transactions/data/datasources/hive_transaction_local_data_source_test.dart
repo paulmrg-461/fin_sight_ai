@@ -100,6 +100,26 @@ void main() {
       );
     });
 
+    test('purges only old tombstones', () async {
+      final oldTombstone = TransactionModel.fromEntity(
+        buildModel(id: 'old').copyWith(deletedAt: DateTime.utc(2026, 1, 1)),
+      );
+      final recentTombstone = TransactionModel.fromEntity(
+        buildModel(id: 'recent').copyWith(deletedAt: DateTime.utc(2026, 10, 1)),
+      );
+      final active = buildModel(id: 'active');
+      await dataSource.saveTransaction(oldTombstone);
+      await dataSource.saveTransaction(recentTombstone);
+      await dataSource.saveTransaction(active);
+
+      final purged = await dataSource.purgeTombstones(DateTime.utc(2026, 6, 1));
+
+      expect(purged, 1);
+      expect(box.containsKey('old'), isFalse);
+      expect(box.containsKey('recent'), isTrue);
+      expect(box.containsKey('active'), isTrue);
+    });
+
     test('deletes a transaction', () async {
       await dataSource.saveTransaction(buildModel());
 

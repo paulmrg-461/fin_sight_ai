@@ -3,6 +3,7 @@ import 'package:fin_sight_ai/core/error/exceptions.dart';
 import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
@@ -94,6 +95,8 @@ void main() {
   }) {
     when(() => auth.isAuthenticated).thenReturn(authenticated);
     when(() => auth.accessToken).thenReturn(authenticated ? 'token' : null);
+    when(() => auth.restoreSession())
+        .thenAnswer((_) async => const Right(null));
     return SyncRepositoryImpl(
       local,
       remote,
@@ -134,8 +137,11 @@ void main() {
     when(() => transactionLocal.saveTransaction(any()))
         .thenAnswer((_) async {});
     when(() => transactionLocal.getTransactions()).thenAnswer((_) async => []);
+    when(() => transactionLocal.purgeTombstones(any()))
+        .thenAnswer((_) async => 0);
     when(() => debtLocal.saveDebt(any())).thenAnswer((_) async {});
     when(() => debtLocal.getDebts()).thenAnswer((_) async => []);
+    when(() => debtLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
     when(
       () => remote.fetchTransactions(updatedAfter: any(named: 'updatedAfter')),
     ).thenAnswer((_) async => []);
@@ -213,6 +219,25 @@ void main() {
       verifyNever(() => remote.upsertTransaction(any()));
     });
 
+    test('skips operations waiting for their retry window', () async {
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.transaction,
+        entityId: 'tx-1',
+        payload: buildTransaction().toJson(),
+        queuedAt: now,
+        nextAttemptAt: now.add(const Duration(minutes: 5)),
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => local.pendingCount()).thenAnswer((_) async => 1);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.pushed, 0);
+      expect(report.pendingOperations, 1);
+      verifyNever(() => remote.upsertTransaction(any()));
+    });
+
     test('pushes a new transaction and marks it synced', () async {
       final model = buildTransaction();
       final operation = SyncOperation.upsert(
@@ -242,6 +267,14 @@ void main() {
               as TransactionModel;
       expect(saved.isSynced, isTrue);
       verify(() => local.setLastSyncedAt(now)).called(1);
+      verify(
+        () => transactionLocal.purgeTombstones(
+          now.subtract(const Duration(days: 30)),
+        ),
+      ).called(1);
+      verify(
+        () => debtLocal.purgeTombstones(now.subtract(const Duration(days: 30))),
+      ).called(1);
     });
 
     test('resolves a conflict in favor of a newer remote record', () async {
@@ -342,6 +375,8 @@ void main() {
           verify(() => local.enqueue(captureAny())).captured.single
               as SyncOperation;
       expect(requeued.attempts, 1);
+      expect(requeued.nextAttemptAt, isNotNull);
+      expect(requeued.nextAttemptAt!.isAfter(now), isTrue);
     });
 
     test('rejects invalid queued payloads', () async {

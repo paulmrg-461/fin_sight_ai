@@ -17,6 +17,7 @@ class SyncOperation {
     required this.queuedAt,
     this.payload = const {},
     this.attempts = 0,
+    this.nextAttemptAt,
   });
 
   factory SyncOperation.upsert({
@@ -24,6 +25,7 @@ class SyncOperation {
     required String entityId,
     required Map<String, dynamic> payload,
     required DateTime queuedAt,
+    DateTime? nextAttemptAt,
   }) {
     return SyncOperation(
       id: keyFor(entityType, entityId),
@@ -32,6 +34,7 @@ class SyncOperation {
       operationType: SyncOperationType.upsert,
       queuedAt: queuedAt,
       payload: payload,
+      nextAttemptAt: nextAttemptAt,
     );
   }
 
@@ -39,6 +42,7 @@ class SyncOperation {
     required SyncEntityType entityType,
     required String entityId,
     required DateTime queuedAt,
+    DateTime? nextAttemptAt,
   }) {
     return SyncOperation(
       id: keyFor(entityType, entityId),
@@ -46,6 +50,7 @@ class SyncOperation {
       entityId: entityId,
       operationType: SyncOperationType.delete,
       queuedAt: queuedAt,
+      nextAttemptAt: nextAttemptAt,
     );
   }
 
@@ -75,6 +80,7 @@ class SyncOperation {
 
     final payload = json['payload'];
     final attempts = json['attempts'];
+    final nextAttemptAt = json['nextAttemptAt'];
 
     return SyncOperation(
       id: id,
@@ -84,6 +90,9 @@ class SyncOperation {
       queuedAt: DateTime.parse(queuedAt),
       payload: payload is Map ? Map<String, dynamic>.from(payload) : const {},
       attempts: attempts is int ? attempts : 0,
+      nextAttemptAt: nextAttemptAt is String
+          ? DateTime.tryParse(nextAttemptAt)
+          : null,
     );
   }
 
@@ -98,7 +107,10 @@ class SyncOperation {
   final Map<String, dynamic> payload;
   final int attempts;
 
-  SyncOperation copyWith({int? attempts}) {
+  /// Earliest time this operation may be retried after a failure.
+  final DateTime? nextAttemptAt;
+
+  SyncOperation copyWith({int? attempts, DateTime? nextAttemptAt}) {
     return SyncOperation(
       id: id,
       entityType: entityType,
@@ -107,6 +119,7 @@ class SyncOperation {
       queuedAt: queuedAt,
       payload: payload,
       attempts: attempts ?? this.attempts,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
     );
   }
 
@@ -119,6 +132,7 @@ class SyncOperation {
       'queuedAt': queuedAt.toUtc().toIso8601String(),
       'payload': payload,
       'attempts': attempts,
+      'nextAttemptAt': nextAttemptAt?.toUtc().toIso8601String(),
     };
   }
 
@@ -132,6 +146,7 @@ class SyncOperation {
           other.operationType == operationType &&
           other.queuedAt == queuedAt &&
           other.attempts == attempts &&
+          other.nextAttemptAt == nextAttemptAt &&
           _samePayload(other.payload, payload);
 
   @override
@@ -142,6 +157,7 @@ class SyncOperation {
     operationType,
     queuedAt,
     attempts,
+    nextAttemptAt,
     payload.toString(),
   );
 

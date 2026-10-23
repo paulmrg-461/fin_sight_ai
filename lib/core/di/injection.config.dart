@@ -13,6 +13,7 @@
 import 'package:fin_sight_ai/core/di/injection.dart' as _i1015;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
 import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
@@ -171,6 +172,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => const _i598.MlKitOcrDataSource(),
     );
     gh.lazySingleton<_i441.SessionStorage>(() => _i26.SecureSessionStorage());
+    gh.lazySingleton<_i666.ReceiptImageStore>(
+      () => _i666.FileReceiptImageStore(),
+    );
     gh.lazySingleton<_i147.ReceiptImagePicker>(
       () => _i147.ImagePickerReceiptImagePicker(),
     );
@@ -413,14 +417,6 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
-    gh.factory<_i1031.OcrBloc>(
-      () => _i1031.OcrBloc(
-        gh<_i826.ScanReceiptUseCase>(),
-        gh<_i292.SaveReceiptUseCase>(),
-        gh<_i937.GetReceiptsUseCase>(),
-        gh<_i361.AddTransactionUseCase>(),
-      ),
-    );
     gh.factory<_i746.BudgetBloc>(
       () => _i746.BudgetBloc(
         gh<_i41.AddBudgetUseCase>(),
@@ -433,6 +429,15 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i470.SyncBloc(
         gh<_i558.SyncNowUseCase>(),
         gh<_i558.GetSyncStatusUseCase>(),
+      ),
+    );
+    gh.factory<_i1031.OcrBloc>(
+      () => _i1031.OcrBloc(
+        gh<_i826.ScanReceiptUseCase>(),
+        gh<_i292.SaveReceiptUseCase>(),
+        gh<_i937.GetReceiptsUseCase>(),
+        gh<_i361.AddTransactionUseCase>(),
+        gh<_i666.ReceiptImageStore>(),
       ),
     );
     return this;

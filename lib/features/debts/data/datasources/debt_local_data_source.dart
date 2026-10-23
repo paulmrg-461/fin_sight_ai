@@ -8,4 +8,7 @@ abstract interface class DebtLocalDataSource {
   Future<void> saveDebt(DebtModel debt);
 
   Future<void> deleteDebt(String id);
+
+  /// Hard-deletes tombstones older than [before] and returns the count.
+  Future<int> purgeTombstones(DateTime before);
 }

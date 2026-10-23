@@ -58,25 +58,27 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - [x] Soft-delete tombstones for transactions and debts.
 - [x] Budgets/categories slice (domain/data/presentation + route).
 - [x] GitHub Actions CI.
+- [x] Persistent receipt images + orphan cleanup.
+- [x] Sync exponential backoff + tombstone purge.
+- [x] Coverage gate script wired into CI.
 - [x] `flutter analyze`, unit + integration tests.
 - [x] Commit + push.
 
 ## Verification
 
 - `flutter analyze` clean.
-- 467 unit/widget tests passing.
+- 478 unit/widget tests passing.
 - 9 integration tests passing on Linux.
-- Coverage: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/91.8%, core 91.6%.
+- Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, core 91.2%.
 - SQL: `0001_init.sql`, `0002_tombstones.sql`, `tests/rls_test.sql`.
 
 ## Known gaps / next
 
 1. Run the RLS script against a real Supabase project (needs credentials).
 2. Sync budgets and receipt metadata.
-3. Receipt image persistence (currently stores only the picked path).
-4. Tombstone compaction and sync backoff.
-5. Streaming AI responses and conversation memory.
-6. Money as integer minor units instead of `double`.
+3. Streaming AI responses and conversation memory.
+4. Money as integer minor units instead of `double`.
+5. Golden/screenshot tests in CI.
 
 ## Conventions to keep
 

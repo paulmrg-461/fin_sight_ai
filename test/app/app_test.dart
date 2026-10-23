@@ -3,6 +3,7 @@ import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
@@ -102,6 +103,8 @@ class MockGetBudgetProgress extends Mock implements GetBudgetProgressUseCase {}
 
 class MockGetCategories extends Mock implements GetCategoriesUseCase {}
 
+class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
+
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
   @override
   Future<String?> pick(ReceiptImageSource source) async => null;
@@ -164,6 +167,7 @@ void main() {
       MockSaveReceipt(),
       MockGetReceipts(),
       addTransaction,
+      MockReceiptImageStore(),
     );
     aiCoachBloc = AiCoachBloc(
       MockGetInsights(),

@@ -72,7 +72,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - `MlKitOcrDataSource` (Google ML Kit, Android/iOS) returns raw text; `ReceiptParser` extracts fields with tolerant heuristics.
 - `ReceiptRepositoryImpl` validates empty scans, maps OCR/storage errors, and persists receipts in Hive.
 - `OcrBloc` scans, saves, and lists receipts. Saving a newly scanned receipt also creates an expense transaction with the receipt id (idempotent retries).
-- `ReceiptImagePicker` abstracts camera/gallery; `OcrScreen` and `ReceiptPreviewScreen` handle editing, loading, empty, and error states.
+- `ReceiptImagePicker` abstracts camera/gallery; `FileReceiptImageStore` copies picked images into `<documents>/receipts` so previews survive cache cleanup; failed scans delete the orphaned copy.
 
 ### AI Coach
 
@@ -102,7 +102,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - Deletes write `deletedAt` tombstones and enqueue upserts; local queries hide tombstones while sync keeps them idempotent.
 - `HiveSyncLocalDataSource` stores the queue and `lastSyncedAt` in Hive; repeated edits collapse into the latest operation.
 - `SupabaseRestSyncDataSource` talks to PostgREST over `http.Client` with the authenticated JWT, mapping camelCase models to snake_case columns (including `deleted_at`).
-- `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows/tombstones, and persists `lastSyncedAt`.
+- `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows/tombstones, persists `lastSyncedAt`, retries with exponential backoff, and purges tombstones older than 30 days.
 - `SyncBloc` + `SyncStatusChip` expose pending count, offline/configured/authenticated state, and manual sync. Startup restores auth then syncs.
 - Receipts remain local-only. Without credentials or a session, sync returns a non-fatal offline report.
 
@@ -173,7 +173,7 @@ flutter test --coverage
 flutter test -d linux integration_test/app_flow_test.dart
 ```
 
-Domain and data coverage target: ≥ 90%. Integration benchmarks print launch and render timings and assert upper bounds. CI (`.github/workflows/ci.yml`) runs analyze, unit tests with coverage, and Linux integration tests under Xvfb.
+Domain and data coverage target: ≥ 90%, enforced by `tool/check_coverage.dart`. Integration benchmarks print launch and render timings and assert upper bounds. CI (`.github/workflows/ci.yml`) runs format, analyze, the coverage gate, and Linux integration tests under Xvfb.
 
 ## 10. Key Decisions
 
@@ -193,6 +193,8 @@ Domain and data coverage target: ≥ 90%. Integration benchmarks print launch an
 | Secure storage for sessions | Keychain/Keystore instead of plaintext | Linux needs libsecret; tests use a fake |
 | Soft-delete tombstones | Deletions propagate across devices | Local tombstones require eventual cleanup |
 | Local-only budgets | Fast, simple first slice | Budgets do not sync yet |
+| Persistent receipt images | Previews survive cache cleanup | Requires orphan cleanup/compaction |
+| Exponential sync backoff | Avoids hammering a failing backend | Delayed retries after failures |
 
 ## 11. Roadmap
 

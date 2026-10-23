@@ -60,7 +60,15 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] Budgets/categories slice with aggregation, BLoC, and screen.
 - [x] GitHub Actions CI (analyze, unit coverage, Linux integration).
 
-### Phase 6: Integration and delivery
+### Phase 6: Production polish
+
+- [x] Persistent receipt image store (copied into app documents, orphan cleanup).
+- [x] Sync exponential backoff via `nextAttemptAt`.
+- [x] Tombstone purge (30 days) after successful sync.
+- [x] Coverage gate script (`tool/check_coverage.dart`) wired into CI.
+- [x] Login title, sync-chip sign-in routing, and picker test seam.
+
+### Phase 7: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.

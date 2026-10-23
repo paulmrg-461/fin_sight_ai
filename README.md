@@ -8,10 +8,10 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, and category suggestions.
-- **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, Hive persistence, and automatic expense creation.
+- **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
-- **Sync** — authenticated Supabase PostgREST push/pull, offline queue, last-write-wins conflicts, tombstones, pending-count indicator, and manual/startup sync.
+- **Sync** — authenticated Supabase PostgREST push/pull, offline queue, exponential backoff, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
 
 ## Architecture
@@ -82,16 +82,17 @@ See [supabase/README.md](supabase/README.md) for details.
 ```bash
 flutter analyze
 flutter test --coverage
+dart run tool/check_coverage.dart
 flutter test -d linux integration_test/app_flow_test.dart
 ```
 
 Current status:
 
-- **467 unit/widget tests** passing.
+- **478 unit/widget tests** passing.
 - **9 integration tests** passing on Linux desktop.
-- Coverage: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/91.8%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.6%.
+- Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.2%.
 - Integration benchmarks: app launch + dashboard ≈ 175 ms, transactions render ≈ 250 ms.
-- CI: GitHub Actions runs analyze, coverage, and Linux integration tests under Xvfb.
+- CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.
 
 ## Routes
 

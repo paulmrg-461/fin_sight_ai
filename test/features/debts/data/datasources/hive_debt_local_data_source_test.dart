@@ -114,6 +114,23 @@ void main() {
       expect(await dataSource.getDebts(), isEmpty);
     });
 
+    test('purges only old tombstones', () async {
+      final oldTombstone = DebtModel.fromEntity(
+        buildModel(id: 'old').copyWith(deletedAt: DateTime.utc(2026, 1, 1)),
+      );
+      final recentTombstone = DebtModel.fromEntity(
+        buildModel(id: 'recent').copyWith(deletedAt: DateTime.utc(2026, 10, 1)),
+      );
+      await dataSource.saveDebt(oldTombstone);
+      await dataSource.saveDebt(recentTombstone);
+
+      final purged = await dataSource.purgeTombstones(DateTime.utc(2026, 6, 1));
+
+      expect(purged, 1);
+      expect(box.containsKey('old'), isFalse);
+      expect(box.containsKey('recent'), isTrue);
+    });
+
     test('deletes a debt', () async {
       await dataSource.saveDebt(buildModel());
 

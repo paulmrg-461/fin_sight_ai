@@ -49,6 +49,7 @@ ResultFuture<List<ReceiptEntity>> getReceipts();
 States: initial, loading, receipts loaded, empty, scanning, scan success, saving, saved, failure.
 
 - `OcrScreen` — camera/gallery actions through `ReceiptImagePicker`, saved receipts list, retry/empty/loading states.
+- `FileReceiptImageStore` copies picked images into `<documents>/receipts`; failed scans delete the copy to avoid orphans.
 - `ReceiptPreviewScreen` — editable merchant, total, currency, date, and items; saving a newly scanned receipt also creates an expense transaction (`category: Receipts`, transaction id = receipt id) so retries stay idempotent.
 
 ## Verification

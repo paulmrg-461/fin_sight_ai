@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/services/receipt_image_store.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/domain/usecases/add_transaction_usecase.dart';
@@ -18,6 +19,7 @@ class OcrBloc extends Bloc<OcrEvent, OcrState> {
     this._saveReceipt,
     this._getReceipts,
     this._addTransaction,
+    this._imageStore,
   ) : super(const OcrInitial()) {
     on<LoadReceipts>(_onLoad);
     on<ScanReceipt>(_onScan);
@@ -28,6 +30,7 @@ class OcrBloc extends Bloc<OcrEvent, OcrState> {
   final SaveReceiptUseCase _saveReceipt;
   final GetReceiptsUseCase _getReceipts;
   final AddTransactionUseCase _addTransaction;
+  final ReceiptImageStore _imageStore;
 
   Future<void> _onLoad(LoadReceipts event, Emitter<OcrState> emit) async {
     emit(const OcrLoading());
@@ -42,11 +45,26 @@ class OcrBloc extends Bloc<OcrEvent, OcrState> {
 
   Future<void> _onScan(ScanReceipt event, Emitter<OcrState> emit) async {
     emit(const OcrScanning());
-    final result = await _scanReceipt(event.imagePath);
-    result.fold(
-      (failure) => emit(OcrFailure(failure.message)),
-      (receipt) => emit(OcrScanSuccess(receipt)),
-    );
+    String? persistedPath;
+    try {
+      persistedPath = await _imageStore.persist(event.imagePath);
+      final result = await _scanReceipt(persistedPath);
+      final failure = result.getLeft().toNullable();
+      if (failure != null) {
+        await _imageStore.delete(persistedPath);
+        emit(OcrFailure(failure.message));
+        return;
+      }
+      final receipt = result.getOrElse(
+        (_) => throw StateError('Unreachable: failure handled above.'),
+      );
+      emit(OcrScanSuccess(receipt));
+    } catch (_) {
+      if (persistedPath != null) {
+        await _imageStore.delete(persistedPath);
+      }
+      emit(const OcrFailure('Unable to prepare the receipt image.'));
+    }
   }
 
   Future<void> _onSave(SaveReceipt event, Emitter<OcrState> emit) async {

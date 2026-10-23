@@ -69,17 +69,30 @@ class SyncRepositoryImpl implements SyncRepository {
   @override
   ResultFuture<SyncReport> syncNow() async {
     try {
-      final pending = await _localDataSource.pending();
+      final allPending = await _localDataSource.pending();
+      final now = clock.now();
+      final pending = allPending
+          .where(
+            (operation) =>
+                operation.nextAttemptAt == null ||
+                !operation.nextAttemptAt!.isAfter(now),
+          )
+          .toList(growable: false);
+
+      if (_env.hasSupabase && !_auth.isAuthenticated) {
+        await _auth.restoreSession();
+      }
+
       if (!_env.hasSupabase || !_auth.isAuthenticated) {
         return Right(
           SyncReport(
             pushed: 0,
             pulled: 0,
             conflictsResolved: 0,
-            pendingOperations: pending.length,
+            pendingOperations: allPending.length,
             isConfigured: _env.hasSupabase,
             isAuthenticated: _auth.isAuthenticated,
-            completedAt: clock.now(),
+            completedAt: now,
           ),
         );
       }
@@ -103,6 +116,7 @@ class SyncRepositoryImpl implements SyncRepository {
       }
 
       final pulled = await _pull();
+      await _purgeTombstones();
       await _localDataSource.setLastSyncedAt(clock.now());
 
       return Right(
@@ -271,10 +285,25 @@ class SyncRepositoryImpl implements SyncRepository {
     return _epoch;
   }
 
+  Future<void> _purgeTombstones() async {
+    final cutoff = clock.now().subtract(const Duration(days: 30));
+    try {
+      await _transactionLocalDataSource.purgeTombstones(cutoff);
+      await _debtLocalDataSource.purgeTombstones(cutoff);
+    } catch (_) {
+      // Cleanup is best effort and must not fail the sync pass.
+    }
+  }
+
   Future<void> _requeue(SyncOperation operation) async {
     try {
+      final attempts = operation.attempts + 1;
+      final backoffSeconds = (1 << attempts.clamp(0, 10)).clamp(1, 3600);
       await _localDataSource.enqueue(
-        operation.copyWith(attempts: operation.attempts + 1),
+        operation.copyWith(
+          attempts: attempts,
+          nextAttemptAt: clock.now().add(Duration(seconds: backoffSeconds)),
+        ),
       );
     } catch (_) {
       // Keep the original queued operation if the counter cannot be updated.

@@ -17,4 +17,7 @@ abstract interface class TransactionLocalDataSource {
     required DateTime start,
     required DateTime end,
   });
+
+  /// Hard-deletes tombstones older than [before] and returns the count.
+  Future<int> purgeTombstones(DateTime before);
 }

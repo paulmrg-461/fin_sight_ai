@@ -1,5 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart';
@@ -22,11 +24,14 @@ class MockGetReceipts extends Mock implements GetReceiptsUseCase {}
 
 class MockAddTransaction extends Mock implements AddTransactionUseCase {}
 
+class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
+
 void main() {
   late MockScanReceipt scanReceipt;
   late MockSaveReceipt saveReceipt;
   late MockGetReceipts getReceipts;
   late MockAddTransaction addTransaction;
+  late MockReceiptImageStore imageStore;
 
   final receipt = ReceiptEntity(
     id: 'receipt-1',
@@ -57,10 +62,20 @@ void main() {
     saveReceipt = MockSaveReceipt();
     getReceipts = MockGetReceipts();
     addTransaction = MockAddTransaction();
+    imageStore = MockReceiptImageStore();
+    when(() => imageStore.persist(any())).thenAnswer(
+      (invocation) async => invocation.positionalArguments.first as String,
+    );
+    when(() => imageStore.delete(any())).thenAnswer((_) async {});
   });
 
-  OcrBloc buildBloc() =>
-      OcrBloc(scanReceipt, saveReceipt, getReceipts, addTransaction);
+  OcrBloc buildBloc() => OcrBloc(
+    scanReceipt,
+    saveReceipt,
+    getReceipts,
+    addTransaction,
+    imageStore,
+  );
 
   group('OcrBloc', () {
     test('initial state is OcrInitial', () {
@@ -110,6 +125,39 @@ void main() {
       build: buildBloc,
       act: (bloc) => bloc.add(const ScanReceipt('/tmp/r.jpg')),
       expect: () => [const OcrScanning(), OcrScanSuccess(receipt)],
+    );
+
+    blocTest<OcrBloc, OcrState>(
+      'deletes the persisted image when scanning fails',
+      setUp: () {
+        when(
+          () => scanReceipt(any()),
+        ).thenAnswer((_) async => const Left(ServerFailure('Unable to scan.')));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const ScanReceipt('/tmp/r.jpg')),
+      expect: () => [const OcrScanning(), const OcrFailure('Unable to scan.')],
+      verify: (_) {
+        verify(() => imageStore.delete('/tmp/r.jpg')).called(1);
+      },
+    );
+
+    blocTest<OcrBloc, OcrState>(
+      'emits failure when the image cannot be persisted',
+      setUp: () {
+        when(() => imageStore.persist(any())).thenThrow(
+          const CacheException('Image missing.', code: 'receipt_image_missing'),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const ScanReceipt('/tmp/r.jpg')),
+      expect: () => [
+        const OcrScanning(),
+        const OcrFailure('Unable to prepare the receipt image.'),
+      ],
+      verify: (_) {
+        verifyNever(() => scanReceipt(any()));
+      },
     );
 
     blocTest<OcrBloc, OcrState>(
