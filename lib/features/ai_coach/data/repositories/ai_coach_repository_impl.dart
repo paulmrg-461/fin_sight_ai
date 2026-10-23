@@ -86,10 +86,7 @@ class AiCoachRepositoryImpl implements AiCoachRepository {
       return Right(await _datasource.callGroqApi(prompt, context));
     } on ServerException catch (exception) {
       return Left(
-        ServerFailure(
-          'Unable to reach the AI coach. Please try again.',
-          code: exception.code,
-        ),
+        ServerFailure(_messageFor(exception.code), code: exception.code),
       );
     } catch (_) {
       return const Left(
@@ -99,6 +96,19 @@ class AiCoachRepositoryImpl implements AiCoachRepository {
         ),
       );
     }
+  }
+
+  String _messageFor(String? code) {
+    return switch (code) {
+      'groq_not_configured' =>
+        'The AI coach is not configured. Set GROQ_API_KEY and restart the app.',
+      'groq_http_401' || 'groq_http_403' =>
+        'The AI coach API key was rejected. Check GROQ_API_KEY.',
+      'groq_http_404' =>
+        'The AI coach model is unavailable. Update the configured model.',
+      'groq_timeout' => 'The AI coach timed out. Please try again.',
+      _ => 'Unable to reach the AI coach. Please try again.',
+    };
   }
 
   FinancialInsightEntity _toEntity(ParsedInsight insight) {

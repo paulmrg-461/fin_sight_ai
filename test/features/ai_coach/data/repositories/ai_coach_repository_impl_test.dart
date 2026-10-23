@@ -114,6 +114,27 @@ void main() {
       expect(failure?.message, isNot(contains('Timeout')));
     });
 
+    test('explains missing configuration', () async {
+      when(() => datasource.callGroqApi(any(), any())).thenThrow(
+        const ServerException('Missing.', code: 'groq_not_configured'),
+      );
+
+      final result = await repository.getFinancialInsights('context');
+
+      final failure = result.getLeft().toNullable();
+      expect(failure?.code, 'groq_not_configured');
+      expect(failure?.message, contains('GROQ_API_KEY'));
+    });
+
+    test('explains a rejected API key', () async {
+      when(() => datasource.callGroqApi(any(), any()))
+          .thenThrow(const ServerException('Rejected.', code: 'groq_http_401'));
+
+      final result = await repository.getFinancialInsights('context');
+
+      expect(result.getLeft().toNullable()?.message, contains('API key'));
+    });
+
     test('maps unexpected errors to ai_coach_failed', () async {
       when(() => datasource.callGroqApi(any(), any()))
           .thenThrow(StateError('boom'));

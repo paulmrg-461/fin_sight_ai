@@ -15,7 +15,7 @@ class GroqApiDatasource implements AiCoachDatasource {
 
   static const String endpoint =
       'https://api.groq.com/openai/v1/chat/completions';
-  static const String model = 'llama-3.3-70b-versatile';
+  static const String model = 'openai/gpt-oss-20b';
   static const Duration timeout = Duration(seconds: 15);
   static const String systemPrompt =
       'You are FinSight AI, a precise personal finance coach. '
