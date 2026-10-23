@@ -51,7 +51,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - [x] `SyncNowUseCase`, `GetSyncStatusUseCase`, `SyncBloc`, `SyncStatusChip`.
 - [x] DI: boxes, module providers, app/main wiring.
 - [x] Tests: queue, remote HTTP, sync repository, bloc, repository enqueue paths.
-- [x] Docs: `SPEC-sync.md`, ARCHITECTURE, README, tasks.
+- [x] Docs: `specs/SPEC-sync.md`, ARCHITECTURE, README, tasks.
 - [x] Supabase Auth (GoTrue REST), secure session storage, refresh, login UI.
 - [x] JWT-authenticated sync with offline/unauthenticated reporting.
 - [x] RLS verification SQL + `supabase/verify_rls.sh`.

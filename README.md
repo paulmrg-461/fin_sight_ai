@@ -38,12 +38,13 @@ lib/
     ├── ai_coach/{domain,data,presentation}
     ├── dashboard/{domain,data,presentation}
     └── sync/{domain,data,presentation}
+specs/                           # Feature specifications
 supabase/migrations/             # Postgres schema + RLS + tombstones
 supabase/tests/rls_test.sql      # Real-database RLS isolation checks
 .github/workflows/ci.yml         # Analyze + unit + Linux integration tests
 ```
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) and the `SPEC-*.md` files for contracts.
+See [ARCHITECTURE.md](ARCHITECTURE.md) and the [specs](specs/) directory for feature contracts.
 
 ## Setup
 
