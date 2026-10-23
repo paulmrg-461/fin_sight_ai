@@ -19,7 +19,7 @@ _Last updated: 2026-10-22. Read this before starting a new session._
 - Gates: `flutter analyze` clean, 324 unit/widget tests, 7 integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
-## Current slice: Supabase sync (IMPLEMENTED, pending commit/push)
+## Current slice: Auth + tombstones + budgets + CI (IMPLEMENTED, pending commit/push)
 
 Goal: queue local writes offline, push them to Supabase, pull remote changes, and resolve conflicts last-write-wins.
 
@@ -30,12 +30,14 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - Queue lives in `lib/core/sync/sync_operation.dart`; key = `<entityType>:<entityId>` so repeated edits collapse.
 - Sync scope: **transactions and debts**. Receipts remain local-only for now.
 - Conflict policy: if remote `updatedAt` is newer than the local payload, remote wins and is written locally; otherwise push local.
-- Deletes are pushed immediately; remote deletes from other devices are not pulled (documented limitation until tombstones exist).
+- Deletes write `deletedAt` tombstones and are pushed/pulled; local queries hide tombstones while they remain for idempotent sync.
 - Local store remains the source of truth; a remote failure never rolls back a local write.
 - Sync queue failures must not fail the business write.
 - UI: app-level `SyncBloc` + dashboard AppBar `SyncStatusChip` (manual sync + pending count), auto-sync status on startup.
-- Hive boxes to add: `sync_queue`, `sync_meta`.
-- SQL migration will live in `supabase/migrations/0001_init.sql`; RLS/auth slice is still pending, so real sync requires configured Supabase auth.
+- Hive boxes: `sync_queue`, `sync_meta`, `budgets`.
+- Auth: Supabase GoTrue REST + `flutter_secure_storage`; sync uses the access token and reports unauthenticated state.
+- Budgets are local-only for now; aggregation comes from `TransactionRepository`.
+- SQL: `0001_init.sql`, `0002_tombstones.sql`, RLS test script.
 
 ### Progress
 
@@ -50,24 +52,30 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - [x] DI: boxes, module providers, app/main wiring.
 - [x] Tests: queue, remote HTTP, sync repository, bloc, repository enqueue paths.
 - [x] Docs: `SPEC-sync.md`, ARCHITECTURE, README, tasks.
+- [x] Supabase Auth (GoTrue REST), secure session storage, refresh, login UI.
+- [x] JWT-authenticated sync with offline/unauthenticated reporting.
+- [x] RLS verification SQL + `supabase/verify_rls.sh`.
+- [x] Soft-delete tombstones for transactions and debts.
+- [x] Budgets/categories slice (domain/data/presentation + route).
+- [x] GitHub Actions CI.
 - [x] `flutter analyze`, unit + integration tests.
 - [x] Commit + push.
 
-## Verification (sync slice)
+## Verification
 
 - `flutter analyze` clean.
-- 374 unit/widget tests passing.
-- 7 integration tests passing on Linux.
-- Coverage: sync domain 100%, sync data 91.5%, core 90.1%.
-- SQL migration: `supabase/migrations/0001_init.sql`.
+- 467 unit/widget tests passing.
+- 9 integration tests passing on Linux.
+- Coverage: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/91.8%, core 91.6%.
+- SQL: `0001_init.sql`, `0002_tombstones.sql`, `tests/rls_test.sql`.
 
-## Known gaps / next after sync
+## Known gaps / next
 
-1. Supabase auth (anonymous or email) + RLS verification against a real project.
-2. Tombstones for remote deletes.
+1. Run the RLS script against a real Supabase project (needs credentials).
+2. Sync budgets and receipt metadata.
 3. Receipt image persistence (currently stores only the picked path).
-4. Budgets/categories slice.
-5. CI workflow for analyze + unit + integration tests.
+4. Tombstone compaction and sync backoff.
+5. Streaming AI responses and conversation memory.
 6. Money as integer minor units instead of `double`.
 
 ## Conventions to keep

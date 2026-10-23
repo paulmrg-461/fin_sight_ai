@@ -6,6 +6,8 @@ import '../core/theme/app_theme.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/utils/app_constants.dart';
 import '../features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/budgets/presentation/bloc/budget_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
@@ -24,6 +26,8 @@ class FinSightApp extends StatelessWidget {
     required this.aiCoachBloc,
     required this.dashboardBloc,
     required this.syncBloc,
+    required this.authBloc,
+    required this.budgetBloc,
   });
 
   final ThemeController themeController;
@@ -34,6 +38,8 @@ class FinSightApp extends StatelessWidget {
   final AiCoachBloc aiCoachBloc;
   final DashboardBloc dashboardBloc;
   final SyncBloc syncBloc;
+  final AuthBloc authBloc;
+  final BudgetBloc budgetBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +51,8 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<AiCoachBloc>.value(value: aiCoachBloc),
         BlocProvider<DashboardBloc>.value(value: dashboardBloc),
         BlocProvider<SyncBloc>.value(value: syncBloc),
+        BlocProvider<AuthBloc>.value(value: authBloc),
+        BlocProvider<BudgetBloc>.value(value: budgetBloc),
       ],
       child: ListenableBuilder(
         listenable: themeController,

@@ -5,11 +5,13 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 ## Features
 
 - **Dashboard** — income/expense/balance/savings KPIs, category pie chart, monthly comparison bar chart, recent activity, date-range filtering, and pull-to-refresh.
-- **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and deletion.
+- **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
+- **Budgets** — monthly category limits with spending progress, over-budget highlighting, and category suggestions.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, Hive persistence, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
-- **Sync** — offline change queue, Supabase PostgREST push/pull, last-write-wins conflict resolution, pending-count indicator, and manual/startup sync.
+- **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
+- **Sync** — authenticated Supabase PostgREST push/pull, offline queue, last-write-wins conflicts, tombstones, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
 
 ## Architecture
@@ -28,21 +30,24 @@ lib/
 │   ├── usecase/                 # UseCase / Result contracts
 │   └── utils/                   # Env, clock, constants, formatters
 └── features/
+    ├── auth/{domain,data,presentation}
     ├── transactions/{domain,data,presentation}
     ├── debts/{domain,data,presentation}
+    ├── budgets/{domain,data,presentation}
     ├── ocr/{domain,data,presentation}
     ├── ai_coach/{domain,data,presentation}
     ├── dashboard/{domain,data,presentation}
-    ├── sync/{domain,data,presentation}
-    └── ... (presentation-only feature shells)
-supabase/migrations/             # Postgres schema + RLS policies
+    └── sync/{domain,data,presentation}
+supabase/migrations/             # Postgres schema + RLS + tombstones
+supabase/tests/rls_test.sql      # Real-database RLS isolation checks
+.github/workflows/ci.yml         # Analyze + unit + Linux integration tests
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) and the `SPEC-*.md` files for contracts.
 
 ## Setup
 
-Requirements: Flutter 3.50 beta / Dart 3.14. OCR runs on Android/iOS via Google ML Kit; integration tests replace OCR, Groq, image picking, and sync with fakes.
+Requirements: Flutter 3.50 beta / Dart 3.14. OCR runs on Android/iOS via Google ML Kit; integration tests replace OCR, Groq, image picking, and auth with fakes.
 
 ```bash
 flutter pub get
@@ -61,8 +66,16 @@ flutter run \
 
 ### Supabase
 
-1. Apply [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) to create `transactions` and `debts` with RLS.
-2. Sync requires an authenticated Supabase session; the auth slice is still pending. Without credentials or auth, the app stays fully offline and the dashboard shows a cloud-off indicator.
+1. Apply the migrations: `supabase/migrations/0001_init.sql` and `0002_tombstones.sql` (or `supabase db push`).
+2. Sign in from the dashboard account button. Without a session the app stays offline and the sync chip says “Sign in to sync”.
+3. Verify RLS against a real database:
+
+```bash
+export SUPABASE_DB_URL="postgresql://postgres:...@db.<project>.supabase.co:5432/postgres"
+./supabase/verify_rls.sh
+```
+
+See [supabase/README.md](supabase/README.md) for details.
 
 ## Quality gates
 
@@ -74,10 +87,11 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **374 unit/widget tests** passing.
-- **7 integration tests** passing on Linux desktop.
-- Coverage: transactions 100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100%, dashboard 93.1/97.6%, sync 100/91.5%, core 90.1%.
-- Integration benchmarks: app launch + dashboard ≈ 160–290 ms, transactions render ≈ 230–280 ms.
+- **467 unit/widget tests** passing.
+- **9 integration tests** passing on Linux desktop.
+- Coverage: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/91.8%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.6%.
+- Integration benchmarks: app launch + dashboard ≈ 175 ms, transactions render ≈ 250 ms.
+- CI: GitHub Actions runs analyze, coverage, and Linux integration tests under Xvfb.
 
 ## Routes
 
@@ -86,8 +100,10 @@ Current status:
 | `dashboard` | `/dashboard` |
 | `transactions` | `/transactions` |
 | `debts` | `/debts` |
+| `budgets` | `/budgets` |
 | `ocr` | `/ocr` |
 | `ai-coach` | `/ai-coach` |
+| `login` | `/login` |
 
 ## Conventions
 

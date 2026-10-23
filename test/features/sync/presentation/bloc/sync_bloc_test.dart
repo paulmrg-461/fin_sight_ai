@@ -21,6 +21,7 @@ void main() {
   const status = SyncStatusEntity(
     pendingCount: 2,
     isConfigured: true,
+    isAuthenticated: true,
     lastSyncedAt: null,
   );
 
@@ -30,6 +31,7 @@ void main() {
     conflictsResolved: 0,
     pendingOperations: 0,
     isConfigured: true,
+    isAuthenticated: true,
     completedAt: DateTime.utc(2026, 10, 22),
   );
 

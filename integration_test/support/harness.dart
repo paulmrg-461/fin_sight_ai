@@ -3,12 +3,24 @@ import 'dart:io';
 import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
+import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
+import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
+import 'package:fin_sight_ai/features/budgets/data/datasources/hive_budget_local_data_source.dart';
+import 'package:fin_sight_ai/features/budgets/data/repositories/budget_repository_impl.dart';
+import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_event.dart';
 import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -47,6 +59,7 @@ import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -70,6 +83,7 @@ class IntegrationHarness {
   late Box<dynamic> _receiptsBox;
   late Box<dynamic> _syncQueueBox;
   late Box<dynamic> _syncMetaBox;
+  late Box<dynamic> _budgetsBox;
 
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
@@ -87,6 +101,8 @@ class IntegrationHarness {
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
+  late AuthBloc authBloc;
+  late BudgetBloc budgetBloc;
   late GoRouter router;
 
   static Future<IntegrationHarness> create() async {
@@ -106,6 +122,7 @@ class IntegrationHarness {
     _receiptsBox = await Hive.openBox<dynamic>('receipts');
     _syncQueueBox = await Hive.openBox<dynamic>('sync_queue');
     _syncMetaBox = await Hive.openBox<dynamic>('sync_meta');
+    _budgetsBox = await Hive.openBox<dynamic>('budgets');
   }
 
   void _wire() {
@@ -173,16 +190,35 @@ class IntegrationHarness {
     );
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
+    final authRepository = _FakeAuthRepository();
     final syncRepository = SyncRepositoryImpl(
       HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox),
-      SupabaseRestSyncDataSource(http.Client(), appEnv),
+      SupabaseRestSyncDataSource(http.Client(), appEnv, authRepository),
       HiveTransactionLocalDataSource(_transactionsBox),
       HiveDebtLocalDataSource(_debtsBox),
       appEnv,
+      authRepository,
     );
     syncBloc = SyncBloc(
       SyncNowUseCase(syncRepository),
       GetSyncStatusUseCase(syncRepository),
+    );
+    authBloc = AuthBloc(
+      SignInUseCase(authRepository),
+      SignUpUseCase(authRepository),
+      SignOutUseCase(authRepository),
+      RestoreSessionUseCase(authRepository),
+    );
+
+    final budgetRepository = BudgetRepositoryImpl(
+      HiveBudgetLocalDataSource(_budgetsBox),
+      transactionRepository,
+    );
+    budgetBloc = BudgetBloc(
+      AddBudgetUseCase(budgetRepository),
+      DeleteBudgetUseCase(budgetRepository),
+      GetBudgetProgressUseCase(budgetRepository),
+      GetCategoriesUseCase(budgetRepository),
     );
 
     router = buildRouter(
@@ -201,6 +237,8 @@ class IntegrationHarness {
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
+      authBloc: authBloc,
+      budgetBloc: budgetBloc,
     );
   }
 
@@ -211,6 +249,8 @@ class IntegrationHarness {
     ocrBloc.add(const LoadReceipts());
     dashboardBloc.add(const LoadDashboard());
     syncBloc.add(const LoadSyncStatus());
+    authBloc.add(const RestoreAuthSession());
+    budgetBloc.add(const LoadBudgets());
     await tester.pump();
   }
 
@@ -221,6 +261,7 @@ class IntegrationHarness {
     await _receiptsBox.close();
     await _syncQueueBox.close();
     await _syncMetaBox.close();
+    await _budgetsBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -233,6 +274,8 @@ class IntegrationHarness {
     await aiCoachBloc.close();
     await dashboardBloc.close();
     await syncBloc.close();
+    await authBloc.close();
+    await budgetBloc.close();
   }
 
   Future<void> dispose() async {
@@ -251,6 +294,9 @@ class IntegrationHarness {
     }
     if (_syncMetaBox.isOpen) {
       await _syncMetaBox.close();
+    }
+    if (_budgetsBox.isOpen) {
+      await _budgetsBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {
@@ -289,4 +335,53 @@ Future<void> pumpUntilGone(
     }
   }
   throw TestFailure('Timed out waiting for disappearance of: $finder');
+}
+
+class _FakeAuthRepository implements AuthRepository {
+  AuthSession? _session;
+
+  @override
+  String? get accessToken => _session?.accessToken;
+
+  @override
+  bool get isAuthenticated => _session != null;
+
+  AuthSession _buildSession(String email) {
+    return AuthSession(
+      accessToken: 'integration-access-token',
+      refreshToken: 'integration-refresh-token',
+      userId: 'integration-user',
+      email: email,
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    );
+  }
+
+  @override
+  ResultFuture<AuthSession> signIn({
+    required String email,
+    required String password,
+  }) async {
+    if (email.trim().isEmpty || password.length < 6) {
+      return const Left(
+        AuthFailure('Invalid credentials.', code: 'auth_invalid_credentials'),
+      );
+    }
+    _session = _buildSession(email.trim());
+    return Right(_session!);
+  }
+
+  @override
+  ResultFuture<AuthSession> signUp({
+    required String email,
+    required String password,
+  }) => signIn(email: email, password: password);
+
+  @override
+  ResultFuture<AuthSession?> restoreSession() async => const Right(null);
+
+  @override
+  ResultFuture<void> signOut() async {
+    _session = null;
+    return const Right(null);
+  }
 }

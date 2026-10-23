@@ -16,7 +16,8 @@ class HiveTransactionLocalDataSource implements TransactionLocalDataSource {
   @override
   Future<List<TransactionModel>> getTransactions() async {
     try {
-      return _readAll()..sort(_newestFirst);
+      return _readAll().where((transaction) => !transaction.isDeleted).toList()
+        ..sort(_newestFirst);
     } catch (_) {
       throw const CacheException(
         'Unable to read transactions from local storage.',
@@ -58,7 +59,9 @@ class HiveTransactionLocalDataSource implements TransactionLocalDataSource {
       return _readAll()
         ..removeWhere(
           (transaction) =>
-              transaction.date.isBefore(start) || transaction.date.isAfter(end),
+              transaction.isDeleted ||
+              transaction.date.isBefore(start) ||
+              transaction.date.isAfter(end),
         )
         ..sort(_newestFirst);
     } catch (_) {

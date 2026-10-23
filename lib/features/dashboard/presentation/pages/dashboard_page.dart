@@ -11,6 +11,7 @@ import '../bloc/dashboard_state.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
+import '../../../auth/presentation/widgets/account_button.dart';
 import '../../../sync/presentation/widgets/sync_status_chip.dart';
 import '../widgets/summary_cards.dart';
 
@@ -62,6 +63,7 @@ class DashboardPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('FinSight AI'),
             actions: [
+              const AccountButton(),
               const SyncStatusChip(),
               IconButton(
                 onPressed: () => _pickRange(context),
@@ -243,6 +245,11 @@ class _QuickActions extends StatelessWidget {
                   avatar: const Icon(Icons.account_balance_outlined, size: 18),
                   label: const Text('Debts'),
                   onPressed: () => onOpen(AppRoutes.debtsName),
+                ),
+                ActionChip(
+                  avatar: const Icon(Icons.pie_chart_outline, size: 18),
+                  label: const Text('Budgets'),
+                  onPressed: () => onOpen(AppRoutes.budgetsName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.document_scanner_outlined, size: 18),

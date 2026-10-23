@@ -20,6 +20,20 @@ import 'package:fin_sight_ai/features/ai_coach/data/datasources/groq_api_datasou
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/ai_coach_repository.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/secure_session_storage.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/session_storage.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/supabase_auth_data_source.dart';
+import 'package:fin_sight_ai/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fin_sight_ai/features/budgets/data/datasources/budget_local_data_source.dart';
+import 'package:fin_sight_ai/features/budgets/data/datasources/hive_budget_local_data_source.dart';
+import 'package:fin_sight_ai/features/budgets/data/repositories/budget_repository_impl.dart';
+import 'package:fin_sight_ai/features/budgets/domain/repositories/budget_repository.dart';
+import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
 import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -151,6 +165,23 @@ GROQ_API_KEY=groq-key
     expect(getIt<SyncNowUseCase>(), isNotNull);
     expect(getIt<GetSyncStatusUseCase>(), isNotNull);
     expect(getIt<SyncBloc>(), isA<SyncBloc>());
+
+    expect(getIt<SessionStorage>(), isA<SecureSessionStorage>());
+    expect(getIt<AuthRemoteDataSource>(), isA<SupabaseAuthDataSource>());
+    expect(getIt<AuthRepository>(), isA<AuthRepositoryImpl>());
+    expect(getIt<SignInUseCase>(), isNotNull);
+    expect(getIt<SignUpUseCase>(), isNotNull);
+    expect(getIt<SignOutUseCase>(), isNotNull);
+    expect(getIt<RestoreSessionUseCase>(), isNotNull);
+    expect(getIt<AuthBloc>(), isA<AuthBloc>());
+
+    expect(getIt<BudgetLocalDataSource>(), isA<HiveBudgetLocalDataSource>());
+    expect(getIt<BudgetRepository>(), isA<BudgetRepositoryImpl>());
+    expect(getIt<AddBudgetUseCase>(), isNotNull);
+    expect(getIt<DeleteBudgetUseCase>(), isNotNull);
+    expect(getIt<GetBudgetProgressUseCase>(), isNotNull);
+    expect(getIt<GetCategoriesUseCase>(), isNotNull);
+    expect(getIt<BudgetBloc>(), isA<BudgetBloc>());
   });
 
   test('resolving before configuration throws', () async {

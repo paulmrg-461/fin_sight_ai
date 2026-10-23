@@ -7,6 +7,7 @@ import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/app_env.dart';
 import '../../../../core/utils/clock.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../debts/data/datasources/debt_local_data_source.dart';
 import '../../../debts/data/models/debt_model.dart';
 import '../../../transactions/data/datasources/transaction_local_data_source.dart';
@@ -24,7 +25,8 @@ class SyncRepositoryImpl implements SyncRepository {
     this._remoteDataSource,
     this._transactionLocalDataSource,
     this._debtLocalDataSource,
-    this._env, {
+    this._env,
+    this._auth, {
     this.clock = const Clock(),
   });
 
@@ -38,6 +40,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final TransactionLocalDataSource _transactionLocalDataSource;
   final DebtLocalDataSource _debtLocalDataSource;
   final AppEnv _env;
+  final AuthRepository _auth;
   final Clock clock;
 
   @override
@@ -47,6 +50,7 @@ class SyncRepositoryImpl implements SyncRepository {
         SyncStatusEntity(
           pendingCount: await _localDataSource.pendingCount(),
           isConfigured: _env.hasSupabase,
+          isAuthenticated: _auth.isAuthenticated,
           lastSyncedAt: await _localDataSource.lastSyncedAt(),
         ),
       );
@@ -66,14 +70,15 @@ class SyncRepositoryImpl implements SyncRepository {
   ResultFuture<SyncReport> syncNow() async {
     try {
       final pending = await _localDataSource.pending();
-      if (!_env.hasSupabase) {
+      if (!_env.hasSupabase || !_auth.isAuthenticated) {
         return Right(
           SyncReport(
             pushed: 0,
             pulled: 0,
             conflictsResolved: 0,
             pendingOperations: pending.length,
-            isConfigured: false,
+            isConfigured: _env.hasSupabase,
+            isAuthenticated: _auth.isAuthenticated,
             completedAt: clock.now(),
           ),
         );
@@ -107,6 +112,7 @@ class SyncRepositoryImpl implements SyncRepository {
           conflictsResolved: conflicts,
           pendingOperations: await _localDataSource.pendingCount(),
           isConfigured: true,
+          isAuthenticated: true,
           completedAt: clock.now(),
         ),
       );

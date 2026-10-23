@@ -15,6 +15,7 @@ class TransactionEntity extends Entity {
     this.receiptImagePath,
     this.updatedAt,
     this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -37,6 +38,11 @@ class TransactionEntity extends Entity {
   /// Whether the remote backend already accepted this record.
   final bool isSynced;
 
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
   DateTime get lastModified => updatedAt ?? date;
 
   bool get isIncome => type == TransactionType.income;
@@ -56,6 +62,7 @@ class TransactionEntity extends Entity {
     String? receiptImagePath,
     DateTime? updatedAt,
     bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return TransactionEntity(
       id: id ?? this.id,
@@ -67,6 +74,7 @@ class TransactionEntity extends Entity {
       receiptImagePath: receiptImagePath ?? this.receiptImagePath,
       updatedAt: updatedAt ?? this.updatedAt,
       isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -82,7 +90,8 @@ class TransactionEntity extends Entity {
           other.date == date &&
           other.receiptImagePath == receiptImagePath &&
           other.updatedAt == updatedAt &&
-          other.isSynced == isSynced;
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
   int get hashCode => Object.hash(
@@ -95,6 +104,7 @@ class TransactionEntity extends Entity {
     receiptImagePath,
     updatedAt,
     isSynced,
+    deletedAt,
   );
 
   @override

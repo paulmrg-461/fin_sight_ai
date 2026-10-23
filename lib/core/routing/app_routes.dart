@@ -14,4 +14,10 @@ abstract final class AppRoutes {
 
   static const String aiCoachName = 'ai-coach';
   static const String aiCoachPath = '/ai-coach';
+
+  static const String loginName = 'login';
+  static const String loginPath = '/login';
+
+  static const String budgetsName = 'budgets';
+  static const String budgetsPath = '/budgets';
 }

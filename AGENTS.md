@@ -66,6 +66,7 @@ Current storage is **Hive CE**, accessed only through a feature-owned local data
 - **Structure:** Arrange → Act → Assert. One behavior per test. Test names state the expected behavior.
 - **Integration coverage:** critical user flows (add transaction, scan receipt, add debt, AI insights, date filtering, restart persistence) run through `integration_test/` with real local storage and faked external services.
 - **Performance smoke checks:** integration tests record launch and screen render timings with explicit upper bounds.
+- **CI gate:** `.github/workflows/ci.yml` runs format checks, analyze, unit coverage, and Linux integration tests; keep it green.
 - **No skipped tests, no deleted assertions, no `@ts-ignore` equivalents** to force a green build.
 
 ---
@@ -144,3 +145,6 @@ For an **offline-first** client where local storage answers the vast majority of
 - Validate all untrusted input at the domain boundary.
 - Do not log financial amounts, notes, tokens, or personal identifiers.
 - Storage paths, retry policies, and timeouts are configuration values, not scattered literals.
+- Sessions live in platform secure storage; never persist access/refresh tokens in Hive or logs.
+- Supabase RLS stays enabled. Verify policies with `supabase/tests/rls_test.sql` / `supabase/verify_rls.sh` before production.
+- Soft-deleted records keep their tombstones until a compaction job exists; never hard-delete synced rows.

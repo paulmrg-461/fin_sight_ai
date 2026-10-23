@@ -45,6 +45,7 @@ class DebtEntity extends Entity {
     this.paymentHistory = const [],
     this.updatedAt,
     this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -70,6 +71,11 @@ class DebtEntity extends Entity {
   /// Whether the remote backend already accepted this record.
   final bool isSynced;
 
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
   DateTime get lastModified => updatedAt ?? dueDate;
 
   double get paidAmount =>
@@ -93,6 +99,7 @@ class DebtEntity extends Entity {
     List<PaymentRecord>? paymentHistory,
     DateTime? updatedAt,
     bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return DebtEntity(
       id: id ?? this.id,
@@ -106,6 +113,7 @@ class DebtEntity extends Entity {
       paymentHistory: paymentHistory ?? this.paymentHistory,
       updatedAt: updatedAt ?? this.updatedAt,
       isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -123,6 +131,7 @@ class DebtEntity extends Entity {
           other.status == status &&
           other.updatedAt == updatedAt &&
           other.isSynced == isSynced &&
+          other.deletedAt == deletedAt &&
           _sameHistory(other.paymentHistory, paymentHistory);
 
   @override
@@ -137,6 +146,7 @@ class DebtEntity extends Entity {
     status,
     updatedAt,
     isSynced,
+    deletedAt,
     Object.hashAll(paymentHistory),
   );
 

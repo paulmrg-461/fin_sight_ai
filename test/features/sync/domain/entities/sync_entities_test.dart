@@ -10,6 +10,7 @@ void main() {
     conflictsResolved: 1,
     pendingOperations: 0,
     isConfigured: true,
+    isAuthenticated: true,
     completedAt: completedAt,
   );
 
@@ -26,6 +27,7 @@ void main() {
             conflictsResolved: 1,
             pendingOperations: 0,
             isConfigured: true,
+            isAuthenticated: true,
             completedAt: completedAt,
           ),
         ),
@@ -39,6 +41,7 @@ void main() {
             conflictsResolved: 1,
             pendingOperations: 0,
             isConfigured: false,
+            isAuthenticated: true,
             completedAt: completedAt,
           ),
         ),
@@ -52,6 +55,7 @@ void main() {
             conflictsResolved: 1,
             pendingOperations: 0,
             isConfigured: true,
+            isAuthenticated: true,
             completedAt: completedAt.add(const Duration(minutes: 1)),
           ),
         ),
@@ -68,21 +72,41 @@ void main() {
   });
 
   group('SyncStatusEntity', () {
-    const status = SyncStatusEntity(pendingCount: 3, isConfigured: true);
+    const status = SyncStatusEntity(
+      pendingCount: 3,
+      isConfigured: true,
+      isAuthenticated: true,
+    );
 
     test('uses value equality including the last sync timestamp', () {
       expect(
         status,
-        const SyncStatusEntity(pendingCount: 3, isConfigured: true),
+        const SyncStatusEntity(
+          pendingCount: 3,
+          isConfigured: true,
+          isAuthenticated: true,
+        ),
       );
       expect(status.hashCode, isNonZero);
       expect(
         status,
-        isNot(const SyncStatusEntity(pendingCount: 0, isConfigured: true)),
+        isNot(
+          const SyncStatusEntity(
+            pendingCount: 0,
+            isConfigured: true,
+            isAuthenticated: true,
+          ),
+        ),
       );
       expect(
         status,
-        isNot(const SyncStatusEntity(pendingCount: 3, isConfigured: false)),
+        isNot(
+          const SyncStatusEntity(
+            pendingCount: 3,
+            isConfigured: false,
+            isAuthenticated: true,
+          ),
+        ),
       );
       expect(
         status,
@@ -90,6 +114,7 @@ void main() {
           SyncStatusEntity(
             pendingCount: 3,
             isConfigured: true,
+            isAuthenticated: true,
             lastSyncedAt: completedAt,
           ),
         ),

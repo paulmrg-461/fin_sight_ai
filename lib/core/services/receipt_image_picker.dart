@@ -15,9 +15,12 @@ abstract interface class ReceiptImagePicker {
 /// `image_picker` implementation for Android, iOS, and desktop where supported.
 @LazySingleton(as: ReceiptImagePicker)
 class ImagePickerReceiptImagePicker implements ReceiptImagePicker {
-  ImagePickerReceiptImagePicker();
+  ImagePickerReceiptImagePicker() : _picker = ImagePicker();
 
-  final ImagePicker _picker = ImagePicker();
+  /// Test seam: inject a fake picker implementation.
+  ImagePickerReceiptImagePicker.withPicker(this._picker);
+
+  final ImagePicker _picker;
 
   @override
   Future<String?> pick(ReceiptImageSource source) async {

@@ -105,6 +105,15 @@ void main() {
       expect(debts.single.remainingAmount, 0);
     });
 
+    test('hides soft-deleted tombstones', () async {
+      final tombstone = DebtModel.fromEntity(
+        buildModel().copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveDebt(tombstone);
+
+      expect(await dataSource.getDebts(), isEmpty);
+    });
+
     test('deletes a debt', () async {
       await dataSource.saveDebt(buildModel());
 

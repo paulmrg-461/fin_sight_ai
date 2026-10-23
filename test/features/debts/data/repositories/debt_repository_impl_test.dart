@@ -133,16 +133,33 @@ void main() {
       expect(result.getLeft().toNullable()?.code, 'cache_read_failed');
     });
 
-    test('deletes a debt', () async {
-      when(() => localDataSource.deleteDebt('debt-1')).thenAnswer((_) async {});
+    test('writes a tombstone instead of hard-deleting', () async {
+      when(() => localDataSource.getDebts())
+          .thenAnswer((_) async => [buildModel()]);
+      when(() => localDataSource.saveDebt(any())).thenAnswer((_) async {});
 
       final result = await repository.deleteDebt('debt-1');
 
       expect(result.isRight(), isTrue);
+      final saved =
+          verify(() => localDataSource.saveDebt(captureAny())).captured.single
+              as DebtModel;
+      expect(saved.isDeleted, isTrue);
+      expect(saved.isSynced, isFalse);
+      verifyNever(() => localDataSource.deleteDebt(any()));
+    });
+
+    test('ignores missing records', () async {
+      when(() => localDataSource.getDebts()).thenAnswer((_) async => []);
+
+      final result = await repository.deleteDebt('missing');
+
+      expect(result.isRight(), isTrue);
+      verifyNever(() => localDataSource.saveDebt(any()));
     });
 
     test('maps delete failures to CacheFailure', () async {
-      when(() => localDataSource.deleteDebt(any())).thenThrow(
+      when(() => localDataSource.getDebts()).thenThrow(
         const CacheException('Missing.', code: 'cache_delete_failed'),
       );
 
@@ -216,8 +233,10 @@ void main() {
       expect(operation.payload['updatedAt'], now.toUtc().toIso8601String());
     });
 
-    test('enqueues a delete', () async {
-      when(() => localDataSource.deleteDebt('debt-1')).thenAnswer((_) async {});
+    test('enqueues a tombstone upsert', () async {
+      when(() => localDataSource.getDebts())
+          .thenAnswer((_) async => [buildModel()]);
+      when(() => localDataSource.saveDebt(any())).thenAnswer((_) async {});
       final repository = DebtRepositoryImpl(
         localDataSource,
         syncQueue: queue,
@@ -229,8 +248,9 @@ void main() {
       final operation =
           verify(() => queue.enqueue(captureAny())).captured.single
               as SyncOperation;
-      expect(operation.operationType, SyncOperationType.delete);
+      expect(operation.operationType, SyncOperationType.upsert);
       expect(operation.entityId, 'debt-1');
+      expect(operation.payload['deletedAt'], isNotNull);
     });
 
     test('a queue failure does not fail the local write', () async {

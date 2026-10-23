@@ -36,12 +36,29 @@ class DebtRepositoryImpl implements DebtRepository {
   @override
   ResultFuture<void> deleteDebt(String id) async {
     try {
-      await _localDataSource.deleteDebt(id);
+      final models = await _localDataSource.getDebts();
+      DebtModel? existing;
+      for (final model in models) {
+        if (model.id == id) {
+          existing = model;
+          break;
+        }
+      }
+      if (existing == null) {
+        return const Right(null);
+      }
+
+      final now = clock.now();
+      final tombstone = DebtModel.fromEntity(
+        existing.copyWith(updatedAt: now, isSynced: false, deletedAt: now),
+      );
+      await _localDataSource.saveDebt(tombstone);
       await _enqueue(
-        SyncOperation.delete(
+        SyncOperation.upsert(
           entityType: SyncEntityType.debt,
-          entityId: id,
-          queuedAt: clock.now(),
+          entityId: tombstone.id,
+          payload: tombstone.toJson(),
+          queuedAt: now,
         ),
       );
       return const Right(null);

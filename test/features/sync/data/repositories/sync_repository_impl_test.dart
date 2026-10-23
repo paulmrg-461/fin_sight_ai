@@ -3,6 +3,7 @@ import 'package:fin_sight_ai/core/error/exceptions.dart';
 import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
+import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart';
@@ -22,6 +23,8 @@ class MockTransactionLocalDataSource extends Mock
     implements TransactionLocalDataSource {}
 
 class MockDebtLocalDataSource extends Mock implements DebtLocalDataSource {}
+
+class MockAuthRepository extends Mock implements AuthRepository {}
 
 class FixedClock extends Clock {
   const FixedClock(this.value);
@@ -83,14 +86,21 @@ void main() {
   late MockSyncRemoteDataSource remote;
   late MockTransactionLocalDataSource transactionLocal;
   late MockDebtLocalDataSource debtLocal;
+  late MockAuthRepository auth;
 
-  SyncRepositoryImpl buildRepository({AppEnv env = emptyEnv}) {
+  SyncRepositoryImpl buildRepository({
+    AppEnv env = emptyEnv,
+    bool authenticated = true,
+  }) {
+    when(() => auth.isAuthenticated).thenReturn(authenticated);
+    when(() => auth.accessToken).thenReturn(authenticated ? 'token' : null);
     return SyncRepositoryImpl(
       local,
       remote,
       transactionLocal,
       debtLocal,
       env,
+      auth,
       clock: FixedClock(now),
     );
   }
@@ -113,6 +123,7 @@ void main() {
     remote = MockSyncRemoteDataSource();
     transactionLocal = MockTransactionLocalDataSource();
     debtLocal = MockDebtLocalDataSource();
+    auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
     when(() => local.pendingCount()).thenAnswer((_) async => 0);
@@ -147,6 +158,7 @@ void main() {
       final status = result.getOrElse((_) => fail('Expected status'));
       expect(status.pendingCount, 3);
       expect(status.isConfigured, isTrue);
+      expect(status.isAuthenticated, isTrue);
       expect(status.lastSyncedAt, DateTime.utc(2026, 10, 20));
     });
 
@@ -170,12 +182,34 @@ void main() {
       );
       when(() => local.pending()).thenAnswer((_) async => [operation]);
 
-      final result = await buildRepository().syncNow();
+      final result = await buildRepository(authenticated: false).syncNow();
 
       final report = result.getOrElse((_) => fail('Expected report'));
       expect(report.isConfigured, isFalse);
+      expect(report.isAuthenticated, isFalse);
       expect(report.pendingOperations, 1);
       expect(report.pushed, 0);
+      verifyNever(() => remote.upsertTransaction(any()));
+    });
+
+    test('keeps the queue when the user is not authenticated', () async {
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.transaction,
+        entityId: 'tx-1',
+        payload: buildTransaction().toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+
+      final result = await buildRepository(
+        env: configuredEnv(),
+        authenticated: false,
+      ).syncNow();
+
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.isConfigured, isTrue);
+      expect(report.isAuthenticated, isFalse);
+      expect(report.pendingOperations, 1);
       verifyNever(() => remote.upsertTransaction(any()));
     });
 
@@ -197,6 +231,7 @@ void main() {
       expect(report.pulled, 0);
       expect(report.conflictsResolved, 0);
       expect(report.pendingOperations, 0);
+      expect(report.isAuthenticated, isTrue);
 
       verify(() => remote.upsertTransaction(any())).called(1);
       verify(() => local.remove('transaction:tx-1')).called(1);

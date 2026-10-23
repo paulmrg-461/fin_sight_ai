@@ -41,3 +41,8 @@ final class CacheFailure extends Failure {
 final class ValidationFailure extends Failure {
   const ValidationFailure(super.message, {super.code});
 }
+
+/// Authentication failed, expired, or is required for the operation.
+final class AuthFailure extends Failure {
+  const AuthFailure(super.message, {super.code});
+}

@@ -84,6 +84,22 @@ void main() {
       expect(transactions.single.amount, 99);
     });
 
+    test('hides soft-deleted tombstones from queries', () async {
+      final tombstone = TransactionModel.fromEntity(
+        buildModel().copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveTransaction(tombstone);
+
+      expect(await dataSource.getTransactions(), isEmpty);
+      expect(
+        await dataSource.getTransactionsByDateRange(
+          start: DateTime.utc(2026, 1, 1),
+          end: DateTime.utc(2026, 12, 31),
+        ),
+        isEmpty,
+      );
+    });
+
     test('deletes a transaction', () async {
       await dataSource.saveTransaction(buildModel());
 

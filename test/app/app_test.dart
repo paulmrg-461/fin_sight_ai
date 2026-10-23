@@ -9,6 +9,12 @@ import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_state.dart';
+import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
+import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_state.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -80,6 +86,22 @@ class MockSyncNow extends Mock implements SyncNowUseCase {}
 
 class MockGetSyncStatus extends Mock implements GetSyncStatusUseCase {}
 
+class MockSignIn extends Mock implements SignInUseCase {}
+
+class MockSignUp extends Mock implements SignUpUseCase {}
+
+class MockSignOut extends Mock implements SignOutUseCase {}
+
+class MockRestoreSession extends Mock implements RestoreSessionUseCase {}
+
+class MockAddBudget extends Mock implements AddBudgetUseCase {}
+
+class MockDeleteBudget extends Mock implements DeleteBudgetUseCase {}
+
+class MockGetBudgetProgress extends Mock implements GetBudgetProgressUseCase {}
+
+class MockGetCategories extends Mock implements GetCategoriesUseCase {}
+
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
   @override
   Future<String?> pick(ReceiptImageSource source) async => null;
@@ -94,6 +116,8 @@ void main() {
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
+  late AuthBloc authBloc;
+  late BudgetBloc budgetBloc;
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -169,6 +193,18 @@ void main() {
     );
 
     syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
+    authBloc = AuthBloc(
+      MockSignIn(),
+      MockSignUp(),
+      MockSignOut(),
+      MockRestoreSession(),
+    );
+    budgetBloc = BudgetBloc(
+      MockAddBudget(),
+      MockDeleteBudget(),
+      MockGetBudgetProgress(),
+      MockGetCategories(),
+    );
   });
 
   Widget buildApp() {
@@ -181,6 +217,8 @@ void main() {
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
+      authBloc: authBloc,
+      budgetBloc: budgetBloc,
     );
   }
 
@@ -189,8 +227,16 @@ void main() {
       DashboardEmpty(start: DateTime.now(), end: DateTime.now()),
     );
     syncBloc.emit(
-      const SyncIdle(SyncStatusEntity(pendingCount: 0, isConfigured: true)),
+      const SyncIdle(
+        SyncStatusEntity(
+          pendingCount: 0,
+          isConfigured: true,
+          isAuthenticated: true,
+        ),
+      ),
     );
+    authBloc.emit(const AuthUnauthenticated());
+    budgetBloc.emit(const BudgetEmpty(categories: []));
     await tester.pumpWidget(buildApp());
     await tester.pump();
   }

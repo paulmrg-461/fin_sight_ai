@@ -10,7 +10,7 @@ Verify the complete FinSight AI user journey with the real widget graph, real Hi
 
 - Real Hive boxes (`transactions`, `debts`, `receipts`) in a temp directory.
 - Real repositories, use cases, blocs, router, and theme controller.
-- `FakeOcrDataSource`, `FakeGroqDatasource`, and `FakeReceiptImagePicker`.
+- `FakeOcrDataSource`, `FakeGroqDatasource`, `FakeReceiptImagePicker`, and a fake auth repository (no real Supabase project).
 
 External networks and platform plugins are never invoked. ML Kit, Groq, and image picking are replaced at their interfaces.
 
@@ -21,9 +21,11 @@ External networks and platform plugins are never invoked. ML Kit, Groq, and imag
 3. Scan a receipt with the fake picker/OCR; save it; an expense transaction is created automatically and the dashboard updates.
 4. Add a debt through the form; the card appears with repayment progress.
 5. Request AI insights; the mocked suggestion renders.
-6. Filter transactions by date range; only matching records remain.
-7. Restart persistence: close boxes/blocs, reopen the same Hive directory, rebuild the app, and verify transactions, debts, and receipts survive.
-8. Performance smoke benchmarks for launch/dashboard and transactions render.
+6. Add a budget and verify category spending progress.
+7. Sign in and out through the dashboard account button.
+8. Filter transactions by date range; only matching records remain.
+9. Restart persistence: close boxes/blocs, reopen the same Hive directory, rebuild the app, and verify transactions, debts, and receipts survive.
+10. Performance smoke benchmarks for launch/dashboard and transactions render.
 
 ## Commands
 
@@ -45,6 +47,7 @@ Thresholds: launch/dashboard `< 5000ms`, transactions render `< 3000ms`.
 - OCR text: `ACME MARKET`, two items, `TOTAL $25.50`.
 - Groq response: `{"type":"suggestion","content":"Automate 10% of your income."}`.
 - Image picker: stable `/tmp/fake-receipt.jpg`.
+- Auth: any valid email + 6-character password signs in with a synthetic session.
 
 ## Verification
 

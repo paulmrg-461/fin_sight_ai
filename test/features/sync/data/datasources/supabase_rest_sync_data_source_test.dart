@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:fin_sight_ai/core/error/exceptions.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
+import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:mocktail/mocktail.dart';
 
 AppEnv configuredEnv() => const AppEnv(
   supabaseUrl: 'https://demo.supabase.co',
@@ -39,7 +41,17 @@ Map<String, dynamic> debtRow({String id = 'debt-1'}) => {
   'updated_at': '2026-10-22T12:05:00.000Z',
 };
 
+class MockAuthRepository extends Mock implements AuthRepository {}
+
 void main() {
+  late MockAuthRepository auth;
+
+  setUp(() {
+    auth = MockAuthRepository();
+    when(() => auth.isAuthenticated).thenReturn(true);
+    when(() => auth.accessToken).thenReturn('access-token');
+  });
+
   group('SupabaseRestSyncDataSource', () {
     test('rejects calls without Supabase credentials', () async {
       final client = MockClient((request) async {
@@ -48,6 +60,7 @@ void main() {
       final datasource = SupabaseRestSyncDataSource(
         client,
         const AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: ''),
+        auth,
       );
 
       await expectLater(
@@ -62,13 +75,41 @@ void main() {
       );
     });
 
+    test('rejects calls without an authenticated session', () async {
+      when(() => auth.isAuthenticated).thenReturn(false);
+      when(() => auth.accessToken).thenReturn(null);
+      final client = MockClient((request) async {
+        fail('HTTP must not be called without a session');
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await expectLater(
+        datasource.fetchTransaction('tx-1'),
+        throwsA(
+          isA<ServerException>().having(
+            (e) => e.code,
+            'code',
+            'supabase_unauthenticated',
+          ),
+        ),
+      );
+    });
+
     test('fetches and maps a transaction', () async {
       late http.Request captured;
       final client = MockClient((request) async {
         captured = request;
         return http.Response(jsonEncode([transactionRow()]), 200);
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       final row = await datasource.fetchTransaction('tx-1');
 
@@ -86,7 +127,11 @@ void main() {
       final client = MockClient(
         (request) async => http.Response(jsonEncode([]), 200),
       );
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       expect(await datasource.fetchTransaction('missing'), isNull);
     });
@@ -97,7 +142,11 @@ void main() {
         captured = request;
         return http.Response(jsonEncode([transactionRow()]), 200);
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       final rows = await datasource.fetchTransactions(
         updatedAfter: DateTime.utc(2026, 10, 1),
@@ -117,7 +166,11 @@ void main() {
         captured = request;
         return http.Response('', 201);
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await datasource.upsertTransaction({
         'id': 'tx-1',
@@ -145,7 +198,11 @@ void main() {
         captured = request;
         return http.Response('', 204);
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await datasource.deleteTransaction('tx-1');
 
@@ -157,7 +214,11 @@ void main() {
       final client = MockClient(
         (request) async => http.Response(jsonEncode([debtRow()]), 200),
       );
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       final row = await datasource.fetchDebt('debt-1');
 
@@ -174,7 +235,11 @@ void main() {
         captured = request;
         return http.Response('', 200);
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await datasource.upsertDebt({
         'id': 'debt-1',
@@ -199,7 +264,11 @@ void main() {
       final client = MockClient(
         (request) async => http.Response('forbidden', 403),
       );
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await expectLater(
         datasource.fetchDebts(),
@@ -217,7 +286,11 @@ void main() {
       final client = MockClient(
         (request) async => http.Response('{"not":"a list"}', 200),
       );
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await expectLater(
         datasource.fetchTransactions(),
@@ -235,7 +308,11 @@ void main() {
       final client = MockClient((request) async {
         throw http.ClientException('offline');
       });
-      final datasource = SupabaseRestSyncDataSource(client, configuredEnv());
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
 
       await expectLater(
         datasource.fetchTransactions(),

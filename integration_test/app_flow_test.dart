@@ -131,6 +131,53 @@ void main() {
     expect(find.text('SUGGESTION'), findsOneWidget);
   });
 
+  testWidgets('adds a budget and shows category progress', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 40,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Groceries',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('\$40.00'));
+
+    harness.router.goNamed(AppRoutes.budgetsName);
+    await pumpUntil(tester, find.text('Add budget'));
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntil(tester, find.text('New budget'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Food');
+    await tester.enterText(fields.at(1), '100');
+    await tester.tap(find.text('Save budget'));
+
+    await pumpUntilGone(tester, find.text('New budget'));
+    await pumpUntil(tester, find.textContaining('/ \$100.00'));
+    expect(find.text('Food'), findsOneWidget);
+  });
+
+  testWidgets('signs in and out from the dashboard', (tester) async {
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+
+    await tester.tap(find.byIcon(Icons.person_outline));
+    await pumpUntil(tester, find.text('Welcome back'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'user@example.com');
+    await tester.enterText(fields.at(1), 'secret1');
+    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+
+    await pumpUntil(tester, find.byIcon(Icons.logout));
+    await tester.tap(find.byIcon(Icons.logout));
+    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+  });
+
   testWidgets('filters transactions by date range', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

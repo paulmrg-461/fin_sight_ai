@@ -14,6 +14,7 @@ class TransactionModel extends TransactionEntity {
     super.receiptImagePath,
     super.updatedAt,
     super.isSynced,
+    super.deletedAt,
   });
 
   factory TransactionModel.fromEntity(TransactionEntity transaction) {
@@ -27,6 +28,7 @@ class TransactionModel extends TransactionEntity {
       receiptImagePath: transaction.receiptImagePath,
       updatedAt: transaction.updatedAt,
       isSynced: transaction.isSynced,
+      deletedAt: transaction.deletedAt,
     );
   }
 
@@ -40,6 +42,7 @@ class TransactionModel extends TransactionEntity {
     final receiptImagePath = json['receiptImagePath'];
     final updatedAt = json['updatedAt'];
     final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Transaction id is missing or invalid.');
@@ -78,6 +81,7 @@ class TransactionModel extends TransactionEntity {
       receiptImagePath: receiptImagePath is String ? receiptImagePath : null,
       updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
       isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
     );
   }
 
@@ -92,6 +96,7 @@ class TransactionModel extends TransactionEntity {
       'receiptImagePath': receiptImagePath,
       'updatedAt': updatedAt?.toUtc().toIso8601String(),
       'isSynced': isSynced,
+      'deletedAt': deletedAt?.toUtc().toIso8601String(),
     };
   }
 
@@ -106,6 +111,7 @@ class TransactionModel extends TransactionEntity {
       receiptImagePath: receiptImagePath,
       updatedAt: updatedAt,
       isSynced: isSynced,
+      deletedAt: deletedAt,
     );
   }
 }

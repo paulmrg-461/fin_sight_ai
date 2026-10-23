@@ -143,18 +143,36 @@ void main() {
   });
 
   group('TransactionRepositoryImpl.deleteTransaction', () {
-    test('deletes through the data source', () async {
-      when(() => localDataSource.deleteTransaction('tx-1'))
+    test('writes a tombstone instead of hard-deleting', () async {
+      when(() => localDataSource.getTransactions())
+          .thenAnswer((_) async => [buildModel()]);
+      when(() => localDataSource.saveTransaction(any()))
           .thenAnswer((_) async {});
 
       final result = await repository.deleteTransaction('tx-1');
 
       expect(result.isRight(), isTrue);
-      verify(() => localDataSource.deleteTransaction('tx-1')).called(1);
+      final saved =
+          verify(() => localDataSource.saveTransaction(captureAny()))
+                  .captured
+                  .single
+              as TransactionModel;
+      expect(saved.isDeleted, isTrue);
+      expect(saved.isSynced, isFalse);
+      verifyNever(() => localDataSource.deleteTransaction(any()));
+    });
+
+    test('ignores missing records', () async {
+      when(() => localDataSource.getTransactions()).thenAnswer((_) async => []);
+
+      final result = await repository.deleteTransaction('missing');
+
+      expect(result.isRight(), isTrue);
+      verifyNever(() => localDataSource.saveTransaction(any()));
     });
 
     test('maps CacheException to CacheFailure', () async {
-      when(() => localDataSource.deleteTransaction(any())).thenThrow(
+      when(() => localDataSource.getTransactions()).thenThrow(
         const CacheException('Missing.', code: 'cache_delete_failed'),
       );
 
@@ -233,8 +251,10 @@ void main() {
       expect(operation.payload['updatedAt'], now.toUtc().toIso8601String());
     });
 
-    test('enqueues a delete', () async {
-      when(() => localDataSource.deleteTransaction('tx-1'))
+    test('enqueues a tombstone upsert', () async {
+      when(() => localDataSource.getTransactions())
+          .thenAnswer((_) async => [buildModel()]);
+      when(() => localDataSource.saveTransaction(any()))
           .thenAnswer((_) async {});
       final repository = TransactionRepositoryImpl(
         localDataSource,
@@ -247,8 +267,9 @@ void main() {
       final operation =
           verify(() => queue.enqueue(captureAny())).captured.single
               as SyncOperation;
-      expect(operation.operationType, SyncOperationType.delete);
+      expect(operation.operationType, SyncOperationType.upsert);
       expect(operation.entityId, 'tx-1');
+      expect(operation.payload['deletedAt'], isNotNull);
     });
 
     test('a queue failure does not fail the local write', () async {

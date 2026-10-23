@@ -76,12 +76,29 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   ResultFuture<void> deleteTransaction(String id) async {
     try {
-      await _localDataSource.deleteTransaction(id);
+      final models = await _localDataSource.getTransactions();
+      TransactionModel? existing;
+      for (final model in models) {
+        if (model.id == id) {
+          existing = model;
+          break;
+        }
+      }
+      if (existing == null) {
+        return const Right(null);
+      }
+
+      final now = clock.now();
+      final tombstone = TransactionModel.fromEntity(
+        existing.copyWith(updatedAt: now, isSynced: false, deletedAt: now),
+      );
+      await _localDataSource.saveTransaction(tombstone);
       await _enqueue(
-        SyncOperation.delete(
+        SyncOperation.upsert(
           entityType: SyncEntityType.transaction,
-          entityId: id,
-          queuedAt: clock.now(),
+          entityId: tombstone.id,
+          payload: tombstone.toJson(),
+          queuedAt: now,
         ),
       );
       return const Right(null);

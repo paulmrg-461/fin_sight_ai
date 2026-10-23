@@ -13,7 +13,8 @@ class HiveDebtLocalDataSource implements DebtLocalDataSource {
   @override
   Future<List<DebtModel>> getDebts() async {
     try {
-      return _readAll()..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+      return _readAll().where((debt) => !debt.isDeleted).toList()
+        ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
     } catch (_) {
       throw const CacheException(
         'Unable to read debts from local storage.',

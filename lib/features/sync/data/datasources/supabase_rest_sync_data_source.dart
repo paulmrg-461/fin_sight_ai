@@ -6,21 +6,23 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/app_env.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import 'sync_remote_data_source.dart';
 
 /// Supabase PostgREST implementation of [SyncRemoteDataSource].
 @LazySingleton(as: SyncRemoteDataSource)
 class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
-  SupabaseRestSyncDataSource(this._client, this._env);
+  SupabaseRestSyncDataSource(this._client, this._env, this._auth);
 
   static const Duration timeout = Duration(seconds: 15);
 
   final http.Client _client;
   final AppEnv _env;
+  final AuthRepository _auth;
 
   Map<String, String> get _headers => <String, String>{
     'apikey': _env.supabaseAnonKey,
-    'Authorization': 'Bearer ${_env.supabaseAnonKey}',
+    'Authorization': 'Bearer ${_auth.accessToken ?? _env.supabaseAnonKey}',
     'Content-Type': 'application/json',
   };
 
@@ -29,6 +31,12 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       throw const ServerException(
         'Supabase is not configured.',
         code: 'supabase_not_configured',
+      );
+    }
+    if (!_auth.isAuthenticated || _auth.accessToken == null) {
+      throw const ServerException(
+        'Sign in to synchronize with Supabase.',
+        code: 'supabase_unauthenticated',
       );
     }
   }
@@ -192,6 +200,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'description': json['description'],
       'date': json['date'],
       'receipt_image_path': json['receiptImagePath'],
+      'deleted_at': json['deletedAt'],
       'updated_at': json['updatedAt'] ?? json['date'],
     };
   }
@@ -206,6 +215,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'date': row['date'],
       'receiptImagePath': row['receipt_image_path'],
       'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
       'isSynced': true,
     };
   }
@@ -221,6 +231,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'due_date': json['dueDate'],
       'status': json['status'],
       'payment_history': json['paymentHistory'] ?? const [],
+      'deleted_at': json['deletedAt'],
       'updated_at': json['updatedAt'] ?? json['dueDate'],
     };
   }
@@ -237,6 +248,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'status': row['status'],
       'paymentHistory': row['payment_history'] ?? const [],
       'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
       'isSynced': true,
     };
   }

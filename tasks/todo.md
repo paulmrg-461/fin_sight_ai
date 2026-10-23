@@ -45,6 +45,17 @@
 - [x] Postgres schema + RLS migration
 - [x] Queue, HTTP, repository, use case, BLoC, and enqueue tests
 
+## Auth, tombstones, budgets, CI
+
+- [x] Supabase Auth datasource + secure session storage
+- [x] Auth repository/use cases/BLoC/login screen/account button
+- [x] JWT-authenticated sync + offline/unauthenticated states
+- [x] RLS verification SQL + script
+- [x] Soft-delete tombstones for transactions and debts
+- [x] Budgets/categories domain/data/BLoC/screen
+- [x] GitHub Actions CI
+- [x] Unit + integration tests updated
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -56,7 +67,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 374 tests passing
-- [x] Integration tests — 7 passing
+- [x] `flutter test --coverage` — 467 tests passing
+- [x] Integration tests — 9 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push

@@ -6,6 +6,7 @@ class SyncReport {
     required this.conflictsResolved,
     required this.pendingOperations,
     required this.isConfigured,
+    required this.isAuthenticated,
     required this.completedAt,
   });
 
@@ -16,6 +17,9 @@ class SyncReport {
 
   /// `false` when Supabase credentials are missing (offline-only mode).
   final bool isConfigured;
+
+  /// `false` when the user has no valid Supabase session.
+  final bool isAuthenticated;
   final DateTime completedAt;
 
   @override
@@ -27,6 +31,7 @@ class SyncReport {
           other.conflictsResolved == conflictsResolved &&
           other.pendingOperations == pendingOperations &&
           other.isConfigured == isConfigured &&
+          other.isAuthenticated == isAuthenticated &&
           other.completedAt == completedAt;
 
   @override
@@ -36,6 +41,7 @@ class SyncReport {
     conflictsResolved,
     pendingOperations,
     isConfigured,
+    isAuthenticated,
     completedAt,
   );
 
@@ -43,7 +49,7 @@ class SyncReport {
   String toString() =>
       'SyncReport(pushed: $pushed, pulled: $pulled, '
       'conflicts: $conflictsResolved, pending: $pendingOperations, '
-      'configured: $isConfigured)';
+      'configured: $isConfigured, authenticated: $isAuthenticated)';
 }
 
 /// Lightweight status used by the dashboard sync indicator.
@@ -51,11 +57,13 @@ class SyncStatusEntity {
   const SyncStatusEntity({
     required this.pendingCount,
     required this.isConfigured,
+    required this.isAuthenticated,
     this.lastSyncedAt,
   });
 
   final int pendingCount;
   final bool isConfigured;
+  final bool isAuthenticated;
   final DateTime? lastSyncedAt;
 
   @override
@@ -64,12 +72,15 @@ class SyncStatusEntity {
       other is SyncStatusEntity &&
           other.pendingCount == pendingCount &&
           other.isConfigured == isConfigured &&
+          other.isAuthenticated == isAuthenticated &&
           other.lastSyncedAt == lastSyncedAt;
 
   @override
-  int get hashCode => Object.hash(pendingCount, isConfigured, lastSyncedAt);
+  int get hashCode =>
+      Object.hash(pendingCount, isConfigured, isAuthenticated, lastSyncedAt);
 
   @override
   String toString() =>
-      'SyncStatusEntity(pending: $pendingCount, configured: $isConfigured)';
+      'SyncStatusEntity(pending: $pendingCount, configured: $isConfigured, '
+      'authenticated: $isAuthenticated)';
 }

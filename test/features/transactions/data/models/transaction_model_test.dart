@@ -83,6 +83,17 @@ void main() {
       expect(TransactionModel.fromJson(json).receiptImagePath, isNull);
     });
 
+    test('round-trips a soft-delete tombstone', () {
+      final model = TransactionModel.fromEntity(
+        buildModel().copyWith(deletedAt: date),
+      );
+
+      final restored = TransactionModel.fromJson(model.toJson());
+
+      expect(restored.deletedAt, date);
+      expect(restored.isDeleted, isTrue);
+    });
+
     test('throws FormatException for an invalid id', () {
       expect(
         () => TransactionModel.fromJson(<String, dynamic>{'id': ''}),

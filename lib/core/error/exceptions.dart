@@ -31,3 +31,8 @@ final class ValidationException extends AppException {
 final class OcrException extends AppException {
   const OcrException(super.message, {super.code});
 }
+
+/// Supabase Auth failed (credentials, signup, refresh, or logout).
+final class AuthException extends AppException {
+  const AuthException(super.message, {super.code});
+}

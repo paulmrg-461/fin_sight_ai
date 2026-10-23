@@ -86,6 +86,17 @@ void main() {
       expect(DebtModel.fromJson(json).paymentHistory, isEmpty);
     });
 
+    test('round-trips a soft-delete tombstone', () {
+      final model = DebtModel.fromEntity(
+        buildModel().copyWith(deletedAt: dueDate),
+      );
+
+      final restored = DebtModel.fromJson(model.toJson());
+
+      expect(restored.deletedAt, dueDate);
+      expect(restored.isDeleted, isTrue);
+    });
+
     test('throws FormatException for an invalid id', () {
       expect(
         () => DebtModel.fromJson(<String, dynamic>{'id': ''}),

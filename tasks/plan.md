@@ -51,7 +51,16 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] Postgres schema + RLS migration.
 - [x] Queue, HTTP, sync repository, use case, BLoC, and repository-enqueue tests.
 
-### Phase 5: Integration and delivery
+### Phase 5: Auth, tombstones, budgets, CI
+
+- [x] Supabase Auth (GoTrue REST), secure session storage, refresh, BLoC, login UI.
+- [x] Authenticated PostgREST sync with offline/unauthenticated reporting.
+- [x] RLS verification SQL + script for a real database.
+- [x] Soft-delete tombstones for transactions and debts (local + remote mapping + SQL).
+- [x] Budgets/categories slice with aggregation, BLoC, and screen.
+- [x] GitHub Actions CI (analyze, unit coverage, Linux integration).
+
+### Phase 6: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.
