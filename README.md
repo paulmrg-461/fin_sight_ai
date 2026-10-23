@@ -7,7 +7,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Dashboard** — income/expense/balance/savings KPIs, category pie chart, monthly comparison bar chart, recent activity, date-range filtering, and pull-to-refresh.
 - **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
-- **Budgets** — monthly category limits with spending progress, over-budget highlighting, and category suggestions.
+- **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
@@ -66,7 +66,7 @@ flutter run \
 
 ### Supabase
 
-1. Apply the migrations: `supabase/migrations/0001_init.sql` and `0002_tombstones.sql` (or `supabase db push`).
+1. Apply the migrations: `0001_init.sql`, `0002_tombstones.sql`, and `0003_budgets.sql` (or `supabase db push`).
 2. Sign in from the dashboard account button. Without a session the app stays offline and the sync chip says “Sign in to sync”.
 3. Verify RLS against a real database:
 
@@ -88,7 +88,7 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **478 unit/widget tests** passing.
+- **492 unit/widget tests** passing.
 - **9 integration tests** passing on Linux desktop.
 - Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.2%.
 - Integration benchmarks: app launch + dashboard ≈ 175 ms, transactions render ≈ 250 ms.

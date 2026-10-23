@@ -114,6 +114,19 @@ void main() {
       expect(await dataSource.getDebts(), isEmpty);
     });
 
+    test('includes tombstones only in getAllDebts', () async {
+      final active = buildModel(id: 'active');
+      final tombstone = DebtModel.fromEntity(
+        buildModel(id: 'deleted')
+            .copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveDebt(active);
+      await dataSource.saveDebt(tombstone);
+
+      expect(await dataSource.getDebts(), hasLength(1));
+      expect(await dataSource.getAllDebts(), hasLength(2));
+    });
+
     test('purges only old tombstones', () async {
       final oldTombstone = DebtModel.fromEntity(
         buildModel(id: 'old').copyWith(deletedAt: DateTime.utc(2026, 1, 1)),

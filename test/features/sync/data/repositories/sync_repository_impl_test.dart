@@ -5,6 +5,8 @@ import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
+import 'package:fin_sight_ai/features/budgets/data/datasources/budget_local_data_source.dart';
+import 'package:fin_sight_ai/features/budgets/data/models/budget_model.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart';
@@ -24,6 +26,8 @@ class MockTransactionLocalDataSource extends Mock
     implements TransactionLocalDataSource {}
 
 class MockDebtLocalDataSource extends Mock implements DebtLocalDataSource {}
+
+class MockBudgetLocalDataSource extends Mock implements BudgetLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -87,6 +91,7 @@ void main() {
   late MockSyncRemoteDataSource remote;
   late MockTransactionLocalDataSource transactionLocal;
   late MockDebtLocalDataSource debtLocal;
+  late MockBudgetLocalDataSource budgetLocal;
   late MockAuthRepository auth;
 
   SyncRepositoryImpl buildRepository({
@@ -102,6 +107,7 @@ void main() {
       remote,
       transactionLocal,
       debtLocal,
+      budgetLocal,
       env,
       auth,
       clock: FixedClock(now),
@@ -118,6 +124,14 @@ void main() {
     );
     registerFallbackValue(buildTransaction());
     registerFallbackValue(buildDebt());
+    registerFallbackValue(
+      BudgetModel(
+        id: 'fallback',
+        category: 'fallback',
+        monthlyLimit: 1,
+        month: DateTime.utc(2026, 10),
+      ),
+    );
     registerFallbackValue(DateTime.utc(2026));
   });
 
@@ -126,6 +140,7 @@ void main() {
     remote = MockSyncRemoteDataSource();
     transactionLocal = MockTransactionLocalDataSource();
     debtLocal = MockDebtLocalDataSource();
+    budgetLocal = MockBudgetLocalDataSource();
     auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
@@ -137,10 +152,13 @@ void main() {
     when(() => transactionLocal.saveTransaction(any()))
         .thenAnswer((_) async {});
     when(() => transactionLocal.getTransactions()).thenAnswer((_) async => []);
+    when(() => transactionLocal.getAllTransactions())
+        .thenAnswer((_) async => []);
     when(() => transactionLocal.purgeTombstones(any()))
         .thenAnswer((_) async => 0);
     when(() => debtLocal.saveDebt(any())).thenAnswer((_) async {});
     when(() => debtLocal.getDebts()).thenAnswer((_) async => []);
+    when(() => debtLocal.getAllDebts()).thenAnswer((_) async => []);
     when(() => debtLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
     when(
       () => remote.fetchTransactions(updatedAfter: any(named: 'updatedAfter')),
@@ -151,6 +169,15 @@ void main() {
     when(() => remote.upsertDebt(any())).thenAnswer((_) async {});
     when(() => remote.deleteTransaction(any())).thenAnswer((_) async {});
     when(() => remote.deleteDebt(any())).thenAnswer((_) async {});
+    when(() => budgetLocal.getAllBudgets()).thenAnswer((_) async => []);
+    when(() => budgetLocal.getAllBudgetsIncludingDeleted())
+        .thenAnswer((_) async => []);
+    when(() => budgetLocal.saveBudget(any())).thenAnswer((_) async {});
+    when(() => budgetLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
+    when(() => remote.fetchBudgets(updatedAfter: any(named: 'updatedAfter')))
+        .thenAnswer((_) async => []);
+    when(() => remote.upsertBudget(any())).thenAnswer((_) async {});
+    when(() => remote.deleteBudget(any())).thenAnswer((_) async {});
   });
 
   group('SyncRepositoryImpl.getStatus', () {
@@ -328,6 +355,29 @@ void main() {
       verifyNever(() => remote.upsertTransaction(any()));
     });
 
+    test('does not resurrect a newer local tombstone', () async {
+      final tombstone = TransactionModel.fromEntity(
+        buildTransaction(
+          updatedAt: DateTime.utc(2026, 10, 22, 14),
+        ).copyWith(deletedAt: DateTime.utc(2026, 10, 22, 14), isSynced: false),
+      );
+      final olderRemote = buildTransaction(
+        updatedAt: DateTime.utc(2026, 10, 22, 12),
+        isSynced: true,
+      );
+      when(() => transactionLocal.getAllTransactions())
+          .thenAnswer((_) async => [tombstone]);
+      when(
+        () =>
+            remote.fetchTransactions(updatedAfter: any(named: 'updatedAfter')),
+      ).thenAnswer((_) async => [olderRemote.toJson()]);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pulled, 0);
+      verifyNever(() => transactionLocal.saveTransaction(any()));
+    });
+
     test('pulls newer remote transactions and debts', () async {
       final remoteTransaction = buildTransaction(
         updatedAt: DateTime.utc(2026, 10, 22, 14),
@@ -377,6 +427,52 @@ void main() {
       expect(requeued.attempts, 1);
       expect(requeued.nextAttemptAt, isNotNull);
       expect(requeued.nextAttemptAt!.isAfter(now), isTrue);
+    });
+
+    test('pushes a budget and marks it synced', () async {
+      final model = BudgetModel(
+        id: 'budget-1',
+        category: 'Food',
+        monthlyLimit: 100,
+        month: DateTime.utc(2026, 10),
+        updatedAt: DateTime.utc(2026, 10, 22, 12),
+      );
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.budget,
+        entityId: model.id,
+        payload: model.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => remote.fetchBudget('budget-1')).thenAnswer((_) async => null);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.pushed, 1);
+      verify(() => remote.upsertBudget(any())).called(1);
+      final saved =
+          verify(() => budgetLocal.saveBudget(captureAny())).captured.single
+              as BudgetModel;
+      expect(saved.isSynced, isTrue);
+    });
+
+    test('pulls newer remote budgets', () async {
+      final remoteBudget = BudgetModel(
+        id: 'budget-1',
+        category: 'Food',
+        monthlyLimit: 100,
+        month: DateTime.utc(2026, 10),
+        updatedAt: DateTime.utc(2026, 10, 22, 14),
+        isSynced: true,
+      );
+      when(() => remote.fetchBudgets(updatedAfter: any(named: 'updatedAfter')))
+          .thenAnswer((_) async => [remoteBudget.toJson()]);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pulled, 1);
+      verify(() => budgetLocal.saveBudget(any())).called(1);
     });
 
     test('rejects invalid queued payloads', () async {

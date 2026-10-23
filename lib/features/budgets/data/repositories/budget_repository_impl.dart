@@ -3,6 +3,8 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
+import '../../../../core/utils/clock.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/domain/repositories/transaction_repository.dart';
@@ -16,17 +18,31 @@ import '../models/budget_model.dart';
 class BudgetRepositoryImpl implements BudgetRepository {
   const BudgetRepositoryImpl(
     this._localDataSource,
-    this._transactionRepository,
-  );
+    this._transactionRepository, {
+    this.syncQueue,
+    this.clock = const Clock(),
+  });
 
   final BudgetLocalDataSource _localDataSource;
   final TransactionRepository _transactionRepository;
+  final SyncQueue? syncQueue;
+  final Clock clock;
 
   @override
   ResultFuture<BudgetEntity> addBudget(BudgetEntity budget) async {
     try {
-      final model = BudgetModel.fromEntity(budget);
+      final now = clock.now();
+      final pending = budget.copyWith(updatedAt: now, isSynced: false);
+      final model = BudgetModel.fromEntity(pending);
       await _localDataSource.saveBudget(model);
+      await _enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.budget,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: now,
+        ),
+      );
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_cacheFailure(exception));
@@ -43,7 +59,31 @@ class BudgetRepositoryImpl implements BudgetRepository {
   @override
   ResultFuture<void> deleteBudget(String id) async {
     try {
-      await _localDataSource.deleteBudget(id);
+      final budgets = await _localDataSource.getAllBudgets();
+      BudgetModel? existing;
+      for (final budget in budgets) {
+        if (budget.id == id) {
+          existing = budget;
+          break;
+        }
+      }
+      if (existing == null) {
+        return const Right(null);
+      }
+
+      final now = clock.now();
+      final tombstone = BudgetModel.fromEntity(
+        existing.copyWith(updatedAt: now, isSynced: false, deletedAt: now),
+      );
+      await _localDataSource.saveBudget(tombstone);
+      await _enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.budget,
+          entityId: tombstone.id,
+          payload: tombstone.toJson(),
+          queuedAt: now,
+        ),
+      );
       return const Right(null);
     } on CacheException catch (exception) {
       return Left(_cacheFailure(exception));
@@ -136,6 +176,18 @@ class BudgetRepositoryImpl implements BudgetRepository {
       return const Left(
         CacheFailure('Unable to load categories.', code: 'categories_failed'),
       );
+    }
+  }
+
+  Future<void> _enqueue(SyncOperation operation) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(operation);
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
     }
   }
 

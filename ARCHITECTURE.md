@@ -98,11 +98,11 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ### Sync
 
-- Transactions and debts stamp `updatedAt` / `isSynced`, persist locally, and enqueue a `SyncOperation` (`<entityType>:<entityId>`).
+- Transactions, debts, and budgets stamp `updatedAt` / `isSynced`, persist locally, and enqueue a `SyncOperation` (`<entityType>:<entityId>`).
 - Deletes write `deletedAt` tombstones and enqueue upserts; local queries hide tombstones while sync keeps them idempotent.
 - `HiveSyncLocalDataSource` stores the queue and `lastSyncedAt` in Hive; repeated edits collapse into the latest operation.
 - `SupabaseRestSyncDataSource` talks to PostgREST over `http.Client` with the authenticated JWT, mapping camelCase models to snake_case columns (including `deleted_at`).
-- `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows/tombstones, persists `lastSyncedAt`, retries with exponential backoff, and purges tombstones older than 30 days.
+- `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows/tombstones (transactions, debts, budgets), persists `lastSyncedAt`, retries with exponential backoff, and purges tombstones older than 30 days.
 - `SyncBloc` + `SyncStatusChip` expose pending count, offline/configured/authenticated state, and manual sync. Startup restores auth then syncs.
 - Receipts remain local-only. Without credentials or a session, sync returns a non-fatal offline report.
 
@@ -110,7 +110,8 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 - `BudgetEntity` holds a category limit for a month; `BudgetProgress` adds spending, percentage, remaining, and over-budget state.
 - `BudgetRepositoryImpl` aggregates expenses from `TransactionRepository` for the month and derives categories from transactions plus budgets.
-- `BudgetBloc` + `BudgetScreen` provide monthly progress cards, add/delete actions, and category suggestions. Data stays local (sync for budgets is future work).
+- `BudgetBloc` + `BudgetScreen` provide monthly progress cards, add/delete actions, and category suggestions.
+- Budgets use the same queue/tombstone/LWW sync pipeline (`budgets` table in `0003_budgets.sql`).
 
 ## 5. Routing and Navigation
 
@@ -192,7 +193,7 @@ Domain and data coverage target: ≥ 90%, enforced by `tool/check_coverage.dart`
 | Last-write-wins by `updatedAt` | Simple, deterministic conflict policy | Loses concurrent non-conflicting edits |
 | Secure storage for sessions | Keychain/Keystore instead of plaintext | Linux needs libsecret; tests use a fake |
 | Soft-delete tombstones | Deletions propagate across devices | Local tombstones require eventual cleanup |
-| Local-only budgets | Fast, simple first slice | Budgets do not sync yet |
+| Synced budgets | Consistent offline-first behavior across slices | More rows/tables to migrate |
 | Persistent receipt images | Previews survive cache cleanup | Requires orphan cleanup/compaction |
 | Exponential sync backoff | Avoids hammering a failing backend | Delayed retries after failures |
 

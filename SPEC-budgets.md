@@ -6,7 +6,7 @@ Set monthly spending limits per category and track progress from real transactio
 
 ## Entities
 
-`BudgetEntity extends Entity`: `id`, `category`, `monthlyLimit`, `month` (normalized first day), optional `updatedAt`.
+`BudgetEntity extends Entity`: `id`, `category`, `monthlyLimit`, `month` (normalized first day), `updatedAt`, `isSynced`, `deletedAt`.
 
 `BudgetProgress`: `budget`, `spent`, derived `remaining`, `percentage` (`0..1`), `isOverBudget`.
 
@@ -29,10 +29,12 @@ ResultFuture<List<String>> getCategories();
 ## Data
 
 - `BudgetModel` JSON round-trip.
-- `HiveBudgetLocalDataSource` stores budgets in the `budgets` box, filters by month, sorts categories.
-- `BudgetRepositoryImpl` injects `TransactionRepository`:
+- `HiveBudgetLocalDataSource` stores budgets in the `budgets` box, filters by month/tombstones, sorts categories, and purges old tombstones.
+- `BudgetRepositoryImpl` injects `TransactionRepository` and the `SyncQueue`:
   - Expenses for the month are grouped by category and compared with each budget.
   - Categories are the union of budget categories and transaction categories, sorted.
+  - Adds/updates enqueue an upsert; deletes write a tombstone and enqueue an upsert.
+- Budgets are synced through PostgREST (`budgets` table, `0003_budgets.sql`) with the same last-write-wins policy as transactions/debts.
 
 ## Presentation
 

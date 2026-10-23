@@ -8,6 +8,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/app_env.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../budgets/data/datasources/budget_local_data_source.dart';
+import '../../../budgets/data/models/budget_model.dart';
 import '../../../debts/data/datasources/debt_local_data_source.dart';
 import '../../../debts/data/models/debt_model.dart';
 import '../../../transactions/data/datasources/transaction_local_data_source.dart';
@@ -25,6 +27,7 @@ class SyncRepositoryImpl implements SyncRepository {
     this._remoteDataSource,
     this._transactionLocalDataSource,
     this._debtLocalDataSource,
+    this._budgetLocalDataSource,
     this._env,
     this._auth, {
     this.clock = const Clock(),
@@ -39,6 +42,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final SyncRemoteDataSource _remoteDataSource;
   final TransactionLocalDataSource _transactionLocalDataSource;
   final DebtLocalDataSource _debtLocalDataSource;
+  final BudgetLocalDataSource _budgetLocalDataSource;
   final AppEnv _env;
   final AuthRepository _auth;
   final Clock clock;
@@ -157,6 +161,7 @@ class SyncRepositoryImpl implements SyncRepository {
     return switch (operation.entityType) {
       SyncEntityType.transaction => _pushTransaction(operation),
       SyncEntityType.debt => _pushDebt(operation),
+      SyncEntityType.budget => _pushBudget(operation),
     };
   }
 
@@ -212,6 +217,31 @@ class SyncRepositoryImpl implements SyncRepository {
     return false;
   }
 
+  Future<bool> _pushBudget(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      await _remoteDataSource.deleteBudget(operation.entityId);
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchBudget(operation.entityId);
+    if (remoteRow != null) {
+      final remote = BudgetModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _budgetLocalDataSource.saveBudget(
+          BudgetModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertBudget(operation.payload);
+    final local = BudgetModel.fromJson(operation.payload);
+    await _budgetLocalDataSource.saveBudget(
+      BudgetModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
   Future<int> _pull() async {
     final lastSyncedAt = await _localDataSource.lastSyncedAt();
     var pulled = 0;
@@ -226,6 +256,11 @@ class SyncRepositoryImpl implements SyncRepository {
     );
     pulled += await _mergeDebts(debts);
 
+    final budgets = await _remoteDataSource.fetchBudgets(
+      updatedAfter: lastSyncedAt,
+    );
+    pulled += await _mergeBudgets(budgets);
+
     return pulled;
   }
 
@@ -234,7 +269,7 @@ class SyncRepositoryImpl implements SyncRepository {
       return 0;
     }
 
-    final localModels = await _transactionLocalDataSource.getTransactions();
+    final localModels = await _transactionLocalDataSource.getAllTransactions();
     final byId = <String, TransactionModel>{
       for (final model in localModels) model.id: model,
     };
@@ -258,7 +293,7 @@ class SyncRepositoryImpl implements SyncRepository {
       return 0;
     }
 
-    final localModels = await _debtLocalDataSource.getDebts();
+    final localModels = await _debtLocalDataSource.getAllDebts();
     final byId = <String, DebtModel>{
       for (final model in localModels) model.id: model,
     };
@@ -270,6 +305,31 @@ class SyncRepositoryImpl implements SyncRepository {
       if (local == null || remote.lastModified.isAfter(local.lastModified)) {
         await _debtLocalDataSource.saveDebt(
           DebtModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
+  Future<int> _mergeBudgets(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _budgetLocalDataSource
+        .getAllBudgetsIncludingDeleted();
+    final byId = <String, BudgetModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = BudgetModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _budgetLocalDataSource.saveBudget(
+          BudgetModel.fromEntity(remote.copyWith(isSynced: true)),
         );
         pulled++;
       }
@@ -290,6 +350,7 @@ class SyncRepositoryImpl implements SyncRepository {
     try {
       await _transactionLocalDataSource.purgeTombstones(cutoff);
       await _debtLocalDataSource.purgeTombstones(cutoff);
+      await _budgetLocalDataSource.purgeTombstones(cutoff);
     } catch (_) {
       // Cleanup is best effort and must not fail the sync pass.
     }

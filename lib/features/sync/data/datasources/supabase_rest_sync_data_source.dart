@@ -95,6 +95,33 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
     await _delete('debts', id);
   }
 
+  @override
+  Future<Map<String, dynamic>?> fetchBudget(String id) async {
+    final rows = await _fetch('budgets', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _budgetFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchBudgets({
+    DateTime? updatedAfter,
+  }) async {
+    final rows = await _fetch('budgets', _updatedQuery(updatedAfter));
+    return rows.map(_budgetFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertBudget(Map<String, dynamic> json) async {
+    await _upsert('budgets', _budgetToRow(json));
+  }
+
+  @override
+  Future<void> deleteBudget(String id) async {
+    await _delete('budgets', id);
+  }
+
   Map<String, String> _updatedQuery(DateTime? updatedAfter) {
     return <String, String>{
       'select': '*',
@@ -214,6 +241,29 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'description': row['description'],
       'date': row['date'],
       'receiptImagePath': row['receipt_image_path'],
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _budgetToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'category': json['category'],
+      'monthly_limit': json['monthlyLimit'],
+      'month': json['month'],
+      'deleted_at': json['deletedAt'],
+      'updated_at': json['updatedAt'] ?? json['month'],
+    };
+  }
+
+  Map<String, dynamic> _budgetFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'category': row['category'],
+      'monthlyLimit': row['monthly_limit'],
+      'month': row['month'],
       'updatedAt': row['updated_at'],
       'deletedAt': row['deleted_at'],
       'isSynced': true,

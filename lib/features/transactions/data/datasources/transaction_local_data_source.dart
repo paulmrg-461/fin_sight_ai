@@ -7,6 +7,9 @@ import '../models/transaction_model.dart';
 abstract interface class TransactionLocalDataSource {
   Future<List<TransactionModel>> getTransactions();
 
+  /// Returns active and soft-deleted records (used by sync merges).
+  Future<List<TransactionModel>> getAllTransactions();
+
   /// Inserts [transaction] or replaces the record with the same id.
   Future<void> saveTransaction(TransactionModel transaction);
 

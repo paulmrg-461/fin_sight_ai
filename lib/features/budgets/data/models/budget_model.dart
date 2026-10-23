@@ -8,6 +8,8 @@ class BudgetModel extends BudgetEntity {
     required super.monthlyLimit,
     required super.month,
     super.updatedAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory BudgetModel.fromEntity(BudgetEntity budget) {
@@ -17,6 +19,8 @@ class BudgetModel extends BudgetEntity {
       monthlyLimit: budget.monthlyLimit,
       month: budget.month,
       updatedAt: budget.updatedAt,
+      isSynced: budget.isSynced,
+      deletedAt: budget.deletedAt,
     );
   }
 
@@ -26,6 +30,8 @@ class BudgetModel extends BudgetEntity {
     final monthlyLimit = json['monthlyLimit'];
     final month = json['month'];
     final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Budget id is missing.');
@@ -46,6 +52,8 @@ class BudgetModel extends BudgetEntity {
       monthlyLimit: monthlyLimit.toDouble(),
       month: DateTime.parse(month),
       updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
+      isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
     );
   }
 
@@ -56,6 +64,8 @@ class BudgetModel extends BudgetEntity {
       'monthlyLimit': monthlyLimit,
       'month': month.toUtc().toIso8601String(),
       'updatedAt': updatedAt?.toUtc().toIso8601String(),
+      'isSynced': isSynced,
+      'deletedAt': deletedAt?.toUtc().toIso8601String(),
     };
   }
 
@@ -66,6 +76,8 @@ class BudgetModel extends BudgetEntity {
       monthlyLimit: monthlyLimit,
       month: month,
       updatedAt: updatedAt,
+      isSynced: isSynced,
+      deletedAt: deletedAt,
     );
   }
 }

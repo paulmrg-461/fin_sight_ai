@@ -27,6 +27,18 @@ class HiveTransactionLocalDataSource implements TransactionLocalDataSource {
   }
 
   @override
+  Future<List<TransactionModel>> getAllTransactions() async {
+    try {
+      return _readAll()..sort(_newestFirst);
+    } catch (_) {
+      throw const CacheException(
+        'Unable to read transactions from local storage.',
+        code: 'cache_read_failed',
+      );
+    }
+  }
+
+  @override
   Future<void> saveTransaction(TransactionModel transaction) async {
     try {
       await _box.put(transaction.id, transaction.toJson());

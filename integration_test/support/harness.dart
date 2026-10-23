@@ -198,11 +198,14 @@ class IntegrationHarness {
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
     final authRepository = _FakeAuthRepository();
+    final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
+    final budgetLocal = HiveBudgetLocalDataSource(_budgetsBox);
     final syncRepository = SyncRepositoryImpl(
-      HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox),
+      syncLocal,
       SupabaseRestSyncDataSource(http.Client(), appEnv, authRepository),
       HiveTransactionLocalDataSource(_transactionsBox),
       HiveDebtLocalDataSource(_debtsBox),
+      budgetLocal,
       appEnv,
       authRepository,
     );
@@ -218,8 +221,9 @@ class IntegrationHarness {
     );
 
     final budgetRepository = BudgetRepositoryImpl(
-      HiveBudgetLocalDataSource(_budgetsBox),
+      budgetLocal,
       transactionRepository,
+      syncQueue: syncLocal,
     );
     budgetBloc = BudgetBloc(
       AddBudgetUseCase(budgetRepository),

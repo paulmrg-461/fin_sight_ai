@@ -82,6 +82,49 @@ void main() {
       expect(budgets.single.monthlyLimit, 250);
     });
 
+    test('hides soft-deleted budgets', () async {
+      final tombstone = BudgetModel.fromEntity(
+        buildModel().copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveBudget(tombstone);
+
+      expect(await dataSource.getBudgets(DateTime.utc(2026, 10)), isEmpty);
+      expect(await dataSource.getAllBudgets(), isEmpty);
+    });
+
+    test('includes tombstones only in the sync query', () async {
+      final active = buildModel(id: 'active');
+      final tombstone = BudgetModel.fromEntity(
+        buildModel(id: 'deleted')
+            .copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveBudget(active);
+      await dataSource.saveBudget(tombstone);
+
+      expect(await dataSource.getAllBudgets(), hasLength(1));
+      expect(await dataSource.getAllBudgetsIncludingDeleted(), hasLength(2));
+    });
+
+    test('purges only old tombstones', () async {
+      final oldTombstone = BudgetModel.fromEntity(
+        buildModel(id: 'old').copyWith(deletedAt: DateTime.utc(2026, 1, 1)),
+      );
+      final recentTombstone = BudgetModel.fromEntity(
+        buildModel(id: 'recent').copyWith(deletedAt: DateTime.utc(2026, 10, 1)),
+      );
+      final active = buildModel(id: 'active');
+      await dataSource.saveBudget(oldTombstone);
+      await dataSource.saveBudget(recentTombstone);
+      await dataSource.saveBudget(active);
+
+      final purged = await dataSource.purgeTombstones(DateTime.utc(2026, 6, 1));
+
+      expect(purged, 1);
+      expect(box.containsKey('old'), isFalse);
+      expect(box.containsKey('recent'), isTrue);
+      expect(box.containsKey('active'), isTrue);
+    });
+
     test('deletes a budget', () async {
       await dataSource.saveBudget(buildModel());
 

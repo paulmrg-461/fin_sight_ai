@@ -117,7 +117,7 @@ import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_imp
     as _i1020;
 import 'package:fin_sight_ai/features/sync/data/sync_module.dart' as _i273;
 import 'package:fin_sight_ai/features/sync/domain/repositories/sync_repository.dart'
-    as _i272;
+    as _i271;
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart'
     as _i558;
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart'
@@ -133,7 +133,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart'
     as _i69;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart'
-    as _i271;
+    as _i272;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart'
     as _i1051;
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart'
@@ -250,12 +250,38 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
       () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
     );
+    gh.lazySingleton<_i271.SyncRepository>(
+      () => _i1020.SyncRepositoryImpl(
+        gh<_i921.SyncLocalDataSource>(),
+        gh<_i984.SyncRemoteDataSource>(),
+        gh<_i228.TransactionLocalDataSource>(),
+        gh<_i1035.DebtLocalDataSource>(),
+        gh<_i8.BudgetLocalDataSource>(),
+        gh<_i1042.AppEnv>(),
+        gh<_i993.AuthRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
       ),
+    );
+    gh.lazySingleton<_i575.BudgetRepository>(
+      () => _i545.BudgetRepositoryImpl(
+        gh<_i8.BudgetLocalDataSource>(),
+        gh<_i544.TransactionRepository>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i558.SyncNowUseCase>(
+      () => _i558.SyncNowUseCase(gh<_i271.SyncRepository>()),
+    );
+    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
+      () => _i558.GetSyncStatusUseCase(gh<_i271.SyncRepository>()),
     );
     gh.factory<_i661.AuthBloc>(
       () => _i661.AuthBloc(
@@ -268,17 +294,26 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i588.SyncQueue>(
       () => syncModule.provideSyncQueue(gh<_i921.SyncLocalDataSource>()),
     );
+    gh.lazySingleton<_i41.DeleteBudgetUseCase>(
+      () => _i41.DeleteBudgetUseCase(gh<_i575.BudgetRepository>()),
+    );
+    gh.lazySingleton<_i41.GetBudgetProgressUseCase>(
+      () => _i41.GetBudgetProgressUseCase(gh<_i575.BudgetRepository>()),
+    );
+    gh.lazySingleton<_i41.GetCategoriesUseCase>(
+      () => _i41.GetCategoriesUseCase(gh<_i575.BudgetRepository>()),
+    );
+    gh.lazySingleton<_i41.AddBudgetUseCase>(
+      () => _i41.AddBudgetUseCase(
+        gh<_i575.BudgetRepository>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
     gh.lazySingleton<_i268.DebtRepository>(
       () => _i140.DebtRepositoryImpl(
         gh<_i1035.DebtLocalDataSource>(),
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
-      ),
-    );
-    gh.lazySingleton<_i575.BudgetRepository>(
-      () => _i545.BudgetRepositoryImpl(
-        gh<_i8.BudgetLocalDataSource>(),
-        gh<_i544.TransactionRepository>(),
       ),
     );
     gh.lazySingleton<_i864.DashboardRepository>(
@@ -295,8 +330,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i69.DeleteTransactionUseCase>(
       () => _i69.DeleteTransactionUseCase(gh<_i544.TransactionRepository>()),
     );
-    gh.lazySingleton<_i271.GetTransactionsByDateRangeUseCase>(
-      () => _i271.GetTransactionsByDateRangeUseCase(
+    gh.lazySingleton<_i272.GetTransactionsByDateRangeUseCase>(
+      () => _i272.GetTransactionsByDateRangeUseCase(
         gh<_i544.TransactionRepository>(),
       ),
     );
@@ -318,17 +353,6 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
-    gh.lazySingleton<_i272.SyncRepository>(
-      () => _i1020.SyncRepositoryImpl(
-        gh<_i921.SyncLocalDataSource>(),
-        gh<_i984.SyncRemoteDataSource>(),
-        gh<_i228.TransactionLocalDataSource>(),
-        gh<_i1035.DebtLocalDataSource>(),
-        gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
     gh.lazySingleton<_i978.MakePaymentUseCase>(
       () => _i978.MakePaymentUseCase(
         gh<_i268.DebtRepository>(),
@@ -336,12 +360,20 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.factory<_i746.BudgetBloc>(
+      () => _i746.BudgetBloc(
+        gh<_i41.AddBudgetUseCase>(),
+        gh<_i41.DeleteBudgetUseCase>(),
+        gh<_i41.GetBudgetProgressUseCase>(),
+        gh<_i41.GetCategoriesUseCase>(),
+      ),
+    );
     gh.factory<_i850.DashboardBloc>(
       () => _i850.DashboardBloc(
         gh<_i905.GetDashboardSummaryUseCase>(),
         gh<_i905.GetCategoryBreakdownUseCase>(),
         gh<_i905.GetMonthlyComparisonUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i272.GetTransactionsByDateRangeUseCase>(),
       ),
     );
     gh.lazySingleton<_i144.AddDebtUseCase>(
@@ -355,7 +387,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1051.GetTransactionsUseCase>(),
         gh<_i361.AddTransactionUseCase>(),
         gh<_i69.DeleteTransactionUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i272.GetTransactionsByDateRangeUseCase>(),
+      ),
+    );
+    gh.factory<_i470.SyncBloc>(
+      () => _i470.SyncBloc(
+        gh<_i558.SyncNowUseCase>(),
+        gh<_i558.GetSyncStatusUseCase>(),
       ),
     );
     gh.lazySingleton<_i1045.CalculatePayoffUseCase>(
@@ -375,32 +413,11 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1051.GetTransactionsUseCase>(),
       ),
     );
-    gh.lazySingleton<_i558.SyncNowUseCase>(
-      () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
-    );
-    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
-      () => _i558.GetSyncStatusUseCase(gh<_i272.SyncRepository>()),
-    );
     gh.lazySingleton<_i937.GetReceiptsUseCase>(
       () => _i937.GetReceiptsUseCase(gh<_i832.ReceiptRepository>()),
     );
     gh.lazySingleton<_i826.ScanReceiptUseCase>(
       () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
-    );
-    gh.lazySingleton<_i41.DeleteBudgetUseCase>(
-      () => _i41.DeleteBudgetUseCase(gh<_i575.BudgetRepository>()),
-    );
-    gh.lazySingleton<_i41.GetBudgetProgressUseCase>(
-      () => _i41.GetBudgetProgressUseCase(gh<_i575.BudgetRepository>()),
-    );
-    gh.lazySingleton<_i41.GetCategoriesUseCase>(
-      () => _i41.GetCategoriesUseCase(gh<_i575.BudgetRepository>()),
-    );
-    gh.lazySingleton<_i41.AddBudgetUseCase>(
-      () => _i41.AddBudgetUseCase(
-        gh<_i575.BudgetRepository>(),
-        uuid: gh<_i706.Uuid>(),
-      ),
     );
     gh.factory<_i1009.DebtBloc>(
       () => _i1009.DebtBloc(
@@ -415,20 +432,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i292.SaveReceiptUseCase(
         gh<_i832.ReceiptRepository>(),
         uuid: gh<_i706.Uuid>(),
-      ),
-    );
-    gh.factory<_i746.BudgetBloc>(
-      () => _i746.BudgetBloc(
-        gh<_i41.AddBudgetUseCase>(),
-        gh<_i41.DeleteBudgetUseCase>(),
-        gh<_i41.GetBudgetProgressUseCase>(),
-        gh<_i41.GetCategoriesUseCase>(),
-      ),
-    );
-    gh.factory<_i470.SyncBloc>(
-      () => _i470.SyncBloc(
-        gh<_i558.SyncNowUseCase>(),
-        gh<_i558.GetSyncStatusUseCase>(),
       ),
     );
     gh.factory<_i1031.OcrBloc>(

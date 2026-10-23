@@ -9,6 +9,7 @@ supabase db push
 # or, with psql:
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0001_init.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0002_tombstones.sql
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0003_budgets.sql
 ```
 
 `0001_init.sql` creates `transactions` and `debts` with owner-only RLS.

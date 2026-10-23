@@ -100,6 +100,19 @@ void main() {
       );
     });
 
+    test('includes tombstones only in getAllTransactions', () async {
+      final active = buildModel(id: 'active');
+      final tombstone = TransactionModel.fromEntity(
+        buildModel(id: 'deleted')
+            .copyWith(deletedAt: DateTime.utc(2026, 10, 22)),
+      );
+      await dataSource.saveTransaction(active);
+      await dataSource.saveTransaction(tombstone);
+
+      expect(await dataSource.getTransactions(), hasLength(1));
+      expect(await dataSource.getAllTransactions(), hasLength(2));
+    });
+
     test('purges only old tombstones', () async {
       final oldTombstone = TransactionModel.fromEntity(
         buildModel(id: 'old').copyWith(deletedAt: DateTime.utc(2026, 1, 1)),

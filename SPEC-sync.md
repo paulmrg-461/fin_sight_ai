@@ -6,7 +6,7 @@ Keep the local Hive store as the source of truth while asynchronously pushing qu
 
 ## Scope
 
-- Synced entities: **transactions** and **debts**, including soft-delete tombstones.
+- Synced entities: **transactions**, **debts**, and **budgets**, including soft-delete tombstones.
 - Receipts stay local-only for now (metadata/path, not uploaded).
 - Deletions create `deletedAt` tombstones that are pushed and pulled; UI queries hide them.
 - The app remains fully usable without Supabase credentials or a session.
@@ -35,7 +35,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 `SyncRemoteDataSource` → `SupabaseRestSyncDataSource`:
 
 - PostgREST over `http.Client` with `apikey` (anon key) and `Authorization: Bearer <access token>` from Supabase Auth.
-- Transactions: `GET/POST/DELETE /rest/v1/transactions`; debts: `/rest/v1/debts`.
+- Transactions: `/rest/v1/transactions`; debts: `/rest/v1/debts`; budgets: `/rest/v1/budgets`.
 - Upserts use `on_conflict=id` and `Prefer: resolution=merge-duplicates,return=minimal`.
 - Pulls use `updated_at=gt.<lastSyncedAt>&order=updated_at.asc`.
 - Snake_case columns are mapped to the camelCase model JSON in both directions.
@@ -52,7 +52,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
    - Delete → remote delete, remove from queue.
    - Upsert → fetch remote row. If remote `updatedAt` is newer, write remote locally (conflict), remove from queue. Otherwise upsert and mark the local record `isSynced = true`.
    - On remote failure, increment `attempts`, set `nextAttemptAt` with exponential backoff (1s, 2s, 4s… capped at 1h), keep the operation, and return `ServerFailure`.
-4. Pull transactions and debts updated since `lastSyncedAt`, merging only newer remote rows.
+4. Pull transactions, debts, and budgets updated since `lastSyncedAt`, merging only newer remote rows (including tombstones).
 5. Persist `lastSyncedAt`.
 6. Purge local tombstones older than 30 days (best effort).
 
@@ -65,7 +65,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 
 ## Schema
 
-`supabase/migrations/0001_init.sql` creates `transactions` and `debts` with `user_id default auth.uid()`, `updated_at` indexes, RLS enabled, and owner-only policies. `0002_tombstones.sql` adds `deleted_at` and active-row indexes.
+`0001_init.sql` creates `transactions` and `debts`; `0002_tombstones.sql` adds `deleted_at`; `0003_budgets.sql` adds synced budgets. All tables use `user_id default auth.uid()`, RLS, and owner-only policies.
 
 **Auth is a prerequisite for real sync.** Without a session, sync returns an offline report and keeps the queue; local data is never lost. RLS verification lives in `supabase/tests/rls_test.sql` and `supabase/verify_rls.sh`.
 

@@ -68,7 +68,16 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] Coverage gate script (`tool/check_coverage.dart`) wired into CI.
 - [x] Login title, sync-chip sign-in routing, and picker test seam.
 
-### Phase 7: Integration and delivery
+### Phase 7: Synced budgets
+
+- [x] Budget `updatedAt`/`isSynced`/`deletedAt` + model fields.
+- [x] Queue upserts and tombstone deletes from `BudgetRepositoryImpl`.
+- [x] Budget PostgREST mapping and sync push/pull/merge.
+- [x] Budget tombstone purge and include-deleted merge protection.
+- [x] `0003_budgets.sql` with RLS.
+- [x] Unit/data/sync tests.
+
+### Phase 8: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.

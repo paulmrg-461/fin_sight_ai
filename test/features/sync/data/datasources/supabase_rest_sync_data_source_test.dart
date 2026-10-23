@@ -26,6 +26,15 @@ Map<String, dynamic> transactionRow({String id = 'tx-1'}) => {
   'updated_at': '2026-10-22T12:05:00.000Z',
 };
 
+Map<String, dynamic> budgetRow({String id = 'budget-1'}) => {
+  'id': id,
+  'category': 'Food',
+  'monthly_limit': 100,
+  'month': '2026-10-01T00:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
 Map<String, dynamic> debtRow({String id = 'debt-1'}) => {
   'id': id,
   'creditor_name': 'Bank',
@@ -258,6 +267,50 @@ void main() {
       expect(body['creditor_name'], 'Bank');
       expect(body['remaining_amount'], 600);
       expect(body['payment_history'], isEmpty);
+    });
+
+    test('fetches and maps budgets', () async {
+      final client = MockClient(
+        (request) async => http.Response(jsonEncode([budgetRow()]), 200),
+      );
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final row = await datasource.fetchBudget('budget-1');
+
+      expect(row!['category'], 'Food');
+      expect(row['monthlyLimit'], 100);
+      expect(row['isSynced'], isTrue);
+    });
+
+    test('upserts a budget using snake_case columns', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response('', 201);
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await datasource.upsertBudget({
+        'id': 'budget-1',
+        'category': 'Food',
+        'monthlyLimit': 100,
+        'month': '2026-10-01T00:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+        'deletedAt': null,
+      });
+
+      final body = jsonDecode(captured.body) as Map<String, dynamic>;
+      expect(body['monthly_limit'], 100);
+      expect(body['month'], '2026-10-01T00:00:00.000Z');
+      expect(body['updated_at'], '2026-10-22T12:05:00.000Z');
     });
 
     test('maps non-2xx responses to an HTTP failure', () async {

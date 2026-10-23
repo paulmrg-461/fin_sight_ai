@@ -34,6 +34,27 @@ class HiveBudgetLocalDataSource implements BudgetLocalDataSource {
         }
         budgets.add(BudgetModel.fromJson(Map<String, dynamic>.from(value)));
       }
+      budgets.removeWhere((budget) => budget.isDeleted);
+      budgets.sort((a, b) => a.category.compareTo(b.category));
+      return List<BudgetModel>.unmodifiable(budgets);
+    } catch (_) {
+      throw const CacheException(
+        'Unable to read budgets from local storage.',
+        code: 'cache_read_failed',
+      );
+    }
+  }
+
+  @override
+  Future<List<BudgetModel>> getAllBudgetsIncludingDeleted() async {
+    try {
+      final budgets = <BudgetModel>[];
+      for (final value in _box.values) {
+        if (value is! Map) {
+          throw const FormatException('Invalid budget entry.');
+        }
+        budgets.add(BudgetModel.fromJson(Map<String, dynamic>.from(value)));
+      }
       budgets.sort((a, b) => a.category.compareTo(b.category));
       return List<BudgetModel>.unmodifiable(budgets);
     } catch (_) {
@@ -52,6 +73,34 @@ class HiveBudgetLocalDataSource implements BudgetLocalDataSource {
       throw const CacheException(
         'Unable to save the budget locally.',
         code: 'cache_write_failed',
+      );
+    }
+  }
+
+  @override
+  Future<int> purgeTombstones(DateTime before) async {
+    try {
+      final keys = <dynamic>[];
+      for (final key in _box.keys) {
+        final value = _box.get(key);
+        if (value is! Map) {
+          continue;
+        }
+        final model = BudgetModel.fromJson(Map<String, dynamic>.from(value));
+        final deletedAt = model.deletedAt;
+        if (deletedAt != null && deletedAt.isBefore(before)) {
+          keys.add(key);
+        }
+      }
+      if (keys.isEmpty) {
+        return 0;
+      }
+      await _box.deleteAll(keys);
+      return keys.length;
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge budget tombstones.',
+        code: 'cache_purge_failed',
       );
     }
   }

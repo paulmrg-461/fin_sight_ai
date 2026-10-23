@@ -20,4 +20,12 @@ abstract interface class SyncRemoteDataSource {
   Future<void> upsertDebt(Map<String, dynamic> json);
 
   Future<void> deleteDebt(String id);
+
+  Future<Map<String, dynamic>?> fetchBudget(String id);
+
+  Future<List<Map<String, dynamic>>> fetchBudgets({DateTime? updatedAfter});
+
+  Future<void> upsertBudget(Map<String, dynamic> json);
+
+  Future<void> deleteBudget(String id);
 }

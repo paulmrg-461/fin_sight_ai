@@ -19,7 +19,7 @@ _Last updated: 2026-10-22. Read this before starting a new session._
 - Gates: `flutter analyze` clean, 324 unit/widget tests, 7 integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
-## Current slice: Auth + tombstones + budgets + CI (IMPLEMENTED, pending commit/push)
+## Current slice: Synced budgets (IMPLEMENTED, pending commit/push)
 
 Goal: queue local writes offline, push them to Supabase, pull remote changes, and resolve conflicts last-write-wins.
 
@@ -28,7 +28,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - Use Supabase **PostgREST over `http.Client`** (no `supabase_flutter` dependency).
 - Credentials from `AppEnv` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`); missing config yields `supabase_not_configured` and a non-fatal offline report.
 - Queue lives in `lib/core/sync/sync_operation.dart`; key = `<entityType>:<entityId>` so repeated edits collapse.
-- Sync scope: **transactions and debts**. Receipts remain local-only for now.
+- Sync scope: **transactions, debts, and budgets**. Receipts remain local-only for now.
 - Conflict policy: if remote `updatedAt` is newer than the local payload, remote wins and is written locally; otherwise push local.
 - Deletes write `deletedAt` tombstones and are pushed/pulled; local queries hide tombstones while they remain for idempotent sync.
 - Local store remains the source of truth; a remote failure never rolls back a local write.
@@ -36,7 +36,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - UI: app-level `SyncBloc` + dashboard AppBar `SyncStatusChip` (manual sync + pending count), auto-sync status on startup.
 - Hive boxes: `sync_queue`, `sync_meta`, `budgets`.
 - Auth: Supabase GoTrue REST + `flutter_secure_storage`; sync uses the access token and reports unauthenticated state.
-- Budgets are local-only for now; aggregation comes from `TransactionRepository`.
+- Budgets are synced with the same queue/tombstone/LWW pipeline; aggregation comes from `TransactionRepository`.
 - SQL: `0001_init.sql`, `0002_tombstones.sql`, RLS test script.
 
 ### Progress
@@ -67,7 +67,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 478 unit/widget tests passing.
+- 492 unit/widget tests passing.
 - 9 integration tests passing on Linux.
 - Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, core 91.2%.
 - SQL: `0001_init.sql`, `0002_tombstones.sql`, `tests/rls_test.sql`.
@@ -75,7 +75,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Known gaps / next
 
 1. Run the RLS script against a real Supabase project (needs credentials).
-2. Sync budgets and receipt metadata.
+2. Sync receipt metadata.
 3. Streaming AI responses and conversation memory.
 4. Money as integer minor units instead of `double`.
 5. Golden/screenshot tests in CI.

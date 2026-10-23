@@ -8,6 +8,8 @@ class BudgetEntity extends Entity {
     required this.monthlyLimit,
     required this.month,
     this.updatedAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -20,12 +22,24 @@ class BudgetEntity extends Entity {
   final DateTime month;
   final DateTime? updatedAt;
 
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? month;
+
   BudgetEntity copyWith({
     String? id,
     String? category,
     double? monthlyLimit,
     DateTime? month,
     DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return BudgetEntity(
       id: id ?? this.id,
@@ -33,6 +47,8 @@ class BudgetEntity extends Entity {
       monthlyLimit: monthlyLimit ?? this.monthlyLimit,
       month: month ?? this.month,
       updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -44,7 +60,9 @@ class BudgetEntity extends Entity {
           other.category == category &&
           other.monthlyLimit == monthlyLimit &&
           other.month == month &&
-          other.updatedAt == updatedAt;
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
   int get hashCode => Object.hash(id, category, monthlyLimit, month, updatedAt);

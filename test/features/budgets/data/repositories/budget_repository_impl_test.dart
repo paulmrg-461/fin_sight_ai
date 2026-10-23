@@ -1,5 +1,7 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
+import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/budgets/data/datasources/budget_local_data_source.dart';
 import 'package:fin_sight_ai/features/budgets/data/models/budget_model.dart';
 import 'package:fin_sight_ai/features/budgets/data/repositories/budget_repository_impl.dart';
@@ -13,6 +15,17 @@ import 'package:mocktail/mocktail.dart';
 class MockBudgetLocalDataSource extends Mock implements BudgetLocalDataSource {}
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
+
+class FixedClock extends Clock {
+  const FixedClock(this.value);
+
+  final DateTime value;
+
+  @override
+  DateTime now() => value;
+}
 
 BudgetModel buildBudgetModel({
   String id = 'budget-1',
@@ -49,6 +62,13 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(buildBudgetModel());
+    registerFallbackValue(
+      SyncOperation.delete(
+        entityType: SyncEntityType.budget,
+        entityId: 'fallback',
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -183,12 +203,107 @@ void main() {
     });
   });
 
-  test('deletes a budget', () async {
-    when(() => local.deleteBudget('budget-1')).thenAnswer((_) async {});
+  test('deletes a budget with a tombstone', () async {
+    when(() => local.getAllBudgets())
+        .thenAnswer((_) async => [buildBudgetModel()]);
+    when(() => local.saveBudget(any())).thenAnswer((_) async {});
 
     final result = await repository.deleteBudget('budget-1');
 
     expect(result.isRight(), isTrue);
-    verify(() => local.deleteBudget('budget-1')).called(1);
+    final saved =
+        verify(() => local.saveBudget(captureAny())).captured.single
+            as BudgetModel;
+    expect(saved.isDeleted, isTrue);
+    expect(saved.isSynced, isFalse);
+    verifyNever(() => local.deleteBudget(any()));
+  });
+
+  test('ignores missing budgets on delete', () async {
+    when(() => local.getAllBudgets()).thenAnswer((_) async => []);
+
+    final result = await repository.deleteBudget('missing');
+
+    expect(result.isRight(), isTrue);
+    verifyNever(() => local.saveBudget(any()));
+  });
+
+  group('sync queue integration', () {
+    final now = DateTime.utc(2026, 10, 23, 12);
+    late MockSyncQueue queue;
+
+    setUp(() {
+      queue = MockSyncQueue();
+      when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    });
+
+    test('enqueues an upsert when adding a budget', () async {
+      when(() => local.saveBudget(any())).thenAnswer((_) async {});
+      final repository = BudgetRepositoryImpl(
+        local,
+        transactions,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.addBudget(
+        BudgetEntity(
+          id: 'budget-1',
+          category: 'Food',
+          monthlyLimit: 100,
+          month: DateTime(2026, 10),
+        ),
+      );
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.entityType, SyncEntityType.budget);
+      expect(operation.operationType, SyncOperationType.upsert);
+      expect(operation.payload['isSynced'], isFalse);
+      expect(operation.payload['updatedAt'], now.toUtc().toIso8601String());
+    });
+
+    test('enqueues a tombstone when deleting a budget', () async {
+      when(() => local.getAllBudgets())
+          .thenAnswer((_) async => [buildBudgetModel()]);
+      when(() => local.saveBudget(any())).thenAnswer((_) async {});
+      final repository = BudgetRepositoryImpl(
+        local,
+        transactions,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      await repository.deleteBudget('budget-1');
+
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.operationType, SyncOperationType.upsert);
+      expect(operation.payload['deletedAt'], isNotNull);
+    });
+
+    test('a queue failure does not fail the local write', () async {
+      when(() => local.saveBudget(any())).thenAnswer((_) async {});
+      when(() => queue.enqueue(any())).thenThrow(Exception('queue down'));
+      final repository = BudgetRepositoryImpl(
+        local,
+        transactions,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      final result = await repository.addBudget(
+        BudgetEntity(
+          id: 'budget-1',
+          category: 'Food',
+          monthlyLimit: 100,
+          month: DateTime(2026, 10),
+        ),
+      );
+
+      expect(result.isRight(), isTrue);
+    });
   });
 }

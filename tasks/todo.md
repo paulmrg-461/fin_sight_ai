@@ -65,6 +65,15 @@
 - [x] Login/sync-chip UX polish
 - [x] Widget/service tests for the new behavior
 
+## Synced budgets
+
+- [x] Sync fields + tombstone support
+- [x] Queue upserts/deletes
+- [x] PostgREST budget datasource + sync merge
+- [x] Tombstone purge and resurrection protection
+- [x] `0003_budgets.sql` + RLS
+- [x] Tests
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -76,7 +85,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 478 tests passing
+- [x] `flutter test --coverage` — 492 tests passing
 - [x] Integration tests — 9 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push
