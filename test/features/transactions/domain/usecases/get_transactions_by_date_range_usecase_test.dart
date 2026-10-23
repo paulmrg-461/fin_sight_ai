@@ -29,6 +29,21 @@ void main() {
   });
 
   group('GetTransactionsByDateRangeUseCase', () {
+    test('DateRangeParams compares by value', () {
+      expect(
+        DateRangeParams(start: start, end: end),
+        DateRangeParams(start: start, end: end),
+      );
+      expect(
+        DateRangeParams(start: start, end: end).hashCode,
+        DateRangeParams(start: start, end: end).hashCode,
+      );
+      expect(
+        DateRangeParams(start: start, end: end),
+        isNot(DateRangeParams(start: start, end: start)),
+      );
+    });
+
     test('queries the repository with the provided range', () async {
       when(() => repository.getTransactionsByDateRange(start: start, end: end))
           .thenAnswer((_) async => Right([transaction]));

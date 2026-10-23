@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fin_sight_ai/core/di/injection.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
@@ -13,7 +14,24 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/calculate_payoff_use
 import 'package:fin_sight_ai/features/debts/domain/usecases/delete_debt_usecase.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart';
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/groq_api_datasource.dart';
+import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/ai_coach_repository.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
+import 'package:fin_sight_ai/features/ocr/data/datasources/hive_receipt_local_data_source.dart';
+import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart';
+import 'package:fin_sight_ai/features/ocr/data/datasources/receipt_local_data_source.dart';
+import 'package:fin_sight_ai/features/ocr/data/repositories/receipt_repository_impl.dart';
+import 'package:fin_sight_ai/features/ocr/domain/repositories/receipt_repository.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart';
+import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/data/datasources/hive_transaction_local_data_source.dart';
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart';
 import 'package:fin_sight_ai/features/transactions/data/repositories/transaction_repository_impl.dart';
@@ -27,6 +45,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -98,6 +117,23 @@ GROQ_API_KEY=groq-key
     expect(getIt<DebtBloc>(), isA<DebtBloc>());
     expect(getIt<ThemeController>(), isA<ThemeController>());
     expect(getIt<GoRouter>(), isA<GoRouter>());
+    expect(getIt<http.Client>(), isA<http.Client>());
+    expect(getIt<ReceiptImagePicker>(), isA<ReceiptImagePicker>());
+
+    expect(getIt<ReceiptLocalDataSource>(), isA<HiveReceiptLocalDataSource>());
+    expect(getIt<OcrDataSource>(), isNotNull);
+    expect(getIt<ReceiptRepository>(), isA<ReceiptRepositoryImpl>());
+    expect(getIt<ScanReceiptUseCase>(), isNotNull);
+    expect(getIt<SaveReceiptUseCase>(), isNotNull);
+    expect(getIt<GetReceiptsUseCase>(), isNotNull);
+    expect(getIt<OcrBloc>(), isA<OcrBloc>());
+
+    expect(getIt<AiCoachDatasource>(), isA<GroqApiDatasource>());
+    expect(getIt<AiCoachRepository>(), isA<AiCoachRepositoryImpl>());
+    expect(getIt<AiCoachBloc>(), isA<AiCoachBloc>());
+
+    expect(getIt<DashboardRepository>(), isA<DashboardRepositoryImpl>());
+    expect(getIt<DashboardBloc>(), isA<DashboardBloc>());
   });
 
   test('resolving before configuration throws', () async {

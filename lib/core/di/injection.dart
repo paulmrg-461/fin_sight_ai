@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -11,6 +12,7 @@ import '../../features/transactions/data/datasources/hive_transaction_local_data
 import '../../features/transactions/data/datasources/transaction_local_data_source.dart';
 import '../routing/app_router.dart';
 import '../services/app_boxes.dart';
+import '../services/receipt_image_picker.dart';
 import '../theme/theme_controller.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_env.dart';
@@ -34,6 +36,9 @@ abstract class CoreModule {
 
   @lazySingleton
   AppEnv provideAppEnv() => AppEnv.current();
+
+  @lazySingleton
+  http.Client provideHttpClient() => http.Client();
 }
 
 @module
@@ -48,6 +53,7 @@ abstract class StorageModule {
         AppConstants.transactionsBoxName,
       ),
       debts: await Hive.openBox<dynamic>(AppConstants.debtsBoxName),
+      receipts: await Hive.openBox<dynamic>(AppConstants.receiptsBoxName),
     );
   }
 }
@@ -70,6 +76,11 @@ abstract class DebtsModule {
 @module
 abstract class RoutingModule {
   @lazySingleton
-  GoRouter provideGoRouter(ThemeController themeController) =>
-      buildRouter(themeController: themeController);
+  GoRouter provideGoRouter(
+    ThemeController themeController,
+    ReceiptImagePicker imagePicker,
+  ) => buildRouter(
+    themeController: themeController,
+    receiptImagePicker: imagePicker,
+  );
 }

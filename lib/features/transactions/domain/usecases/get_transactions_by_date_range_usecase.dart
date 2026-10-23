@@ -12,6 +12,14 @@ class DateRangeParams {
 
   final DateTime start;
   final DateTime end;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DateRangeParams && other.start == start && other.end == end;
+
+  @override
+  int get hashCode => Object.hash(start, end);
 }
 
 /// Returns transactions inside an inclusive date range.

@@ -1,37 +1,51 @@
-# Task List — FinSight AI foundation + features
+# Task List — FinSight AI
 
-## Core infrastructure
+## Core and existing features
 
-- [x] `Entity` and sealed `Failure` hierarchy
-- [x] GoRouter named routes (`/dashboard`, `/transactions`, `/debts`, `/ocr`, `/ai-coach`)
-- [x] Emerald light/dark themes + `ThemeController`
-- [x] `.env` + `flutter_dotenv` typed through `AppEnv`
-- [x] get_it + injectable graph with Hive boxes
-- [x] DI, routing, theme, env, and app-shell tests
+- [x] Core infrastructure (DI, routing, theme, env, domain base)
+- [x] Transactions slice with Hive persistence and BLoC
+- [x] Debts slice with payoff calculator and BLoC
 
-## Transactions
+## OCR
 
-- [x] `TransactionEntity` and repository contract
-- [x] Add / Get / GetByDateRange / Delete use cases
-- [x] `TransactionModel` + JSON round-trip
-- [x] Hive data source + repository implementation
-- [x] `TransactionBloc` + sealed states
-- [x] Screen, form, list, date/category filters
-- [x] Use case, model, data source, repository, and BLoC tests
+- [x] Receipt entities, repository, Scan/Save/Get use cases
+- [x] Tolerant receipt parser + model
+- [x] ML Kit data source + Hive data source + repository
+- [x] OcrBloc + scan/save/load states
+- [x] OCR screen + editable preview
+- [x] Receipt → expense transaction
+- [x] Unit, parser, data, and BLoC tests
 
-## Debts
+## AI Coach
 
-- [x] `DebtEntity`, `PaymentRecord`, `DebtPayoffCalculator`
-- [x] Add / Get / MakePayment / Delete / CalculatePayoff use cases
-- [x] `DebtModel` + JSON round-trip
-- [x] Hive data source + repository implementation
-- [x] `DebtBloc` + sealed states
-- [x] List, add, and detail screens with progress and payment history
-- [x] Calculator, use case, model, data source, repository, and BLoC tests
+- [x] Financial insight entity + repository + use cases
+- [x] Groq prompt templates + HTTP data source
+- [x] Insight parser + repository implementation
+- [x] AiCoachBloc with transaction context
+- [x] Chat-like screen + InsightCard
+- [x] Prompt, HTTP, parser, repository, use case, and BLoC tests
+
+## Dashboard
+
+- [x] Summary/breakdown/comparison entities + repository
+- [x] Dashboard calculator + transaction aggregation
+- [x] Dashboard use cases + range validation
+- [x] DashboardBloc (load/refresh/range)
+- [x] Summary cards, pie/bar charts, recent activity, quick actions, pull-to-refresh
+- [x] Calculation, repository, use case, and BLoC tests
+
+## Integration
+
+- [x] Integration harness with real Hive + fake OCR/Groq/picker
+- [x] Complete user-flow tests
+- [x] Persistence across restart
+- [x] Launch and render benchmarks
+- [x] Integration tests passing with `flutter test -d linux`
 
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 171 tests passing
+- [x] `flutter test --coverage` — 324 tests passing
+- [x] Integration tests — 7 passing
 - [x] Domain and data coverage ≥ 90%
-- [x] Commit and push
+- [ ] Commit and push

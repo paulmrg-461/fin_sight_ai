@@ -64,6 +64,8 @@ Current storage is **Hive CE**, accessed only through a feature-owned local data
 - **Isolation:** `mocktail` for collaborators, `bloc_test` for state transitions, and real implementations for pure logic and Hive data sources using a temporary directory.
 - **Naming:** `test/features/<feature>/<layer>/<file>_test.dart` and `test/core/<area>/<file>_test.dart`.
 - **Structure:** Arrange → Act → Assert. One behavior per test. Test names state the expected behavior.
+- **Integration coverage:** critical user flows (add transaction, scan receipt, add debt, AI insights, date filtering, restart persistence) run through `integration_test/` with real local storage and faked external services.
+- **Performance smoke checks:** integration tests record launch and screen render timings with explicit upper bounds.
 - **No skipped tests, no deleted assertions, no `@ts-ignore` equivalents** to force a green build.
 
 ---
@@ -100,6 +102,12 @@ flutter test --coverage
 ```
 
 Both must pass with zero analyzer errors/warnings and no failing or skipped tests. New behavior ships with tests.
+
+Critical flows also run with:
+
+```bash
+flutter test -d linux integration_test/app_flow_test.dart
+```
 
 ---
 

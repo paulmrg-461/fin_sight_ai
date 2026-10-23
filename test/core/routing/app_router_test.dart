@@ -1,14 +1,25 @@
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+
+class _FakeReceiptImagePicker implements ReceiptImagePicker {
+  @override
+  Future<String?> pick(ReceiptImageSource source) async => null;
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  final picker = _FakeReceiptImagePicker();
+  GoRouter routerFor(ThemeController controller) =>
+      buildRouter(themeController: controller, receiptImagePicker: picker);
+
   group('buildRouter', () {
     test('generates a named location for every feature route', () {
-      final router = buildRouter(themeController: ThemeController());
+      final router = routerFor(ThemeController());
 
       expect(
         router.namedLocation(AppRoutes.dashboardName),
@@ -27,7 +38,7 @@ void main() {
     });
 
     test('starts on the dashboard route', () {
-      final router = buildRouter(themeController: ThemeController());
+      final router = routerFor(ThemeController());
 
       expect(
         router.routeInformationProvider.value.uri.path,
@@ -36,7 +47,7 @@ void main() {
     });
 
     test('builds parameterized locations without throwing', () {
-      final router = buildRouter(themeController: ThemeController());
+      final router = routerFor(ThemeController());
 
       expect(
         router.namedLocation(

@@ -12,9 +12,34 @@
 
 import 'package:fin_sight_ai/core/di/injection.dart' as _i1015;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
+import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
 import 'package:fin_sight_ai/core/utils/clock.dart' as _i956;
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart'
+    as _i323;
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/groq_api_datasource.dart'
+    as _i369;
+import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart'
+    as _i587;
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/ai_coach_repository.dart'
+    as _i853;
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart'
+    as _i177;
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart'
+    as _i811;
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart'
+    as _i363;
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart'
+    as _i872;
+import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart'
+    as _i366;
+import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart'
+    as _i864;
+import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart'
+    as _i905;
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart'
+    as _i850;
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart'
     as _i1035;
 import 'package:fin_sight_ai/features/debts/data/repositories/debt_repository_impl.dart'
@@ -33,6 +58,25 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase
     as _i978;
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart'
     as _i1009;
+import 'package:fin_sight_ai/features/ocr/data/datasources/mlkit_ocr_data_source.dart'
+    as _i598;
+import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart'
+    as _i880;
+import 'package:fin_sight_ai/features/ocr/data/datasources/receipt_local_data_source.dart'
+    as _i783;
+import 'package:fin_sight_ai/features/ocr/data/ocr_module.dart' as _i600;
+import 'package:fin_sight_ai/features/ocr/data/repositories/receipt_repository_impl.dart'
+    as _i367;
+import 'package:fin_sight_ai/features/ocr/domain/repositories/receipt_repository.dart'
+    as _i832;
+import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart'
+    as _i937;
+import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart'
+    as _i292;
+import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart'
+    as _i826;
+import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart'
+    as _i1031;
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart'
     as _i228;
 import 'package:fin_sight_ai/features/transactions/data/repositories/transaction_repository_impl.dart'
@@ -51,6 +95,7 @@ import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction
     as _i820;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:go_router/go_router.dart' as _i583;
+import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:uuid/uuid.dart' as _i706;
 
@@ -63,19 +108,27 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final storageModule = _$StorageModule();
     final coreModule = _$CoreModule();
-    final routingModule = _$RoutingModule();
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
+    final ocrModule = _$OcrModule();
+    final routingModule = _$RoutingModule();
     await gh.factoryAsync<_i422.AppBoxes>(
       () => storageModule.provideAppBoxes(),
       preResolve: true,
     );
     gh.lazySingleton<_i706.Uuid>(() => coreModule.provideUuid());
     gh.lazySingleton<_i1042.AppEnv>(() => coreModule.provideAppEnv());
+    gh.lazySingleton<_i519.Client>(() => coreModule.provideHttpClient());
     gh.lazySingleton<_i32.ThemeController>(() => _i32.ThemeController());
     gh.lazySingleton<_i956.Clock>(() => const _i956.Clock());
-    gh.lazySingleton<_i583.GoRouter>(
-      () => routingModule.provideGoRouter(gh<_i32.ThemeController>()),
+    gh.lazySingleton<_i880.OcrDataSource>(
+      () => const _i598.MlKitOcrDataSource(),
+    );
+    gh.lazySingleton<_i147.ReceiptImagePicker>(
+      () => _i147.ImagePickerReceiptImagePicker(),
+    );
+    gh.lazySingleton<_i323.AiCoachDatasource>(
+      () => _i369.GroqApiDatasource(gh<_i519.Client>(), gh<_i1042.AppEnv>()),
     );
     gh.lazySingleton<_i228.TransactionLocalDataSource>(
       () => transactionsModule.provideTransactionLocalDataSource(
@@ -85,6 +138,31 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1035.DebtLocalDataSource>(
       () => debtsModule.provideDebtLocalDataSource(gh<_i422.AppBoxes>()),
     );
+    gh.lazySingleton<_i783.ReceiptLocalDataSource>(
+      () => ocrModule.provideReceiptLocalDataSource(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i583.GoRouter>(
+      () => routingModule.provideGoRouter(
+        gh<_i32.ThemeController>(),
+        gh<_i147.ReceiptImagePicker>(),
+      ),
+    );
+    gh.lazySingleton<_i853.AiCoachRepository>(
+      () => _i587.AiCoachRepositoryImpl(
+        gh<_i323.AiCoachDatasource>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i177.AnalyzeSpendingUseCase>(
+      () => _i177.AnalyzeSpendingUseCase(gh<_i853.AiCoachRepository>()),
+    );
+    gh.lazySingleton<_i811.GetInsightsUseCase>(
+      () => _i811.GetInsightsUseCase(gh<_i853.AiCoachRepository>()),
+    );
+    gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
+      () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
+    );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
@@ -92,6 +170,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i268.DebtRepository>(
       () => _i140.DebtRepositoryImpl(gh<_i1035.DebtLocalDataSource>()),
+    );
+    gh.lazySingleton<_i864.DashboardRepository>(
+      () => _i366.DashboardRepositoryImpl(gh<_i544.TransactionRepository>()),
+    );
+    gh.lazySingleton<_i832.ReceiptRepository>(
+      () => _i367.ReceiptRepositoryImpl(
+        gh<_i783.ReceiptLocalDataSource>(),
+        gh<_i880.OcrDataSource>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
     );
     gh.lazySingleton<_i69.DeleteTransactionUseCase>(
       () => _i69.DeleteTransactionUseCase(gh<_i544.TransactionRepository>()),
@@ -104,6 +193,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1051.GetTransactionsUseCase>(
       () => _i1051.GetTransactionsUseCase(gh<_i544.TransactionRepository>()),
     );
+    gh.lazySingleton<_i905.GetDashboardSummaryUseCase>(
+      () => _i905.GetDashboardSummaryUseCase(gh<_i864.DashboardRepository>()),
+    );
+    gh.lazySingleton<_i905.GetCategoryBreakdownUseCase>(
+      () => _i905.GetCategoryBreakdownUseCase(gh<_i864.DashboardRepository>()),
+    );
+    gh.lazySingleton<_i905.GetMonthlyComparisonUseCase>(
+      () => _i905.GetMonthlyComparisonUseCase(gh<_i864.DashboardRepository>()),
+    );
     gh.lazySingleton<_i361.AddTransactionUseCase>(
       () => _i361.AddTransactionUseCase(
         gh<_i544.TransactionRepository>(),
@@ -115,6 +213,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i268.DebtRepository>(),
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i850.DashboardBloc>(
+      () => _i850.DashboardBloc(
+        gh<_i905.GetDashboardSummaryUseCase>(),
+        gh<_i905.GetCategoryBreakdownUseCase>(),
+        gh<_i905.GetMonthlyComparisonUseCase>(),
+        gh<_i271.GetTransactionsByDateRangeUseCase>(),
       ),
     );
     gh.lazySingleton<_i144.AddDebtUseCase>(
@@ -140,6 +246,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i243.GetDebtsUseCase>(
       () => _i243.GetDebtsUseCase(gh<_i268.DebtRepository>()),
     );
+    gh.factory<_i872.AiCoachBloc>(
+      () => _i872.AiCoachBloc(
+        gh<_i811.GetInsightsUseCase>(),
+        gh<_i177.AnalyzeSpendingUseCase>(),
+        gh<_i363.GetSavingsSuggestionsUseCase>(),
+        gh<_i1051.GetTransactionsUseCase>(),
+      ),
+    );
+    gh.lazySingleton<_i937.GetReceiptsUseCase>(
+      () => _i937.GetReceiptsUseCase(gh<_i832.ReceiptRepository>()),
+    );
+    gh.lazySingleton<_i826.ScanReceiptUseCase>(
+      () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
+    );
     gh.factory<_i1009.DebtBloc>(
       () => _i1009.DebtBloc(
         gh<_i243.GetDebtsUseCase>(),
@@ -147,6 +267,20 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i978.MakePaymentUseCase>(),
         gh<_i24.DeleteDebtUseCase>(),
         gh<_i1045.CalculatePayoffUseCase>(),
+      ),
+    );
+    gh.lazySingleton<_i292.SaveReceiptUseCase>(
+      () => _i292.SaveReceiptUseCase(
+        gh<_i832.ReceiptRepository>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
+    gh.factory<_i1031.OcrBloc>(
+      () => _i1031.OcrBloc(
+        gh<_i826.ScanReceiptUseCase>(),
+        gh<_i292.SaveReceiptUseCase>(),
+        gh<_i937.GetReceiptsUseCase>(),
+        gh<_i361.AddTransactionUseCase>(),
       ),
     );
     return this;
@@ -157,8 +291,10 @@ class _$StorageModule extends _i1015.StorageModule {}
 
 class _$CoreModule extends _i1015.CoreModule {}
 
-class _$RoutingModule extends _i1015.RoutingModule {}
-
 class _$TransactionsModule extends _i1015.TransactionsModule {}
 
 class _$DebtsModule extends _i1015.DebtsModule {}
+
+class _$OcrModule extends _i600.OcrModule {}
+
+class _$RoutingModule extends _i1015.RoutingModule {}

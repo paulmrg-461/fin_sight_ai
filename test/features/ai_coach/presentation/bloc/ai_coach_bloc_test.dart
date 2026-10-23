@@ -1,0 +1,175 @@
+import 'package:bloc_test/bloc_test.dart';
+import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/usecase/usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/entities/financial_insight_entity.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_event.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_state.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockGetInsights extends Mock implements GetInsightsUseCase {}
+
+class MockAnalyzeSpending extends Mock implements AnalyzeSpendingUseCase {}
+
+class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
+
+class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
+
+void main() {
+  late MockGetInsights getInsights;
+  late MockAnalyzeSpending analyzeSpending;
+  late MockGetSavings getSavings;
+  late MockGetTransactions getTransactions;
+
+  final suggestion = FinancialInsightEntity(
+    id: 'i-1',
+    type: InsightType.suggestion,
+    content: 'Save more.',
+    timestamp: DateTime.utc(2026, 10, 22),
+  );
+  final analysis = FinancialInsightEntity(
+    id: 'i-2',
+    type: InsightType.analysis,
+    content: 'Dining dominates.',
+    timestamp: DateTime.utc(2026, 10, 22),
+  );
+
+  final transactions = [
+    TransactionEntity(
+      id: 'tx-1',
+      amount: 1000,
+      type: TransactionType.income,
+      category: 'Salary',
+      description: 'October',
+      date: DateTime.utc(2026, 10, 1),
+    ),
+    TransactionEntity(
+      id: 'tx-2',
+      amount: 200,
+      type: TransactionType.expense,
+      category: 'Food',
+      description: 'Groceries',
+      date: DateTime.utc(2026, 10, 5),
+    ),
+  ];
+
+  setUpAll(() {
+    registerFallbackValue(const NoParams());
+  });
+
+  setUp(() {
+    getInsights = MockGetInsights();
+    analyzeSpending = MockAnalyzeSpending();
+    getSavings = MockGetSavings();
+    getTransactions = MockGetTransactions();
+    when(() => getTransactions(any()))
+        .thenAnswer((_) async => Right(transactions));
+  });
+
+  AiCoachBloc buildBloc() =>
+      AiCoachBloc(getInsights, analyzeSpending, getSavings, getTransactions);
+
+  group('AiCoachBloc', () {
+    test('initial state is AiCoachInitial', () {
+      expect(buildBloc().state, const AiCoachInitial());
+    });
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'loads insights using a transaction-derived context',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => Right([suggestion]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights()),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion]),
+      ],
+      verify: (_) {
+        final context =
+            verify(() => getInsights(captureAny())).captured.single as String;
+        expect(context, contains('Income: \$1000.00'));
+        expect(context, contains('Expenses: \$200.00'));
+        expect(context, contains('Food: \$200.00'));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'handles an empty transaction history',
+      setUp: () {
+        when(() => getTransactions(any()))
+            .thenAnswer((_) async => const Right([]));
+        when(() => getInsights(any())).thenAnswer((_) async => const Right([]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights()),
+      expect: () => [const AiCoachLoading(), const AiCoachEmpty()],
+      verify: (_) {
+        final context =
+            verify(() => getInsights(captureAny())).captured.single as String;
+        expect(context, contains('No transactions recorded yet.'));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'emits failure when loading insights fails',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => const Left(ServerFailure('Offline.')));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights()),
+      expect: () => [const AiCoachLoading(), const AiCoachFailure('Offline.')],
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'prepends a spending analysis to existing insights',
+      setUp: () {
+        when(() => analyzeSpending(any()))
+            .thenAnswer((_) async => Right(analysis));
+      },
+      build: buildBloc,
+      seed: () => AiCoachLoaded([suggestion]),
+      act: (bloc) => bloc.add(const AnalyzeSpending()),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([analysis, suggestion]),
+      ],
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'prepends savings suggestions to existing insights',
+      setUp: () {
+        when(() => getSavings(any()))
+            .thenAnswer((_) async => Right(suggestion));
+      },
+      build: buildBloc,
+      seed: () => AiCoachLoaded([analysis]),
+      act: (bloc) => bloc.add(const GetSuggestions()),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion, analysis]),
+      ],
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'emits failure when an analysis fails',
+      setUp: () {
+        when(() => analyzeSpending(any()))
+            .thenAnswer((_) async => const Left(ServerFailure('Timeout.')));
+      },
+      build: buildBloc,
+      seed: () => AiCoachLoaded([suggestion]),
+      act: (bloc) => bloc.add(const AnalyzeSpending()),
+      expect: () => [const AiCoachLoading(), const AiCoachFailure('Timeout.')],
+    );
+  });
+}

@@ -5,7 +5,10 @@ import 'package:material_ui/material_ui.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_controller.dart';
 import '../core/utils/app_constants.dart';
+import '../features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
+import '../features/ocr/presentation/bloc/ocr_bloc.dart';
 import '../features/transactions/presentation/bloc/transaction_bloc.dart';
 
 /// Root widget: theme binding, routing, and feature-level BLoC providers.
@@ -16,12 +19,18 @@ class FinSightApp extends StatelessWidget {
     required this.router,
     required this.transactionBloc,
     required this.debtBloc,
+    required this.ocrBloc,
+    required this.aiCoachBloc,
+    required this.dashboardBloc,
   });
 
   final ThemeController themeController;
   final GoRouter router;
   final TransactionBloc transactionBloc;
   final DebtBloc debtBloc;
+  final OcrBloc ocrBloc;
+  final AiCoachBloc aiCoachBloc;
+  final DashboardBloc dashboardBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +38,9 @@ class FinSightApp extends StatelessWidget {
       providers: [
         BlocProvider<TransactionBloc>.value(value: transactionBloc),
         BlocProvider<DebtBloc>.value(value: debtBloc),
+        BlocProvider<OcrBloc>.value(value: ocrBloc),
+        BlocProvider<AiCoachBloc>.value(value: aiCoachBloc),
+        BlocProvider<DashboardBloc>.value(value: dashboardBloc),
       ],
       child: ListenableBuilder(
         listenable: themeController,

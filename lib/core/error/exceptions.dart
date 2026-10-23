@@ -26,3 +26,8 @@ final class CacheException extends AppException {
 final class ValidationException extends AppException {
   const ValidationException(super.message, {super.code});
 }
+
+/// Optical character recognition failed or is unavailable on this platform.
+final class OcrException extends AppException {
+  const OcrException(super.message, {super.code});
+}
