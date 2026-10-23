@@ -24,3 +24,7 @@ create policy "budgets_owner_all"
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+grant select, insert, update, delete on table public.budgets
+  to authenticated;
+revoke all on table public.budgets from anon;

@@ -28,6 +28,14 @@ create policy "transactions_owner_all"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- Least-privilege grants: the app is authenticated-only and never uses anon
+-- for data access. These grants make it safe to disable "Automatically expose
+-- new tables" in the Supabase project settings.
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on table public.transactions
+  to authenticated;
+revoke all on table public.transactions from anon;
+
 create table if not exists public.debts (
   id text primary key,
   user_id uuid not null default auth.uid(),
@@ -53,3 +61,7 @@ create policy "debts_owner_all"
   for all
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
+
+grant select, insert, update, delete on table public.debts
+  to authenticated;
+revoke all on table public.debts from anon;
