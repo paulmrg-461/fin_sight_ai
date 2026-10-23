@@ -19,6 +19,7 @@ import '../features/debts/presentation/bloc/debt_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
 import '../features/sync/presentation/bloc/sync_bloc.dart';
 import '../features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'session_keeper.dart';
 
 /// Root widget: theme binding, routing, and feature-level BLoC providers.
 class FinSightApp extends StatelessWidget {
@@ -75,25 +76,30 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<CategoryBloc>.value(value: categoryBloc),
         BlocProvider<ScheduledPaymentBloc>.value(value: scheduledPaymentBloc),
       ],
-      child: BlocBuilder<LocaleBloc, LocaleState>(
-        builder: (context, localeState) {
-          return ListenableBuilder(
-            listenable: themeController,
-            builder: (context, _) {
-              return MaterialApp.router(
-                onGenerateTitle: (context) => context.l10n.appName,
-                debugShowCheckedModeBanner: false,
-                theme: AppTheme.light,
-                darkTheme: AppTheme.dark,
-                themeMode: themeController.themeMode,
-                locale: localeState is LocaleLoaded ? localeState.locale : null,
-                localizationsDelegates: appLocalizationsDelegates,
-                supportedLocales: AppLocalizations.supportedLocales,
-                routerConfig: router,
-              );
-            },
-          );
-        },
+      child: SessionKeeper(
+        authBloc: authBloc,
+        child: BlocBuilder<LocaleBloc, LocaleState>(
+          builder: (context, localeState) {
+            return ListenableBuilder(
+              listenable: themeController,
+              builder: (context, _) {
+                return MaterialApp.router(
+                  onGenerateTitle: (context) => context.l10n.appName,
+                  debugShowCheckedModeBanner: false,
+                  theme: AppTheme.light,
+                  darkTheme: AppTheme.dark,
+                  themeMode: themeController.themeMode,
+                  locale: localeState is LocaleLoaded
+                      ? localeState.locale
+                      : null,
+                  localizationsDelegates: appLocalizationsDelegates,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  routerConfig: router,
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

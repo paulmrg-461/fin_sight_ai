@@ -28,6 +28,27 @@ class AuthRepositoryImpl implements AuthRepository {
 
   AuthSession? _session;
 
+  /// Refresh failures that mean "try again later", not "you are signed out".
+  static const Set<String> _transientRefreshCodes = <String>{
+    'auth_timeout',
+    'auth_network_error',
+    'auth_not_configured',
+    'auth_http_429',
+  };
+
+  /// Whether a failed refresh should keep the stored session.
+  ///
+  /// Timeouts, connectivity errors, missing configuration, rate limiting, and
+  /// 5xx responses are transient. Anything else (400/401/403, invalid payload)
+  /// is a permanent rejection and clears only the stored session.
+  static bool _isTransientRefreshFailure(String? code) {
+    if (code == null) {
+      return false;
+    }
+    return _transientRefreshCodes.contains(code) ||
+        code.startsWith('auth_http_5');
+  }
+
   @override
   String? get accessToken => isAuthenticated ? _session?.accessToken : null;
 
@@ -108,7 +129,17 @@ class AuthRepositoryImpl implements AuthRepository {
         await _localDataScope.setOwnerUserId(refreshed.userId);
         _session = refreshed;
         return Right(refreshed);
-      } on AuthException {
+      } on AuthException catch (exception) {
+        if (_isTransientRefreshFailure(exception.code)) {
+          // Opening offline must stay signed in: keep the stored session and
+          // the local ledger untouched until a later refresh succeeds.
+          _session = stored;
+          return Right(stored);
+        }
+
+        // The server rejected the refresh token for good. Only the session is
+        // erased; the local ledger and owner stay so a later login reclaims
+        // them. Erasing local data stays reserved for explicit sign-out.
         await _storage.clear();
         _session = null;
         return const Right(null);

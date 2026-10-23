@@ -22,7 +22,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Latest feature commits: `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 668 unit/widget tests, coverage gate green (core 91.1%, categories 97.9/100%, scheduled payments 100/100%), 13 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 722 unit/widget tests, coverage gate green (core 93.1%, auth 94.9/92.7%, categories 97.9/100%, scheduled payments 100/100%), 17 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Categories and scheduled payments
@@ -73,6 +73,21 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - Budgets are synced with the same queue/tombstone/LWW pipeline; aggregation comes from `TransactionRepository`.
 - SQL: `0001_init.sql`, `0002_tombstones.sql`, RLS test script.
 
+### Session persistence
+
+- Supabase GoTrue owns the refresh-token lifetime. The project **must** set
+  Authentication → Sessions → Refresh token expiry to **60 days or longer**;
+  the client cannot extend it and an expired refresh token forces a new login.
+- `AuthRepositoryImpl.restoreSession()` keeps the stored session when a refresh
+  fails transiently (`auth_timeout`, `auth_network_error`, `auth_not_configured`,
+  `auth_http_429`, `auth_http_5xx`), so the app opens offline signed in. Only
+  permanent rejections (400/401/invalid response) clear the stored session;
+  local ledger data and the owner survive until an explicit sign-out.
+- `SessionKeeper` (inside `FinSightApp`) refreshes on `AppLifecycleState.resumed`
+  while authenticated and runs a timer at `expiresAt - 5 min`, clamped to at
+  least 5 minutes from now to avoid a retry loop; it is cancelled on
+  unauthenticated/error states and on dispose.
+
 ### Progress
 
 - [x] `SyncOperation`, enums, `SyncQueue` interface in `lib/core/sync/`.
@@ -101,9 +116,9 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 668 unit/widget tests passing.
-- 13 integration tests passing on Linux.
-- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, categories 97.9/100%, scheduled payments 100/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 91.1%.
+- 722 unit/widget tests passing.
+- 17 integration tests passing on Linux.
+- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 100/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 93.1%.
 - SQL migrations `0001_init.sql` through `0004_wallet_ids.sql` applied; RLS script available.
 
 ## Known gaps / next

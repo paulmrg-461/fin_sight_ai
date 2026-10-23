@@ -3,6 +3,7 @@ import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/core/utils/date_formatters.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
+import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
@@ -19,6 +20,22 @@ String money(double amount) => MoneyFormatter.format(amount, AppCurrency.cop);
 
 String signedMoney(double amount) =>
     MoneyFormatter.signed(amount, AppCurrency.cop);
+
+/// Pumps frames until [condition] holds or the timeout elapses.
+Future<void> waitForCondition(
+  WidgetTester tester,
+  bool Function() condition, {
+  Duration timeout = const Duration(seconds: 8),
+}) async {
+  final deadline = DateTime.now().add(timeout);
+  while (DateTime.now().isBefore(deadline)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    if (condition()) {
+      return;
+    }
+  }
+  throw TestFailure('Timed out waiting for condition.');
+}
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -251,6 +268,28 @@ void main() {
     harness.router.goNamed(AppRoutes.transactionsName);
     await pumpUntil(tester, find.text('No transactions yet'));
     expect(find.text('Private salary'), findsNothing);
+  });
+
+  testWidgets('stays signed in when the refresh fails offline', (tester) async {
+    harness.seedOfflineExpiredSession();
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.byIcon(Icons.logout));
+
+    expect(find.byIcon(Icons.person_outline), findsNothing);
+    expect(harness.authRemote.refreshCount, 1);
+    // Offline sync waits for a usable token, but the ledger stays readable.
+    expect(harness.authRepository.accessToken, isNull);
+
+    harness.authRemote.failRefresh = false;
+    harness.authBloc.add(const RestoreAuthSession());
+    await waitForCondition(
+      tester,
+      () => harness.authRepository.accessToken == 'refreshed-access-2',
+    );
+    await pumpUntil(tester, find.byIcon(Icons.logout));
+
+    expect(harness.authStorage.session?.refreshToken, 'refreshed-refresh-2');
   });
 
   testWidgets('filters transactions by date range', (tester) async {

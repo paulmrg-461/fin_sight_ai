@@ -31,10 +31,14 @@ void main() {
   late MockSessionStorage storage;
   late MockLocalDataScope localDataScope;
 
-  AuthSession session({DateTime? expiresAt}) {
+  AuthSession session({
+    DateTime? expiresAt,
+    String accessToken = 'access',
+    String refreshToken = 'refresh',
+  }) {
     return AuthSession(
-      accessToken: 'access',
-      refreshToken: 'refresh',
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       userId: 'user-1',
       email: 'user@example.com',
       expiresAt: expiresAt ?? DateTime.utc(2030),
@@ -152,9 +156,12 @@ void main() {
       expect(repository.isAuthenticated, isTrue);
     });
 
-    test('refreshes an expired session', () async {
+    test('refreshes an expired session and rotates the tokens', () async {
       final expired = session(expiresAt: DateTime.utc(2020));
-      final refreshed = session();
+      final refreshed = session(
+        accessToken: 'rotated-access',
+        refreshToken: 'rotated-refresh',
+      );
       when(() => storage.read()).thenAnswer((_) async => expired);
       when(() => remote.refresh('refresh')).thenAnswer((_) async => refreshed);
       final repository = buildRepository();
@@ -164,21 +171,58 @@ void main() {
       expect(result.getOrElse((_) => null), refreshed);
       verify(() => storage.write(refreshed)).called(1);
       verify(() => localDataScope.setOwnerUserId('user-1')).called(1);
+      expect(repository.accessToken, 'rotated-access');
+      expect(repository.isAuthenticated, isTrue);
     });
 
-    test('clears the session when refresh fails', () async {
-      final expired = session(expiresAt: DateTime.utc(2020));
-      when(() => storage.read()).thenAnswer((_) async => expired);
-      when(() => remote.refresh(any()))
-          .thenThrow(const AuthException('Expired.', code: 'auth_http_401'));
-      final repository = buildRepository();
+    for (final code in const [
+      'auth_timeout',
+      'auth_network_error',
+      'auth_not_configured',
+      'auth_http_429',
+      'auth_http_500',
+      'auth_http_503',
+    ]) {
+      test('keeps the stored session when refresh fails with $code', () async {
+        final expired = session(expiresAt: DateTime.utc(2020));
+        when(() => storage.read()).thenAnswer((_) async => expired);
+        when(() => remote.refresh(any()))
+            .thenThrow(AuthException('Transient.', code: code));
+        final repository = buildRepository();
 
-      final result = await repository.restoreSession();
+        final result = await repository.restoreSession();
 
-      expect(result.getOrElse((_) => fail('Expected null')), isNull);
-      verify(() => storage.clear()).called(1);
-      expect(repository.isAuthenticated, isFalse);
-    });
+        expect(
+          result.getOrElse((_) => fail('Expected the stored session')),
+          expired,
+        );
+        verifyNever(() => storage.clear());
+        verifyNever(() => localDataScope.clearAllUserData());
+        verifyNever(() => localDataScope.setOwnerUserId(null));
+        expect(repository.isAuthenticated, isFalse);
+      });
+    }
+
+    for (final code in const [
+      'auth_http_400',
+      'auth_http_401',
+      'auth_invalid_response',
+    ]) {
+      test('clears the session when refresh fails with $code', () async {
+        final expired = session(expiresAt: DateTime.utc(2020));
+        when(() => storage.read()).thenAnswer((_) async => expired);
+        when(() => remote.refresh(any()))
+            .thenThrow(AuthException('Rejected.', code: code));
+        final repository = buildRepository();
+
+        final result = await repository.restoreSession();
+
+        expect(result.getOrElse((_) => fail('Expected null')), isNull);
+        verify(() => storage.clear()).called(1);
+        verifyNever(() => localDataScope.clearAllUserData());
+        expect(repository.isAuthenticated, isFalse);
+      });
+    }
 
     test('maps storage failures', () async {
       when(() => storage.read()).thenThrow(Exception('storage'));

@@ -34,6 +34,17 @@ stored in platform secure storage and sent as the `Authorization: Bearer`
 header for PostgREST sync. `user_id` defaults to `auth.uid()`; without an
 authenticated session, RLS rejects writes and the app stays in offline mode.
 
+### Refresh token expiry
+
+GoTrue owns the refresh-token lifetime and the client cannot extend it. In the
+Supabase dashboard set **Authentication → Sessions → Refresh token expiry** to
+**60 days or longer** so a user stays signed in across restarts and offline
+launches. The access token (JWT) may keep the default 1 hour: the app refreshes
+it in the background and treats timeouts, network errors, and 429/5xx responses
+as transient instead of signing the user out. Only a permanent rejection
+(400/401/invalid response) clears the stored session, and only an explicit
+sign-out erases local data.
+
 ## Verify RLS against a real project
 
 The repository includes a transactional RLS test that creates two synthetic

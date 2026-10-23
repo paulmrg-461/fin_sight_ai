@@ -11,18 +11,17 @@ import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
 import 'package:fin_sight_ai/core/currency/hive_currency_repository.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_event.dart';
-import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/locale/hive_locale_repository.dart';
 import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_event.dart';
-import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
@@ -89,7 +88,6 @@ import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart
 import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -107,6 +105,8 @@ class IntegrationHarness {
   final FakeOcrDataSource ocr = FakeOcrDataSource();
   final FakeGroqDatasource groq = FakeGroqDatasource();
   final FakeReceiptImagePicker imagePicker = FakeReceiptImagePicker();
+  final FakeAuthRemoteDataSource authRemote = FakeAuthRemoteDataSource();
+  final InMemorySessionStorage authStorage = InMemorySessionStorage();
 
   late Box<dynamic> _transactionsBox;
   late Box<dynamic> _debtsBox;
@@ -121,6 +121,7 @@ class IntegrationHarness {
   late Box<dynamic> _scheduledPaymentsBox;
 
   late LocalDataScope localDataScope;
+  late AuthRepository authRepository;
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
   late ReceiptRepository receiptRepository;
@@ -268,7 +269,11 @@ class IntegrationHarness {
     );
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
-    final authRepository = _FakeAuthRepository(localDataScope);
+    authRepository = AuthRepositoryImpl(
+      authRemote,
+      authStorage,
+      localDataScope,
+    );
     final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
     final budgetLocal = HiveBudgetLocalDataSource(_budgetsBox);
     final syncRepository = SyncRepositoryImpl(
@@ -395,6 +400,21 @@ class IntegrationHarness {
     await tester.pump();
   }
 
+  /// Seeds an expired stored session whose next refresh fails as if offline.
+  void seedOfflineExpiredSession() {
+    final expired = AuthSession(
+      accessToken: 'expired-access-token',
+      refreshToken: 'expired-refresh-token',
+      userId: 'integration-user',
+      email: 'user@example.com',
+      expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+    );
+    authStorage.session = expired;
+    authRemote
+      ..session = expired
+      ..failRefresh = true;
+  }
+
   Future<void> restart() async {
     await _closeBlocs();
     await _transactionsBox.close();
@@ -515,62 +535,6 @@ Future<void> pumpUntilGone(
     }
   }
   throw TestFailure('Timed out waiting for disappearance of: $finder');
-}
-
-class _FakeAuthRepository implements AuthRepository {
-  _FakeAuthRepository(this._localDataScope);
-
-  final LocalDataScope _localDataScope;
-
-  AuthSession? _session;
-
-  @override
-  String? get accessToken => _session?.accessToken;
-
-  @override
-  bool get isAuthenticated => _session != null;
-
-  AuthSession _buildSession(String email) {
-    return AuthSession(
-      accessToken: 'integration-access-token',
-      refreshToken: 'integration-refresh-token',
-      userId: 'integration-user',
-      email: email,
-      expiresAt: DateTime.now().add(const Duration(hours: 1)),
-    );
-  }
-
-  @override
-  ResultFuture<AuthSession> signIn({
-    required String email,
-    required String password,
-  }) async {
-    if (email.trim().isEmpty || password.length < 6) {
-      return const Left(
-        AuthFailure('Invalid credentials.', code: 'auth_invalid_credentials'),
-      );
-    }
-    _session = _buildSession(email.trim());
-    await _localDataScope.setOwnerUserId(_session!.userId);
-    return Right(_session!);
-  }
-
-  @override
-  ResultFuture<AuthSession> signUp({
-    required String email,
-    required String password,
-  }) => signIn(email: email, password: password);
-
-  @override
-  ResultFuture<AuthSession?> restoreSession() async => const Right(null);
-
-  @override
-  ResultFuture<void> signOut() async {
-    _session = null;
-    await _localDataScope.clearAllUserData();
-    await _localDataScope.setOwnerUserId(null);
-    return const Right(null);
-  }
 }
 
 class _FakeReceiptImageStore implements ReceiptImageStore {

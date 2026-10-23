@@ -1,6 +1,9 @@
 import 'package:fin_sight_ai/core/error/exceptions.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:fin_sight_ai/features/auth/data/datasources/session_storage.dart';
+import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart';
 
 /// Deterministic OCR result used by integration tests.
@@ -46,4 +49,92 @@ class FakeReceiptImagePicker implements ReceiptImagePicker {
   @override
   Future<String?> pick(ReceiptImageSource source) async =>
       '/tmp/fake-receipt.jpg';
+}
+
+/// In-memory session storage so integration tests can seed a stored session.
+class InMemorySessionStorage implements SessionStorage {
+  InMemorySessionStorage([this.session]);
+
+  AuthSession? session;
+
+  @override
+  Future<AuthSession?> read() async => session;
+
+  @override
+  Future<void> write(AuthSession session) async {
+    this.session = session;
+  }
+
+  @override
+  Future<void> clear() async {
+    session = null;
+  }
+}
+
+/// Deterministic Supabase Auth double: no network, rotating tokens, and a
+/// switch that simulates an offline refresh.
+class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
+  AuthSession? session;
+  bool failRefresh = false;
+  int refreshCount = 0;
+
+  AuthSession _sessionFor(String email, String suffix) {
+    return AuthSession(
+      accessToken: 'access-$suffix',
+      refreshToken: 'refresh-$suffix',
+      userId: 'integration-user',
+      email: email,
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    );
+  }
+
+  @override
+  Future<AuthSession> signIn({
+    required String email,
+    required String password,
+  }) async {
+    if (email.trim().isEmpty || password.length < 6) {
+      throw const AuthException(
+        'Invalid credentials.',
+        code: 'auth_invalid_credentials',
+      );
+    }
+    return session = _sessionFor(email.trim(), '1');
+  }
+
+  @override
+  Future<AuthSession> signUp({
+    required String email,
+    required String password,
+  }) => signIn(email: email, password: password);
+
+  @override
+  Future<AuthSession> refresh(String refreshToken) async {
+    refreshCount++;
+    if (failRefresh) {
+      throw const AuthException(
+        'Could not reach Supabase Auth.',
+        code: 'auth_network_error',
+      );
+    }
+
+    final current = session;
+    if (current == null) {
+      throw const AuthException(
+        'Refresh token rejected.',
+        code: 'auth_http_401',
+      );
+    }
+
+    return session = AuthSession(
+      accessToken: 'refreshed-access-$refreshCount',
+      refreshToken: 'refreshed-refresh-$refreshCount',
+      userId: current.userId,
+      email: current.email,
+      expiresAt: DateTime.now().add(const Duration(hours: 1)),
+    );
+  }
+
+  @override
+  Future<void> signOut(String accessToken) async {}
 }
