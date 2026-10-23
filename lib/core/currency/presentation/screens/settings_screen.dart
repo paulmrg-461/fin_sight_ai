@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app_currency.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/locale/presentation/bloc/locale_bloc.dart';
 import '../../../../core/locale/presentation/bloc/locale_event.dart';
@@ -105,6 +107,23 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+                  const SizedBox(height: 32),
+                  Text(
+                    l10n.categoriesTitle,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    l10n.categoriesDescription,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.label_outline),
+                    title: Text(l10n.manageCategories),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.pushNamed(AppRoutes.categoriesName),
+                  ),
                 ],
               );
             },

@@ -639,4 +639,143 @@ class AppLocalizationsEn extends AppLocalizations {
   String transactionRef(String id) {
     return 'Transaction $id';
   }
+
+  @override
+  String get categoriesTitle => 'Categories';
+
+  @override
+  String get categoriesDescription =>
+      'Manage the categories used by transactions, budgets, and scheduled payments.';
+
+  @override
+  String get addCategory => 'Add category';
+
+  @override
+  String get newCategory => 'New category';
+
+  @override
+  String get renameCategory => 'Rename category';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get categoryNameRequired => 'Enter a category name.';
+
+  @override
+  String get categoryExists => 'That category already exists.';
+
+  @override
+  String get archiveCategory => 'Archive';
+
+  @override
+  String get archiveCategoryQuestion => 'Archive category?';
+
+  @override
+  String get archiveCategoryBody =>
+      'It will be hidden from pickers but kept in existing records.';
+
+  @override
+  String get archived => 'Archived';
+
+  @override
+  String get showArchived => 'Show archived';
+
+  @override
+  String get restoreCategory => 'Restore';
+
+  @override
+  String get noCategories => 'No categories yet';
+
+  @override
+  String get noCategoriesBody =>
+      'Add a category to organize your transactions.';
+
+  @override
+  String get manageCategories => 'Manage categories';
+
+  @override
+  String get scheduledPayments => 'Scheduled payments';
+
+  @override
+  String get scheduledPaymentsDescription =>
+      'Recurring expenses like rent, credits, subscriptions, or your phone plan.';
+
+  @override
+  String get addScheduledPayment => 'Add payment';
+
+  @override
+  String get addFirstScheduledPayment => 'Add a scheduled payment';
+
+  @override
+  String get newScheduledPayment => 'New scheduled payment';
+
+  @override
+  String get paymentName => 'Payment name';
+
+  @override
+  String get paymentNameRequired => 'Enter a payment name.';
+
+  @override
+  String get frequency => 'Frequency';
+
+  @override
+  String get monthly => 'Monthly';
+
+  @override
+  String get yearly => 'Yearly';
+
+  @override
+  String get nextDueDate => 'Next due date';
+
+  @override
+  String get payNow => 'Pay now';
+
+  @override
+  String get pausePayment => 'Pause';
+
+  @override
+  String get resumePayment => 'Resume';
+
+  @override
+  String get paused => 'Paused';
+
+  @override
+  String get dueToday => 'Due today';
+
+  @override
+  String get overdue => 'Overdue';
+
+  @override
+  String get noScheduledPayments => 'No scheduled payments';
+
+  @override
+  String get noScheduledPaymentsBody =>
+      'Add rent, credits, subscriptions, or your phone plan and the expense will be recorded automatically when due.';
+
+  @override
+  String autoCreatedPayments(int count) {
+    return '$count scheduled expenses were added.';
+  }
+
+  @override
+  String get deleteScheduledPayment => 'Delete scheduled payment';
+
+  @override
+  String get deleteScheduledPaymentQuestion => 'Delete scheduled payment?';
+
+  @override
+  String get deleteScheduledPaymentBody =>
+      'The schedule is removed. Expenses already recorded are kept.';
+
+  @override
+  String get notesOptional => 'Notes (optional)';
+
+  @override
+  String scheduledFor(String date) {
+    return 'Next: $date';
+  }
+
+  @override
+  String get paidToday => 'Paid today';
 }

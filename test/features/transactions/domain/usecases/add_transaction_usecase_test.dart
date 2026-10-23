@@ -44,6 +44,7 @@ void main() {
     String description = '',
     TransactionType type = TransactionType.expense,
     String? receiptImagePath,
+    String? walletId,
     String? id,
   }) {
     return AddTransactionParams(
@@ -53,11 +54,21 @@ void main() {
       description: description,
       date: date,
       receiptImagePath: receiptImagePath,
+      walletId: walletId,
       id: id,
     );
   }
 
   group('AddTransactionUseCase', () {
+    test('preserves the selected wallet', () async {
+      final result = await useCase(params(walletId: ' wallet-bank '));
+
+      expect(
+        result.fold((_) => null, (transaction) => transaction.walletId),
+        'wallet-bank',
+      );
+    });
+
     test('normalizes input and generates a UUID v4', () async {
       final result = await useCase(
         params(

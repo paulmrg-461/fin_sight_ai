@@ -11,6 +11,8 @@ import '../core/l10n/l10n.dart';
 import '../core/locale/presentation/bloc/locale_bloc.dart';
 import '../core/locale/presentation/bloc/locale_state.dart';
 import '../features/budgets/presentation/bloc/budget_bloc.dart';
+import '../features/categories/presentation/bloc/category_bloc.dart';
+import '../features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import '../features/wallets/presentation/bloc/wallet_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
@@ -35,6 +37,8 @@ class FinSightApp extends StatelessWidget {
     required this.walletBloc,
     required this.currencyBloc,
     required this.localeBloc,
+    required this.categoryBloc,
+    required this.scheduledPaymentBloc,
   });
 
   final ThemeController themeController;
@@ -50,6 +54,8 @@ class FinSightApp extends StatelessWidget {
   final WalletBloc walletBloc;
   final CurrencyBloc currencyBloc;
   final LocaleBloc localeBloc;
+  final CategoryBloc categoryBloc;
+  final ScheduledPaymentBloc scheduledPaymentBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +72,8 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<WalletBloc>.value(value: walletBloc),
         BlocProvider<CurrencyBloc>.value(value: currencyBloc),
         BlocProvider<LocaleBloc>.value(value: localeBloc),
+        BlocProvider<CategoryBloc>.value(value: categoryBloc),
+        BlocProvider<ScheduledPaymentBloc>.value(value: scheduledPaymentBloc),
       ],
       child: BlocBuilder<LocaleBloc, LocaleState>(
         builder: (context, localeState) {

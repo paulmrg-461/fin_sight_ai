@@ -42,7 +42,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 3. Offline-First Storage
 
-- **Hive CE** boxes (`transactions`, `debts`, `receipts`, `budgets`, `wallets`, `wallet_transfers`, `sync_queue`, `sync_meta`, `settings`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
+- **Hive CE** boxes (`transactions`, `debts`, `receipts`, `budgets`, `wallets`, `wallet_transfers`, `categories`, `scheduled_payments`, `sync_queue`, `sync_meta`, `settings`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
 - Each feature owns a local data source interface with a Hive implementation; the repository depends on the interface.
 - Records are stored as JSON maps keyed by entity id. This keeps boxes schema-agnostic and migrations explicit.
 - Local writes happen before any network call. Remote sync is a later slice; a remote failure must never roll back a local write.
@@ -121,6 +121,23 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - `MoneyText` renders every monetary surface with the active currency.
 - `SettingsScreen` (`/settings`) switches currency; amounts are **not** converted.
 
+### Categories
+
+- `CategoryEntity` stores `id`, `name`, `isArchived`, and timestamps; transactions and budgets keep the category **name**, so history stays valid.
+- Localized defaults are seeded once into the Hive `categories` box using the device language (`Platform.localeName`); archived rows prevent reseeding.
+- `CategoryRepositoryImpl` validates non-empty/unique names and maps storage errors to `CacheFailure`.
+- `CategoryBloc` + `/categories` support create, rename, archive, restore, and a “show archived” toggle. Pickers only show active categories.
+- The transaction, scheduled-payment, and budget dialogs read the same catalog through `CategoryBloc`.
+
+### Scheduled payments
+
+- `ScheduledPaymentEntity` supports `monthly` and `yearly` frequencies, a preserved `dayOfMonth` (month-end clamping without drift), category, optional wallet, notes, and active state.
+- `ScheduleCalculator` owns the date math (month lengths, leap years, catch-up).
+- `ScheduledPaymentRepositoryImpl` persists schedules locally and materializes due periods through `TransactionRepository`, so wallet balances, budgets, dashboards, and sync treat them as ordinary expenses.
+- Generated expenses use a deterministic UUID v5 per `(schedule, dueDate)`, making retries idempotent. Startup processing runs before the dashboard loads; the screen also processes on load and after adding a payment, showing an in-app banner with the created count.
+- “Pay now” records today’s expense and advances the schedule; it is a no-op when the period was already paid today. Pausing stops automatic charges; deleting keeps already-recorded expenses.
+- Schedules and category definitions are local-only in this slice; their generated transactions sync normally.
+
 ### Localization
 
 - `lib/l10n/app_en.arb` and `app_es.arb` are the single source of user-facing copy; `flutter gen-l10n` produces `AppLocalizations`.
@@ -138,7 +155,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 5. Routing and Navigation
 
-- `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/budgets`, `/money`, `/settings`, `/ocr`, `/ai-coach`, `/login`.
+- `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/budgets`, `/money`, `/scheduled-payments`, `/categories`, `/settings`, `/ocr`, `/ai-coach`, `/login`.
 - `AppRoutes` centralizes names and paths; `buildRouter()` is a pure function for testability.
 - Feature screens are provided by `FinSightApp` through app-level `MultiBlocProvider`, so pushed routes inherit their blocs.
 - The dashboard exposes quick actions that push feature routes and refresh analytics on return.

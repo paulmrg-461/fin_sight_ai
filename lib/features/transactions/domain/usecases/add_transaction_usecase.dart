@@ -81,6 +81,9 @@ class AddTransactionUseCase
       category: category,
       description: description,
       date: params.date,
+      walletId: params.walletId?.trim().isEmpty == true
+          ? null
+          : params.walletId?.trim(),
       receiptImagePath: receiptImagePath == null || receiptImagePath.isEmpty
           ? null
           : receiptImagePath,

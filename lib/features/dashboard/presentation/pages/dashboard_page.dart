@@ -269,6 +269,11 @@ class _QuickActions extends StatelessWidget {
                   onPressed: () => onOpen(AppRoutes.moneyName),
                 ),
                 ActionChip(
+                  avatar: const Icon(Icons.event_repeat, size: 18),
+                  label: Text(context.l10n.scheduledPayments),
+                  onPressed: () => onOpen(AppRoutes.scheduledPaymentsName),
+                ),
+                ActionChip(
                   avatar: const Icon(Icons.document_scanner_outlined, size: 18),
                   label: Text(context.l10n.scanReceipt),
                   onPressed: () => onOpen(AppRoutes.ocrName),

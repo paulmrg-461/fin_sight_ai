@@ -640,4 +640,143 @@ class AppLocalizationsEs extends AppLocalizations {
   String transactionRef(String id) {
     return 'Transacción $id';
   }
+
+  @override
+  String get categoriesTitle => 'Categorías';
+
+  @override
+  String get categoriesDescription =>
+      'Gestiona las categorías de transacciones, presupuestos y pagos programados.';
+
+  @override
+  String get addCategory => 'Añadir categoría';
+
+  @override
+  String get newCategory => 'Nueva categoría';
+
+  @override
+  String get renameCategory => 'Renombrar categoría';
+
+  @override
+  String get categoryName => 'Nombre de la categoría';
+
+  @override
+  String get categoryNameRequired => 'Introduce un nombre de categoría.';
+
+  @override
+  String get categoryExists => 'Esa categoría ya existe.';
+
+  @override
+  String get archiveCategory => 'Archivar';
+
+  @override
+  String get archiveCategoryQuestion => '¿Archivar categoría?';
+
+  @override
+  String get archiveCategoryBody =>
+      'Se ocultará de los selectores pero se conservará en los registros existentes.';
+
+  @override
+  String get archived => 'Archivada';
+
+  @override
+  String get showArchived => 'Mostrar archivadas';
+
+  @override
+  String get restoreCategory => 'Restaurar';
+
+  @override
+  String get noCategories => 'Aún no hay categorías';
+
+  @override
+  String get noCategoriesBody =>
+      'Añade una categoría para organizar tus transacciones.';
+
+  @override
+  String get manageCategories => 'Gestionar categorías';
+
+  @override
+  String get scheduledPayments => 'Pagos programados';
+
+  @override
+  String get scheduledPaymentsDescription =>
+      'Gastos recurrentes como arriendo, créditos, suscripciones o plan celular.';
+
+  @override
+  String get addScheduledPayment => 'Añadir pago';
+
+  @override
+  String get addFirstScheduledPayment => 'Añadir un pago programado';
+
+  @override
+  String get newScheduledPayment => 'Nuevo pago programado';
+
+  @override
+  String get paymentName => 'Nombre del pago';
+
+  @override
+  String get paymentNameRequired => 'Introduce un nombre de pago.';
+
+  @override
+  String get frequency => 'Frecuencia';
+
+  @override
+  String get monthly => 'Mensual';
+
+  @override
+  String get yearly => 'Anual';
+
+  @override
+  String get nextDueDate => 'Próximo vencimiento';
+
+  @override
+  String get payNow => 'Pagar ahora';
+
+  @override
+  String get pausePayment => 'Pausar';
+
+  @override
+  String get resumePayment => 'Reanudar';
+
+  @override
+  String get paused => 'Pausada';
+
+  @override
+  String get dueToday => 'Vence hoy';
+
+  @override
+  String get overdue => 'Vencido';
+
+  @override
+  String get noScheduledPayments => 'Sin pagos programados';
+
+  @override
+  String get noScheduledPaymentsBody =>
+      'Añade arriendo, créditos, suscripciones o plan celular y el gasto se registrará automáticamente al vencer.';
+
+  @override
+  String autoCreatedPayments(int count) {
+    return 'Se añadieron $count gastos programados.';
+  }
+
+  @override
+  String get deleteScheduledPayment => 'Eliminar pago programado';
+
+  @override
+  String get deleteScheduledPaymentQuestion => '¿Eliminar pago programado?';
+
+  @override
+  String get deleteScheduledPaymentBody =>
+      'Se elimina la programación. Los gastos ya registrados se conservan.';
+
+  @override
+  String get notesOptional => 'Notas (opcional)';
+
+  @override
+  String scheduledFor(String date) {
+    return 'Próximo: $date';
+  }
+
+  @override
+  String get paidToday => 'Pagado hoy';
 }

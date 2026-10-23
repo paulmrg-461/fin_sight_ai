@@ -271,5 +271,62 @@
         "type": "String"
       }
     }
-  }
+  },
+  "categoriesTitle": "Categories",
+  "categoriesDescription": "Manage the categories used by transactions, budgets, and scheduled payments.",
+  "addCategory": "Add category",
+  "newCategory": "New category",
+  "renameCategory": "Rename category",
+  "categoryName": "Category name",
+  "categoryNameRequired": "Enter a category name.",
+  "categoryExists": "That category already exists.",
+  "archiveCategory": "Archive",
+  "archiveCategoryQuestion": "Archive category?",
+  "archiveCategoryBody": "It will be hidden from pickers but kept in existing records.",
+  "archived": "Archived",
+  "showArchived": "Show archived",
+  "restoreCategory": "Restore",
+  "noCategories": "No categories yet",
+  "noCategoriesBody": "Add a category to organize your transactions.",
+  "manageCategories": "Manage categories",
+  "scheduledPayments": "Scheduled payments",
+  "scheduledPaymentsDescription": "Recurring expenses like rent, credits, subscriptions, or your phone plan.",
+  "addScheduledPayment": "Add payment",
+  "addFirstScheduledPayment": "Add a scheduled payment",
+  "newScheduledPayment": "New scheduled payment",
+  "paymentName": "Payment name",
+  "paymentNameRequired": "Enter a payment name.",
+  "frequency": "Frequency",
+  "monthly": "Monthly",
+  "yearly": "Yearly",
+  "nextDueDate": "Next due date",
+  "payNow": "Pay now",
+  "pausePayment": "Pause",
+  "resumePayment": "Resume",
+  "paused": "Paused",
+  "dueToday": "Due today",
+  "overdue": "Overdue",
+  "noScheduledPayments": "No scheduled payments",
+  "noScheduledPaymentsBody": "Add rent, credits, subscriptions, or your phone plan and the expense will be recorded automatically when due.",
+  "autoCreatedPayments": "{count} scheduled expenses were added.",
+  "@autoCreatedPayments": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteScheduledPayment": "Delete scheduled payment",
+  "deleteScheduledPaymentQuestion": "Delete scheduled payment?",
+  "deleteScheduledPaymentBody": "The schedule is removed. Expenses already recorded are kept.",
+  "notesOptional": "Notes (optional)",
+  "scheduledFor": "Next: {date}",
+  "@scheduledFor": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paidToday": "Paid today"
 }

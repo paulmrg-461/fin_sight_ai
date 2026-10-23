@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../categories/presentation/bloc/category_bloc.dart';
+import '../../../categories/presentation/bloc/category_state.dart';
 import '../../domain/entities/budget_entity.dart';
 import '../bloc/budget_bloc.dart';
 import '../bloc/budget_event.dart';
@@ -14,9 +16,17 @@ class BudgetScreen extends StatelessWidget {
   const BudgetScreen({super.key});
 
   Future<void> _addBudget(BuildContext context, List<String> categories) async {
+    final catalog = switch (context.read<CategoryBloc>().state) {
+      CategoryLoaded(:final categories) =>
+        categories
+            .where((category) => !category.isArchived)
+            .map((category) => category.name),
+      _ => const <String>[],
+    };
+    final suggestions = {...categories, ...catalog}.toList()..sort();
     final result = await showDialog<(String, double)>(
       context: context,
-      builder: (_) => _AddBudgetDialog(categories: categories),
+      builder: (_) => _AddBudgetDialog(categories: suggestions),
     );
     if (result == null || !context.mounted) {
       return;

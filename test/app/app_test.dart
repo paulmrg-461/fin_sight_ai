@@ -23,6 +23,13 @@ import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_state.dart';
 import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
 import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
 import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_state.dart';
+import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart'
+    as categories;
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_state.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_state.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -75,6 +82,35 @@ class MockMakePayment extends Mock implements MakePaymentUseCase {}
 class MockDeleteDebt extends Mock implements DeleteDebtUseCase {}
 
 class MockCalculatePayoff extends Mock implements CalculatePayoffUseCase {}
+
+class MockCategoryCatalog extends Mock
+    implements categories.GetCategoryCatalogUseCase {}
+
+class MockAddCategory extends Mock implements categories.AddCategoryUseCase {}
+
+class MockRenameCategory extends Mock
+    implements categories.RenameCategoryUseCase {}
+
+class MockArchiveCategory extends Mock
+    implements categories.SetCategoryArchivedUseCase {}
+
+class MockGetScheduledPayments extends Mock
+    implements GetScheduledPaymentsUseCase {}
+
+class MockAddScheduledPayment extends Mock
+    implements AddScheduledPaymentUseCase {}
+
+class MockSetScheduledPaymentActive extends Mock
+    implements SetScheduledPaymentActiveUseCase {}
+
+class MockDeleteScheduledPayment extends Mock
+    implements DeleteScheduledPaymentUseCase {}
+
+class MockPayScheduledPayment extends Mock
+    implements PayScheduledPaymentUseCase {}
+
+class MockProcessDuePayments extends Mock
+    implements ProcessDueScheduledPaymentsUseCase {}
 
 class MockScanReceipt extends Mock implements ScanReceiptUseCase {}
 
@@ -150,6 +186,8 @@ void main() {
   late WalletBloc walletBloc;
   late CurrencyBloc currencyBloc;
   late LocaleBloc localeBloc;
+  late CategoryBloc categoryBloc;
+  late ScheduledPaymentBloc scheduledPaymentBloc;
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -245,6 +283,20 @@ void main() {
     );
     currencyBloc = CurrencyBloc(MockGetCurrency(), MockSetCurrency());
     localeBloc = LocaleBloc(MockGetLocale(), MockSetLocale());
+    categoryBloc = CategoryBloc(
+      MockCategoryCatalog(),
+      MockAddCategory(),
+      MockRenameCategory(),
+      MockArchiveCategory(),
+    );
+    scheduledPaymentBloc = ScheduledPaymentBloc(
+      MockGetScheduledPayments(),
+      MockAddScheduledPayment(),
+      MockSetScheduledPaymentActive(),
+      MockDeleteScheduledPayment(),
+      MockPayScheduledPayment(),
+      MockProcessDuePayments(),
+    );
   });
 
   Widget buildApp() {
@@ -262,6 +314,8 @@ void main() {
       walletBloc: walletBloc,
       currencyBloc: currencyBloc,
       localeBloc: localeBloc,
+      categoryBloc: categoryBloc,
+      scheduledPaymentBloc: scheduledPaymentBloc,
     );
   }
 
@@ -280,6 +334,8 @@ void main() {
     );
     authBloc.emit(const AuthUnauthenticated());
     budgetBloc.emit(const BudgetEmpty(categories: []));
+    categoryBloc.emit(const CategoryEmpty());
+    scheduledPaymentBloc.emit(const ScheduledPaymentEmpty());
     walletBloc.emit(
       WalletLoaded([
         WalletBalance(

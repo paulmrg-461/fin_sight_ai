@@ -10,6 +10,18 @@ import 'package:fin_sight_ai/core/locale/locale_repository.dart';
 import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
+import 'package:fin_sight_ai/features/categories/data/datasources/category_local_data_source.dart';
+import 'package:fin_sight_ai/features/categories/data/datasources/hive_category_local_data_source.dart';
+import 'package:fin_sight_ai/features/categories/data/repositories/category_repository_impl.dart';
+import 'package:fin_sight_ai/features/categories/domain/repositories/category_repository.dart';
+import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart';
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
@@ -211,6 +223,33 @@ GROQ_API_KEY=groq-key
     expect(getIt<SetWalletBalanceUseCase>(), isNotNull);
     expect(getIt<TransferBetweenWalletsUseCase>(), isNotNull);
     expect(getIt<WalletBloc>(), isA<WalletBloc>());
+
+    expect(
+      getIt<CategoryLocalDataSource>(),
+      isA<HiveCategoryLocalDataSource>(),
+    );
+    expect(getIt<CategoryRepository>(), isA<CategoryRepositoryImpl>());
+    expect(getIt<GetCategoryCatalogUseCase>(), isNotNull);
+    expect(getIt<AddCategoryUseCase>(), isNotNull);
+    expect(getIt<RenameCategoryUseCase>(), isNotNull);
+    expect(getIt<SetCategoryArchivedUseCase>(), isNotNull);
+    expect(getIt<CategoryBloc>(), isA<CategoryBloc>());
+
+    expect(
+      getIt<ScheduledPaymentLocalDataSource>(),
+      isA<HiveScheduledPaymentLocalDataSource>(),
+    );
+    expect(
+      getIt<ScheduledPaymentRepository>(),
+      isA<ScheduledPaymentRepositoryImpl>(),
+    );
+    expect(getIt<GetScheduledPaymentsUseCase>(), isNotNull);
+    expect(getIt<AddScheduledPaymentUseCase>(), isNotNull);
+    expect(getIt<SetScheduledPaymentActiveUseCase>(), isNotNull);
+    expect(getIt<DeleteScheduledPaymentUseCase>(), isNotNull);
+    expect(getIt<PayScheduledPaymentUseCase>(), isNotNull);
+    expect(getIt<ProcessDueScheduledPaymentsUseCase>(), isNotNull);
+    expect(getIt<ScheduledPaymentBloc>(), isA<ScheduledPaymentBloc>());
   });
 
   test('resolving before configuration throws', () async {

@@ -95,7 +95,16 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] Localize dashboard, transactions, wallets, debts, budgets, OCR, AI coach, auth, sync, and settings.
 - [x] Unit, widget, and integration tests (EN → ES → EN).
 
-### Phase 10: Integration and delivery
+### Phase 10: Categories and scheduled payments
+
+- [x] Shared category catalog with EN/ES defaults, create, rename, archive/restore.
+- [x] Category pickers in transactions, budgets, and scheduled payments.
+- [x] Monthly/yearly schedules with month-end clamping and catch-up processing.
+- [x] Auto-generate due expenses with deterministic UUIDs and in-app banner.
+- [x] Pause/resume, pay-now (idempotent per day), and delete.
+- [x] Unit, data, BLoC, and integration coverage.
+
+### Phase 11: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.
@@ -114,3 +123,6 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 | OCR misparses totals | Medium | Editable preview + save validation |
 | Chart animations block tests | Low | Pump-until helpers instead of `pumpAndSettle` |
 | Integer/float money drift | Medium | Round to 2 decimals; future minor-unit migration |
+| Duplicate recurring charges | High | Deterministic UUID v5 per schedule+due date and same-day pay guard |
+| Category rename leaves stale names | Medium | Names remain historical; cascade migration is a documented follow-up |
+| Schedule runaway catch-up | Medium | 60-period guard and date picker limited to today or later |

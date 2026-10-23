@@ -72,6 +72,16 @@ import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.da
     as _i41;
 import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart'
     as _i746;
+import 'package:fin_sight_ai/features/categories/data/categories_module.dart'
+    as _i873;
+import 'package:fin_sight_ai/features/categories/data/datasources/category_local_data_source.dart'
+    as _i65;
+import 'package:fin_sight_ai/features/categories/domain/repositories/category_repository.dart'
+    as _i888;
+import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart'
+    as _i195;
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart'
+    as _i968;
 import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart'
     as _i366;
 import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart'
@@ -117,6 +127,18 @@ import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.d
     as _i826;
 import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart'
     as _i1031;
+import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart'
+    as _i462;
+import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart'
+    as _i403;
+import 'package:fin_sight_ai/features/scheduled_payments/data/scheduled_payments_module.dart'
+    as _i942;
+import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart'
+    as _i312;
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart'
+    as _i160;
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart'
+    as _i200;
 import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart'
     as _i995;
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart'
@@ -180,7 +202,9 @@ extension GetItInjectableX on _i174.GetIt {
     final debtsModule = _$DebtsModule();
     final localeModule = _$LocaleModule();
     final budgetsModule = _$BudgetsModule();
+    final categoriesModule = _$CategoriesModule();
     final ocrModule = _$OcrModule();
+    final scheduledPaymentsModule = _$ScheduledPaymentsModule();
     final syncModule = _$SyncModule();
     final walletsModule = _$WalletsModule();
     final routingModule = _$RoutingModule();
@@ -234,8 +258,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i8.BudgetLocalDataSource>(
       () => budgetsModule.provideBudgetLocalDataSource(gh<_i422.AppBoxes>()),
     );
+    gh.lazySingleton<_i65.CategoryLocalDataSource>(
+      () =>
+          categoriesModule.provideCategoryLocalDataSource(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i783.ReceiptLocalDataSource>(
       () => ocrModule.provideReceiptLocalDataSource(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i462.ScheduledPaymentLocalDataSource>(
+      () => scheduledPaymentsModule.provideScheduledPaymentLocalDataSource(
+        gh<_i422.AppBoxes>(),
+      ),
     );
     gh.lazySingleton<_i921.SyncLocalDataSource>(
       () => syncModule.provideSyncLocalDataSource(gh<_i422.AppBoxes>()),
@@ -329,6 +362,29 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i558.GetSyncStatusUseCase>(
       () => _i558.GetSyncStatusUseCase(gh<_i271.SyncRepository>()),
     );
+    gh.lazySingleton<_i312.ScheduledPaymentRepository>(
+      () => _i403.ScheduledPaymentRepositoryImpl(
+        gh<_i462.ScheduledPaymentLocalDataSource>(),
+        gh<_i544.TransactionRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i160.GetScheduledPaymentsUseCase>(
+      () => _i160.GetScheduledPaymentsUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+      ),
+    );
+    gh.lazySingleton<_i160.SetScheduledPaymentActiveUseCase>(
+      () => _i160.SetScheduledPaymentActiveUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+      ),
+    );
+    gh.lazySingleton<_i160.DeleteScheduledPaymentUseCase>(
+      () => _i160.DeleteScheduledPaymentUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+      ),
+    );
     gh.factory<_i661.AuthBloc>(
       () => _i661.AuthBloc(
         gh<_i998.SignInUseCase>(),
@@ -353,6 +409,18 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i41.AddBudgetUseCase(
         gh<_i575.BudgetRepository>(),
         uuid: gh<_i706.Uuid>(),
+      ),
+    );
+    gh.lazySingleton<_i160.AddScheduledPaymentUseCase>(
+      () => _i160.AddScheduledPaymentUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i888.CategoryRepository>(
+      () => categoriesModule.provideCategoryRepository(
+        gh<_i65.CategoryLocalDataSource>(),
       ),
     );
     gh.lazySingleton<_i305.WalletRepository>(
@@ -462,6 +530,18 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i272.GetTransactionsByDateRangeUseCase>(),
       ),
     );
+    gh.lazySingleton<_i160.PayScheduledPaymentUseCase>(
+      () => _i160.PayScheduledPaymentUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i160.ProcessDueScheduledPaymentsUseCase>(
+      () => _i160.ProcessDueScheduledPaymentsUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.factory<_i470.SyncBloc>(
       () => _i470.SyncBloc(
         gh<_i558.SyncNowUseCase>(),
@@ -485,11 +565,33 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1051.GetTransactionsUseCase>(),
       ),
     );
+    gh.lazySingleton<_i195.GetCategoryCatalogUseCase>(
+      () => _i195.GetCategoryCatalogUseCase(gh<_i888.CategoryRepository>()),
+    );
+    gh.lazySingleton<_i195.AddCategoryUseCase>(
+      () => _i195.AddCategoryUseCase(gh<_i888.CategoryRepository>()),
+    );
+    gh.lazySingleton<_i195.RenameCategoryUseCase>(
+      () => _i195.RenameCategoryUseCase(gh<_i888.CategoryRepository>()),
+    );
+    gh.lazySingleton<_i195.SetCategoryArchivedUseCase>(
+      () => _i195.SetCategoryArchivedUseCase(gh<_i888.CategoryRepository>()),
+    );
     gh.lazySingleton<_i937.GetReceiptsUseCase>(
       () => _i937.GetReceiptsUseCase(gh<_i832.ReceiptRepository>()),
     );
     gh.lazySingleton<_i826.ScanReceiptUseCase>(
       () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
+    );
+    gh.factory<_i200.ScheduledPaymentBloc>(
+      () => _i200.ScheduledPaymentBloc(
+        gh<_i160.GetScheduledPaymentsUseCase>(),
+        gh<_i160.AddScheduledPaymentUseCase>(),
+        gh<_i160.SetScheduledPaymentActiveUseCase>(),
+        gh<_i160.DeleteScheduledPaymentUseCase>(),
+        gh<_i160.PayScheduledPaymentUseCase>(),
+        gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
+      ),
     );
     gh.lazySingleton<_i1013.GetWalletBalancesUseCase>(
       () => _i1013.GetWalletBalancesUseCase(gh<_i305.WalletRepository>()),
@@ -504,6 +606,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i978.MakePaymentUseCase>(),
         gh<_i24.DeleteDebtUseCase>(),
         gh<_i1045.CalculatePayoffUseCase>(),
+      ),
+    );
+    gh.factory<_i968.CategoryBloc>(
+      () => _i968.CategoryBloc(
+        gh<_i195.GetCategoryCatalogUseCase>(),
+        gh<_i195.AddCategoryUseCase>(),
+        gh<_i195.RenameCategoryUseCase>(),
+        gh<_i195.SetCategoryArchivedUseCase>(),
       ),
     );
     gh.lazySingleton<_i292.SaveReceiptUseCase>(
@@ -546,7 +656,11 @@ class _$LocaleModule extends _i688.LocaleModule {}
 
 class _$BudgetsModule extends _i950.BudgetsModule {}
 
+class _$CategoriesModule extends _i873.CategoriesModule {}
+
 class _$OcrModule extends _i600.OcrModule {}
+
+class _$ScheduledPaymentsModule extends _i942.ScheduledPaymentsModule {}
 
 class _$SyncModule extends _i273.SyncModule {}
 

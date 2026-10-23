@@ -2,6 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/utils/date_formatters.dart';
+import '../../../categories/presentation/bloc/category_bloc.dart';
+import '../../../categories/presentation/bloc/category_state.dart';
+import '../../../categories/presentation/widgets/category_dropdown.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
@@ -21,17 +24,27 @@ class TransactionForm extends StatefulWidget {
 class _TransactionFormState extends State<TransactionForm> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _categoryController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _receiptController = TextEditingController();
 
   TransactionType _type = TransactionType.expense;
   DateTime _date = DateTime.now();
   String? _walletId;
+  String? _category;
 
   @override
   void initState() {
     super.initState();
+    final categoryState = context.read<CategoryBloc>().state;
+    if (categoryState is CategoryLoaded) {
+      final active = categoryState.categories
+          .where((category) => !category.isArchived)
+          .toList();
+      if (active.isNotEmpty) {
+        _category = active.first.name;
+      }
+    }
+
     final walletState = context.read<WalletBloc>().state;
     if (walletState is WalletLoaded) {
       _walletId = walletState.balances
@@ -47,7 +60,6 @@ class _TransactionFormState extends State<TransactionForm> {
   @override
   void dispose() {
     _amountController.dispose();
-    _categoryController.dispose();
     _descriptionController.dispose();
     _receiptController.dispose();
     super.dispose();
@@ -64,7 +76,7 @@ class _TransactionFormState extends State<TransactionForm> {
       AddTransaction(
         amount: double.parse(_amountController.text.trim()),
         type: _type,
-        category: _categoryController.text,
+        category: _category ?? '',
         description: _descriptionController.text,
         date: _date,
         walletId: _walletId,
@@ -175,13 +187,9 @@ class _TransactionFormState extends State<TransactionForm> {
                 },
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _categoryController,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(labelText: context.l10n.category),
-                validator: (value) => (value?.trim().isEmpty ?? true)
-                    ? context.l10n.categoryRequired
-                    : null,
+              CategoryDropdown(
+                value: _category,
+                onChanged: (value) => setState(() => _category = value),
               ),
               const SizedBox(height: 12),
               TextFormField(

@@ -1291,6 +1291,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transaction {id}'**
   String transactionRef(String id);
+
+  /// No description provided for @categoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categoriesTitle;
+
+  /// No description provided for @categoriesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage the categories used by transactions, budgets, and scheduled payments.'**
+  String get categoriesDescription;
+
+  /// No description provided for @addCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Add category'**
+  String get addCategory;
+
+  /// No description provided for @newCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'New category'**
+  String get newCategory;
+
+  /// No description provided for @renameCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename category'**
+  String get renameCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryName;
+
+  /// No description provided for @categoryNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a category name.'**
+  String get categoryNameRequired;
+
+  /// No description provided for @categoryExists.
+  ///
+  /// In en, this message translates to:
+  /// **'That category already exists.'**
+  String get categoryExists;
+
+  /// No description provided for @archiveCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get archiveCategory;
+
+  /// No description provided for @archiveCategoryQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive category?'**
+  String get archiveCategoryQuestion;
+
+  /// No description provided for @archiveCategoryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It will be hidden from pickers but kept in existing records.'**
+  String get archiveCategoryBody;
+
+  /// No description provided for @archived.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get archived;
+
+  /// No description provided for @showArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Show archived'**
+  String get showArchived;
+
+  /// No description provided for @restoreCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restoreCategory;
+
+  /// No description provided for @noCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get noCategories;
+
+  /// No description provided for @noCategoriesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category to organize your transactions.'**
+  String get noCategoriesBody;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage categories'**
+  String get manageCategories;
+
+  /// No description provided for @scheduledPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled payments'**
+  String get scheduledPayments;
+
+  /// No description provided for @scheduledPaymentsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring expenses like rent, credits, subscriptions, or your phone plan.'**
+  String get scheduledPaymentsDescription;
+
+  /// No description provided for @addScheduledPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payment'**
+  String get addScheduledPayment;
+
+  /// No description provided for @addFirstScheduledPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a scheduled payment'**
+  String get addFirstScheduledPayment;
+
+  /// No description provided for @newScheduledPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'New scheduled payment'**
+  String get newScheduledPayment;
+
+  /// No description provided for @paymentName.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment name'**
+  String get paymentName;
+
+  /// No description provided for @paymentNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a payment name.'**
+  String get paymentNameRequired;
+
+  /// No description provided for @frequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get frequency;
+
+  /// No description provided for @monthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthly;
+
+  /// No description provided for @yearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get yearly;
+
+  /// No description provided for @nextDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Next due date'**
+  String get nextDueDate;
+
+  /// No description provided for @payNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay now'**
+  String get payNow;
+
+  /// No description provided for @pausePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get pausePayment;
+
+  /// No description provided for @resumePayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get resumePayment;
+
+  /// No description provided for @paused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get paused;
+
+  /// No description provided for @dueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get dueToday;
+
+  /// No description provided for @overdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get overdue;
+
+  /// No description provided for @noScheduledPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No scheduled payments'**
+  String get noScheduledPayments;
+
+  /// No description provided for @noScheduledPaymentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add rent, credits, subscriptions, or your phone plan and the expense will be recorded automatically when due.'**
+  String get noScheduledPaymentsBody;
+
+  /// No description provided for @autoCreatedPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} scheduled expenses were added.'**
+  String autoCreatedPayments(int count);
+
+  /// No description provided for @deleteScheduledPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete scheduled payment'**
+  String get deleteScheduledPayment;
+
+  /// No description provided for @deleteScheduledPaymentQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete scheduled payment?'**
+  String get deleteScheduledPaymentQuestion;
+
+  /// No description provided for @deleteScheduledPaymentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The schedule is removed. Expenses already recorded are kept.'**
+  String get deleteScheduledPaymentBody;
+
+  /// No description provided for @notesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get notesOptional;
+
+  /// No description provided for @scheduledFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {date}'**
+  String scheduledFor(String date);
+
+  /// No description provided for @paidToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid today'**
+  String get paidToday;
 }
 
 class _AppLocalizationsDelegate

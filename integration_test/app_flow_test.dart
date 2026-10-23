@@ -261,6 +261,8 @@ void main() {
     await pumpUntil(tester, find.text('USD — US dollar'));
 
     final usdBalance = MoneyFormatter.format(500, AppCurrency.usd);
+    harness.router.goNamed(AppRoutes.moneyName);
+    await pumpUntil(tester, find.text(usdBalance));
     expect(find.text(usdBalance), findsWidgets);
   });
 
@@ -279,6 +281,119 @@ void main() {
     await tester.tap(find.text('English'));
     await pumpUntil(tester, find.text('Settings'));
     expect(find.text('Language'), findsOneWidget);
+  });
+
+  testWidgets('manages custom categories', (tester) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.categoriesName);
+    await pumpUntil(tester, find.text('Categories'));
+    await pumpUntil(tester, find.text('Show archived'));
+
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Add category'));
+    await pumpUntil(tester, find.text('New category'));
+    await tester.enterText(find.byType(TextFormField).last, 'Pets');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await pumpUntil(tester, find.text('Pets'));
+
+    final petsTile = find.widgetWithText(ListTile, 'Pets');
+    await tester.tap(
+      find.descendant(
+        of: petsTile,
+        matching: find.byType(PopupMenuButton<String>),
+      ),
+    );
+    await pumpUntil(tester, find.text('Rename category'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rename category'));
+    await pumpUntil(tester, find.text('Category name'));
+    await tester.enterText(find.byType(TextFormField).last, 'Pets & vet');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await pumpUntil(tester, find.text('Pets & vet'));
+
+    final renamedTile = find.widgetWithText(ListTile, 'Pets & vet');
+    await tester.tap(
+      find.descendant(
+        of: renamedTile,
+        matching: find.byType(PopupMenuButton<String>),
+      ),
+    );
+    await pumpUntil(tester, find.text('Archive'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Archive'));
+    await pumpUntil(tester, find.text('Archive category?'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Archive'));
+    await pumpUntilGone(tester, find.text('Pets & vet'));
+
+    await tester.tap(find.text('Show archived'));
+    await pumpUntil(tester, find.text('Pets & vet'));
+    expect(find.text('Archived'), findsOneWidget);
+    await tester.ensureVisible(find.text('Pets & vet'));
+    await tester.drag(find.byType(ListView).last, const Offset(0, -120));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Pets & vet'),
+        matching: find.byType(PopupMenuButton<String>),
+      ),
+    );
+    await pumpUntil(tester, find.text('Restore'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Restore'));
+    await pumpUntilGone(tester, find.text('Archived'));
+  });
+
+  testWidgets('schedules a recurring expense and records it', (tester) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.scheduledPaymentsName);
+    await pumpUntil(tester, find.text('Scheduled payments'));
+    await pumpUntil(tester, find.text('No scheduled payments'));
+
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Add payment'));
+    await pumpUntil(tester, find.text('New scheduled payment'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Rent payment');
+    await tester.enterText(fields.at(1), '800');
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await pumpUntil(tester, find.text('Rent').last);
+    await tester.tap(find.text('Rent').last);
+    await tester.pumpAndSettle();
+
+    final savePayment = find.widgetWithText(FilledButton, 'Add payment');
+    await tester.drag(
+      find.byType(SingleChildScrollView).last,
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(savePayment);
+    await pumpUntil(tester, find.text('1 scheduled expenses were added.'));
+    await pumpUntilGone(tester, find.text('New scheduled payment'));
+    expect(find.text('Rent payment'), findsOneWidget);
+
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Transactions'));
+    await pumpUntil(tester, find.text('Rent payment'));
+    expect(find.text(money(800)), findsWidgets);
+
+    harness.router.goNamed(AppRoutes.scheduledPaymentsName);
+    await pumpUntil(tester, find.text('Scheduled payments'));
+    await pumpUntil(tester, find.text('Rent payment'));
+    expect(find.text('Paid today'), findsOneWidget);
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await pumpUntil(tester, find.text('Pause'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pause'));
+    await pumpUntil(tester, find.text('Paused'));
+    expect(find.text('Pay now'), findsNothing);
+
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await pumpUntil(tester, find.text('Delete scheduled payment'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Delete scheduled payment'));
+    await pumpUntil(tester, find.text('Delete scheduled payment?'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+    await pumpUntil(tester, find.text('No scheduled payments'));
   });
 
   testWidgets('persists state across an app restart', (tester) async {

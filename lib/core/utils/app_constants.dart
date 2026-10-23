@@ -10,6 +10,8 @@ abstract final class AppConstants {
   static const String walletsBoxName = 'wallets';
   static const String walletTransfersBoxName = 'wallet_transfers';
   static const String settingsBoxName = 'settings';
+  static const String categoriesBoxName = 'categories';
+  static const String scheduledPaymentsBoxName = 'scheduled_payments';
   static const int maxNoteLength = 500;
   static const double maxInterestRate = 100;
 }

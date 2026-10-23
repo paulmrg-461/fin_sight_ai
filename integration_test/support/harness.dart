@@ -30,6 +30,18 @@ import 'package:fin_sight_ai/features/budgets/data/repositories/budget_repositor
 import 'package:fin_sight_ai/features/budgets/domain/usecases/budget_usecases.dart';
 import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_bloc.dart';
 import 'package:fin_sight_ai/features/budgets/presentation/bloc/budget_event.dart';
+import 'package:fin_sight_ai/features/categories/data/datasources/hive_category_local_data_source.dart';
+import 'package:fin_sight_ai/features/categories/data/repositories/category_repository_impl.dart';
+import 'package:fin_sight_ai/features/categories/domain/repositories/category_repository.dart';
+import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart';
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
+import 'package:fin_sight_ai/features/categories/presentation/bloc/category_event.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
 import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -101,10 +113,14 @@ class IntegrationHarness {
   late Box<dynamic> _walletsBox;
   late Box<dynamic> _walletTransfersBox;
   late Box<dynamic> _settingsBox;
+  late Box<dynamic> _categoriesBox;
+  late Box<dynamic> _scheduledPaymentsBox;
 
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
   late ReceiptRepository receiptRepository;
+  late CategoryRepository categoryRepository;
+  late ScheduledPaymentRepository scheduledPaymentRepository;
 
   late AddTransactionUseCase addTransaction;
   late GetTransactionsUseCase getTransactions;
@@ -123,6 +139,8 @@ class IntegrationHarness {
   late WalletBloc walletBloc;
   late CurrencyBloc currencyBloc;
   late LocaleBloc localeBloc;
+  late CategoryBloc categoryBloc;
+  late ScheduledPaymentBloc scheduledPaymentBloc;
   late GoRouter router;
 
   static Future<IntegrationHarness> create() async {
@@ -146,6 +164,8 @@ class IntegrationHarness {
     _walletsBox = await Hive.openBox<dynamic>('wallets');
     _walletTransfersBox = await Hive.openBox<dynamic>('wallet_transfers');
     _settingsBox = await Hive.openBox<dynamic>('settings');
+    _categoriesBox = await Hive.openBox<dynamic>('categories');
+    _scheduledPaymentsBox = await Hive.openBox<dynamic>('scheduled_payments');
   }
 
   void _wire() {
@@ -156,6 +176,14 @@ class IntegrationHarness {
     receiptRepository = ReceiptRepositoryImpl(
       HiveReceiptLocalDataSource(_receiptsBox),
       ocr,
+    );
+    categoryRepository = CategoryRepositoryImpl(
+      HiveCategoryLocalDataSource(_categoriesBox),
+      languageCode: 'en',
+    );
+    scheduledPaymentRepository = ScheduledPaymentRepositoryImpl(
+      HiveScheduledPaymentLocalDataSource(_scheduledPaymentsBox),
+      transactionRepository,
     );
 
     addTransaction = AddTransactionUseCase(transactionRepository);
@@ -273,6 +301,20 @@ class IntegrationHarness {
       GetLocaleUseCase(localeRepository),
       SetLocaleUseCase(localeRepository),
     );
+    categoryBloc = CategoryBloc(
+      GetCategoryCatalogUseCase(categoryRepository),
+      AddCategoryUseCase(categoryRepository),
+      RenameCategoryUseCase(categoryRepository),
+      SetCategoryArchivedUseCase(categoryRepository),
+    );
+    scheduledPaymentBloc = ScheduledPaymentBloc(
+      GetScheduledPaymentsUseCase(scheduledPaymentRepository),
+      AddScheduledPaymentUseCase(scheduledPaymentRepository),
+      SetScheduledPaymentActiveUseCase(scheduledPaymentRepository),
+      DeleteScheduledPaymentUseCase(scheduledPaymentRepository),
+      PayScheduledPaymentUseCase(scheduledPaymentRepository),
+      ProcessDueScheduledPaymentsUseCase(scheduledPaymentRepository),
+    );
 
     router = buildRouter(
       themeController: themeController,
@@ -295,6 +337,8 @@ class IntegrationHarness {
       walletBloc: walletBloc,
       currencyBloc: currencyBloc,
       localeBloc: localeBloc,
+      categoryBloc: categoryBloc,
+      scheduledPaymentBloc: scheduledPaymentBloc,
     );
   }
 
@@ -310,6 +354,8 @@ class IntegrationHarness {
     walletBloc.add(const LoadWallets());
     currencyBloc.add(const LoadCurrency());
     localeBloc.add(const LoadLocale());
+    categoryBloc.add(const LoadCategories());
+    scheduledPaymentBloc.add(const LoadScheduledPayments());
     await tester.pump();
   }
 
@@ -324,6 +370,8 @@ class IntegrationHarness {
     await _walletsBox.close();
     await _walletTransfersBox.close();
     await _settingsBox.close();
+    await _categoriesBox.close();
+    await _scheduledPaymentsBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -341,6 +389,8 @@ class IntegrationHarness {
     await walletBloc.close();
     await currencyBloc.close();
     await localeBloc.close();
+    await categoryBloc.close();
+    await scheduledPaymentBloc.close();
   }
 
   Future<void> dispose() async {
@@ -371,6 +421,12 @@ class IntegrationHarness {
     }
     if (_settingsBox.isOpen) {
       await _settingsBox.close();
+    }
+    if (_categoriesBox.isOpen) {
+      await _categoriesBox.close();
+    }
+    if (_scheduledPaymentsBox.isOpen) {
+      await _scheduledPaymentsBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {

@@ -91,6 +91,15 @@
 - [x] Settings language selector
 - [x] Unit + widget + integration coverage for switching
 
+## Categories and scheduled payments
+
+- [x] Hive category catalog + EN/ES defaults
+- [x] Create/rename/archive/restore screen and pickers
+- [x] Monthly/yearly schedules with due processing
+- [x] Deterministic generated expenses + startup/screen banner
+- [x] Pause/resume, pay now, delete
+- [x] Unit, data, BLoC, and integration tests
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -102,7 +111,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 562 tests passing
-- [x] Integration tests — 11 passing
+- [x] `flutter test --coverage` — 668 tests passing
+- [x] Integration tests — 13 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push

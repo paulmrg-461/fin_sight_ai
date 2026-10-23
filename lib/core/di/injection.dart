@@ -62,6 +62,10 @@ abstract class StorageModule {
         AppConstants.walletTransfersBoxName,
       ),
       settings: await Hive.openBox<dynamic>(AppConstants.settingsBoxName),
+      categories: await Hive.openBox<dynamic>(AppConstants.categoriesBoxName),
+      scheduledPayments: await Hive.openBox<dynamic>(
+        AppConstants.scheduledPaymentsBoxName,
+      ),
     );
   }
 }

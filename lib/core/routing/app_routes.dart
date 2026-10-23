@@ -26,4 +26,10 @@ abstract final class AppRoutes {
 
   static const String settingsName = 'settings';
   static const String settingsPath = '/settings';
+
+  static const String categoriesName = 'categories';
+  static const String categoriesPath = '/categories';
+
+  static const String scheduledPaymentsName = 'scheduled-payments';
+  static const String scheduledPaymentsPath = '/scheduled-payments';
 }

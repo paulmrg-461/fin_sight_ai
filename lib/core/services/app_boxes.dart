@@ -12,6 +12,8 @@ class AppBoxes {
     required this.wallets,
     required this.walletTransfers,
     required this.settings,
+    required this.categories,
+    required this.scheduledPayments,
   });
 
   final Box<dynamic> transactions;
@@ -23,4 +25,6 @@ class AppBoxes {
   final Box<dynamic> wallets;
   final Box<dynamic> walletTransfers;
   final Box<dynamic> settings;
+  final Box<dynamic> categories;
+  final Box<dynamic> scheduledPayments;
 }

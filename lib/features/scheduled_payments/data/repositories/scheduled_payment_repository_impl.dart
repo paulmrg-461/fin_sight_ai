@@ -1,0 +1,293 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:injectable/injectable.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../../../core/domain/failure.dart';
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/usecase/usecase.dart';
+import '../../../../core/utils/clock.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../transactions/domain/repositories/transaction_repository.dart';
+import '../../domain/entities/scheduled_payment_entity.dart';
+import '../../domain/repositories/scheduled_payment_repository.dart';
+import '../../domain/services/schedule_calculator.dart';
+import '../datasources/scheduled_payment_local_data_source.dart';
+import '../models/scheduled_payment_model.dart';
+
+/// Local-first schedules that materialize ordinary expense transactions.
+@LazySingleton(as: ScheduledPaymentRepository)
+class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
+  ScheduledPaymentRepositoryImpl(
+    this._localDataSource,
+    this._transactionRepository, {
+    this.uuid = const Uuid(),
+    this.clock = const Clock(),
+  });
+
+  static const int maxCatchUpPeriods = 60;
+
+  final ScheduledPaymentLocalDataSource _localDataSource;
+  final TransactionRepository _transactionRepository;
+  final Uuid uuid;
+  final Clock clock;
+
+  @override
+  ResultFuture<List<ScheduledPaymentEntity>> getPayments() async {
+    try {
+      final models = await _localDataSource.getPayments();
+      final sorted = models.toList()
+        ..sort((a, b) {
+          final byDate = a.nextDueDate.compareTo(b.nextDueDate);
+          return byDate != 0 ? byDate : a.name.compareTo(b.name);
+        });
+      return Right(sorted.map((model) => model.toEntity()).toList());
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to read scheduled payments.',
+          code: 'scheduled_payment_read_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<ScheduledPaymentEntity> addPayment(
+    ScheduledPaymentEntity payment,
+  ) async {
+    try {
+      final now = clock.now();
+      final model = ScheduledPaymentModel.fromEntity(
+        payment.copyWith(updatedAt: now),
+      );
+      await _localDataSource.savePayment(model);
+      return Right(model.toEntity());
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to save the scheduled payment locally.',
+          code: 'scheduled_payment_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<ScheduledPaymentEntity> setActive(
+    String id,
+    bool isActive,
+  ) async {
+    try {
+      final model = await _findById(id);
+      if (model == null) {
+        return const Left(
+          ValidationFailure(
+            'Scheduled payment not found.',
+            code: 'scheduled_payment_not_found',
+          ),
+        );
+      }
+      final updated = model.copyWith(
+        isActive: isActive,
+        updatedAt: clock.now(),
+      );
+      await _localDataSource.savePayment(updated);
+      return Right(updated.toEntity());
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to update the scheduled payment.',
+          code: 'scheduled_payment_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<void> deletePayment(String id) async {
+    try {
+      final model = await _findById(id);
+      if (model == null) {
+        return const Right(null);
+      }
+      await _localDataSource.deletePayment(id);
+      return const Right(null);
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to delete the scheduled payment.',
+          code: 'scheduled_payment_delete_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<ScheduledPaymentRun> processDue(DateTime now) async {
+    try {
+      final models = await _localDataSource.getPayments();
+      final today = ScheduleCalculator.dateOnly(now);
+      final created = <TransactionEntity>[];
+      var processed = 0;
+
+      for (final model in models) {
+        if (!model.isActive) {
+          continue;
+        }
+
+        var due = ScheduleCalculator.dateOnly(model.nextDueDate);
+        if (due.isAfter(today)) {
+          continue;
+        }
+
+        var iterations = 0;
+        while (!due.isAfter(today) && iterations < maxCatchUpPeriods) {
+          final transaction = await _record(model, due);
+          final failure = transaction.getLeft().toNullable();
+          if (failure != null) {
+            return Left(failure);
+          }
+          created.add(transaction.getRight().toNullable()!);
+          processed++;
+
+          due = ScheduleCalculator.advanceOnce(
+            current: due,
+            frequency: model.frequency,
+            dayOfMonth: model.dayOfMonth,
+          );
+          iterations++;
+        }
+
+        final paidAt = clock.now();
+        await _localDataSource.savePayment(
+          model.copyWith(
+            nextDueDate: due,
+            lastPaidAt: paidAt,
+            updatedAt: paidAt,
+          ),
+        );
+      }
+
+      return Right(
+        ScheduledPaymentRun(
+          created: List<TransactionEntity>.unmodifiable(created),
+          processed: processed,
+        ),
+      );
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to process scheduled payments.',
+          code: 'scheduled_payment_process_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<ScheduledPaymentRun> payNow(String id, DateTime now) async {
+    try {
+      final model = await _findById(id);
+      if (model == null) {
+        return const Left(
+          ValidationFailure(
+            'Scheduled payment not found.',
+            code: 'scheduled_payment_not_found',
+          ),
+        );
+      }
+
+      final today = ScheduleCalculator.dateOnly(now);
+      if (model.lastPaidAt != null &&
+          ScheduleCalculator.dateOnly(model.lastPaidAt!) == today) {
+        // Already charged today; avoid advancing a second period.
+        return const Right(ScheduledPaymentRun());
+      }
+
+      final transaction = await _record(model, today);
+      final failure = transaction.getLeft().toNullable();
+      if (failure != null) {
+        return Left(failure);
+      }
+
+      var due = ScheduleCalculator.advanceOnce(
+        current: ScheduleCalculator.dateOnly(model.nextDueDate),
+        frequency: model.frequency,
+        dayOfMonth: model.dayOfMonth,
+      );
+      var iterations = 0;
+      while (!due.isAfter(today) && iterations < maxCatchUpPeriods) {
+        due = ScheduleCalculator.advanceOnce(
+          current: due,
+          frequency: model.frequency,
+          dayOfMonth: model.dayOfMonth,
+        );
+        iterations++;
+      }
+
+      final paidAt = clock.now();
+      await _localDataSource.savePayment(
+        model.copyWith(nextDueDate: due, lastPaidAt: paidAt, updatedAt: paidAt),
+      );
+
+      return Right(
+        ScheduledPaymentRun(
+          created: List<TransactionEntity>.unmodifiable([
+            transaction.getRight().toNullable()!,
+          ]),
+          processed: 1,
+        ),
+      );
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to record the scheduled payment.',
+          code: 'scheduled_payment_pay_failed',
+        ),
+      );
+    }
+  }
+
+  Future<ScheduledPaymentModel?> _findById(String id) async {
+    final models = await _localDataSource.getPayments();
+    for (final model in models) {
+      if (model.id == id) {
+        return model;
+      }
+    }
+    return null;
+  }
+
+  Future<Result<TransactionEntity>> _record(
+    ScheduledPaymentEntity payment,
+    DateTime date,
+  ) {
+    final due = ScheduleCalculator.dateOnly(date);
+    final transaction = TransactionEntity(
+      // Deterministic id keeps retries and repeated processing idempotent.
+      id: uuid.v5(
+        Namespace.url.value,
+        'scheduled:${payment.id}:${due.toIso8601String()}',
+      ),
+      amount: payment.amount,
+      type: TransactionType.expense,
+      category: payment.category,
+      description: payment.name,
+      date: due,
+      walletId: payment.walletId,
+    );
+    return _transactionRepository.addTransaction(transaction);
+  }
+}

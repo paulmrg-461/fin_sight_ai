@@ -15,13 +15,26 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Money wallets (bank/cash, reconciliation, transfers) | Done |
 | Currency preference (COP/USD) | Done |
 | Localization (English/Spanish, persisted selector) | Done |
-| Integration suite (11 flows + benchmarks) | Done |
+| Category catalog (defaults, create, rename, archive) | Done |
+| Scheduled payments (monthly/yearly, auto-expense) | Done |
+| Integration suite (13 flows + benchmarks) | Done |
 
-- Last pushed feature commit: `a738bb8 feat(i18n): add English and Spanish localization`.
+- Latest feature commits: `a738bb8` (i18n), then `feat(planning)` for categories + scheduled payments.
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 562 unit/widget tests, coverage gate at core 91.5%, 11 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 668 unit/widget tests, coverage gate green (core 91.1%, categories 97.9/100%, scheduled payments 100/100%), 13 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Categories and scheduled payments
+
+- Categories: Hive `categories` box, seeded once with EN/ES defaults from `Platform.localeName`; transactions/budgets store names, not ids.
+- `/categories` supports create, rename, archive/restore, and show-archived; pickers read `CategoryBloc`.
+- Scheduled payments: Hive `scheduled_payments` box; monthly/yearly with preserved `dayOfMonth` and month-end clamping.
+- Due processing runs at startup (before dashboard blocs) and on screen load; generated expenses use deterministic UUID v5 per schedule+due date, then sync normally.
+- Banner counts are carried into `LoadScheduledPayments(previousAutoCreated: ...)` so startup-created expenses are announced.
+- “Pay now” is idempotent per day; paused schedules never auto-charge; deleting keeps recorded expenses.
+- Known gaps: category rename does not cascade to historical transactions, budgets, or existing schedules; category and schedule definitions are local-only for now.
+- Bug fixed in this slice: `AddTransactionUseCase` now forwards `walletId`, so new expenses affect wallet balances.
 
 ## i18n slice (English / Spanish)
 
@@ -88,19 +101,21 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 562 unit/widget tests passing.
-- 11 integration tests passing on Linux.
-- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 91.5%.
+- 668 unit/widget tests passing.
+- 13 integration tests passing on Linux.
+- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, categories 97.9/100%, scheduled payments 100/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 91.1%.
 - SQL migrations `0001_init.sql` through `0004_wallet_ids.sql` applied; RLS script available.
 
 ## Known gaps / next
 
 1. Localize domain `Failure` messages and AI-generated insight content.
-2. Sync wallets and transfers.
-3. Sync receipt metadata; streaming AI responses.
-4. Money as integer minor units instead of `double`.
-5. Golden/screenshot tests in CI.
-6. Rotate the Groq key and Supabase DB password shared during setup.
+2. Sync categories and scheduled payments (SQL migration + queue/pull).
+3. Cascade category renames to transactions, budgets, and schedules.
+4. Sync wallets and transfers.
+5. Sync receipt metadata; streaming AI responses.
+6. Money as integer minor units instead of `double`.
+7. Golden/screenshot tests in CI.
+8. Rotate the Groq key and Supabase DB password shared during setup.
 
 ## Conventions to keep
 
