@@ -19,7 +19,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Scheduled payments (monthly/yearly, auto-expense) | Done |
 | Integration suite (13 flows + benchmarks) | Done |
 
-- Latest feature commits: `a738bb8` (i18n), then `feat(planning)` for categories + scheduled payments.
+- Latest feature commits: `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
 - Gates at this checkpoint: `flutter analyze` clean, 668 unit/widget tests, coverage gate green (core 91.1%, categories 97.9/100%, scheduled payments 100/100%), 13 Linux integration tests.
