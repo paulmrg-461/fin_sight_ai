@@ -10,7 +10,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 |------|-------|----------|--------|------------|--------|
 | 001 | Remove secrets from release bundles and gate generated files | P1 | S | — | DONE (worktree `plan-001-secrets`, commit `afc4026`) |
 | 002 | Scope local data to one account and clear it safely | P1 | M | — | TODO |
-| 003 | Fix calendar-day storage for transactions and budgets | P1 | S/M | — | TODO |
+| 003 | Fix calendar-day storage for transactions and budgets | P1 | S/M | — | DONE (worktree `plan-003-calendar`, commit `77614a3`) |
 | 004 | Refresh wallet balances, fix OCR posting, and finish i18n | P1 | S | 003 (date normalization) | TODO |
 | 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | TODO |
 | 006 | Give categories a stable id and cascade renames | P2 | M | 003 | TODO |
@@ -29,6 +29,13 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
   scaffold into the worktree (ignored by the environment's global excludes).
   CI checkout will also lack `linux/`; this is a pre-existing repo/CI gap, not
   introduced by plan 001.
+- 003 approved and merged as `e739660` (688 unit tests, 14 integration tests,
+  coverage gate green).
+- Separate unplanned fix `208f85e`: Groq retired
+  `llama-3.3-70b-versatile`; the coach now uses `openai/gpt-oss-20b` and
+  surfaces actionable configuration/API-key errors. A local `.env` command was
+  also missing a line continuation, so `GROQ_API_KEY` was never passed; local
+  runs should use `flutter run --dart-define-from-file=.env`.
 
 ## Dependency notes
 
