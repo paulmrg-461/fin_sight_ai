@@ -57,6 +57,11 @@ abstract class StorageModule {
       syncQueue: await Hive.openBox<dynamic>(AppConstants.syncQueueBoxName),
       syncMeta: await Hive.openBox<dynamic>(AppConstants.syncMetaBoxName),
       budgets: await Hive.openBox<dynamic>(AppConstants.budgetsBoxName),
+      wallets: await Hive.openBox<dynamic>(AppConstants.walletsBoxName),
+      walletTransfers: await Hive.openBox<dynamic>(
+        AppConstants.walletTransfersBoxName,
+      ),
+      settings: await Hive.openBox<dynamic>(AppConstants.settingsBoxName),
     );
   }
 }

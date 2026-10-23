@@ -74,6 +74,15 @@
 - [x] `0003_budgets.sql` + RLS
 - [x] Tests
 
+## Money and currency
+
+- [x] Bank/cash wallets + default creation
+- [x] Balance calculation, reconciliation, transfers
+- [x] Money screen + route + dashboard action
+- [x] Transaction wallet assignment + sync mapping
+- [x] COP/USD setting, formatting, MoneyText, Settings screen
+- [x] Unit, data, BLoC, and integration tests
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -85,7 +94,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 492 tests passing
-- [x] Integration tests — 9 passing
+- [x] `flutter test --coverage` — 545 tests passing
+- [x] Integration tests — 10 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push

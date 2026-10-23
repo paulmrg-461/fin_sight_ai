@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
 
@@ -28,7 +29,7 @@ class PaymentHistoryList extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.check_circle_outline),
-            title: Text('\$${payment.amount.toStringAsFixed(2)}'),
+            title: MoneyText(payment.amount),
             subtitle: Text(formatDisplayDate(payment.paidAt)),
           ),
       ],

@@ -1,3 +1,4 @@
+import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
@@ -10,6 +11,11 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'support/harness.dart';
+
+String money(double amount) => MoneyFormatter.format(amount, AppCurrency.cop);
+
+String signedMoney(double amount) =>
+    MoneyFormatter.signed(amount, AppCurrency.cop);
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -53,7 +59,7 @@ void main() {
 
     await pumpUntil(tester, find.text('Monthly pay'));
     await tester.pageBack();
-    await pumpUntil(tester, find.text('\$120.00'));
+    await pumpUntil(tester, find.text(money(120)));
 
     expect(find.text('Income'), findsOneWidget);
     expect(find.text('No transactions yet'), findsNothing);
@@ -78,7 +84,7 @@ void main() {
     await pumpUntil(tester, find.text('ACME MARKET'));
 
     await tester.pageBack();
-    await pumpUntil(tester, find.text('\$25.50'));
+    await pumpUntil(tester, find.text(money(25.5)));
 
     final result = await harness.transactionRepository.getTransactions();
     final transactions = result.getOrElse((_) => const <TransactionEntity>[]);
@@ -143,7 +149,7 @@ void main() {
     );
 
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('\$40.00'));
+    await pumpUntil(tester, find.text(money(40)));
 
     harness.router.goNamed(AppRoutes.budgetsName);
     await pumpUntil(tester, find.text('Add budget'));
@@ -157,7 +163,7 @@ void main() {
     await tester.tap(find.text('Save budget'));
 
     await pumpUntilGone(tester, find.text('New budget'));
-    await pumpUntil(tester, find.textContaining('/ \$100.00'));
+    await pumpUntil(tester, find.text(money(100)));
     expect(find.text('Food'), findsOneWidget);
   });
 
@@ -213,7 +219,49 @@ void main() {
     await pumpUntilGone(tester, find.text('December shopping'));
 
     expect(find.text('January salary'), findsOneWidget);
-    expect(find.textContaining('100.00'), findsWidgets);
+    expect(find.text(signedMoney(100)), findsWidgets);
+  });
+
+  testWidgets('manages bank/cash balances and switches currency', (
+    tester,
+  ) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 1000,
+        type: TransactionType.income,
+        category: 'Salary',
+        description: 'Opening balance',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text(money(1000)));
+
+    harness.router.goNamed(AppRoutes.moneyName);
+    await pumpUntil(tester, find.text('Total available'));
+
+    await tester.tap(find.text('Set balance').first);
+    await pumpUntil(tester, find.text('Actual balance'));
+    final balanceField = find.byType(TextFormField).last;
+    await tester.enterText(balanceField, '500');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await pumpUntil(tester, find.text(money(500)));
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntil(tester, find.text('Transfer money'));
+    final amountField = find.byType(TextFormField).first;
+    await tester.enterText(amountField, '100');
+    await tester.tap(find.widgetWithText(FilledButton, 'Transfer'));
+    await pumpUntil(tester, find.text(money(100)));
+
+    harness.router.goNamed(AppRoutes.settingsName);
+    await pumpUntil(tester, find.text('Currency'));
+    await tester.tap(find.text('USD'));
+    await pumpUntil(tester, find.text('USD — US Dollar'));
+
+    final usdBalance = MoneyFormatter.format(500, AppCurrency.usd);
+    expect(find.text(usdBalance), findsWidgets);
   });
 
   testWidgets('persists state across an app restart', (tester) async {
@@ -249,12 +297,12 @@ void main() {
     );
 
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('\$500.00'));
+    await pumpUntil(tester, find.text(money(500)));
 
     await tester.pumpWidget(const SizedBox.shrink());
     await harness.restart();
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('\$500.00'));
+    await pumpUntil(tester, find.text(money(500)));
 
     harness.router.goNamed(AppRoutes.transactionsName);
     await pumpUntil(tester, find.text('Persisted salary'));

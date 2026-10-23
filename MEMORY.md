@@ -19,7 +19,7 @@ _Last updated: 2026-10-22. Read this before starting a new session._
 - Gates: `flutter analyze` clean, 324 unit/widget tests, 7 integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
-## Current slice: Synced budgets (IMPLEMENTED, pending commit/push)
+## Current slice: Money wallets + currency configuration (IMPLEMENTED, pending commit/push)
 
 Goal: queue local writes offline, push them to Supabase, pull remote changes, and resolve conflicts last-write-wins.
 
@@ -67,16 +67,16 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 492 unit/widget tests passing.
-- 9 integration tests passing on Linux.
-- Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, core 91.2%.
+- 545 unit/widget tests passing.
+- 10 integration tests passing on Linux.
+- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, sync 100/90.8%, wallets 91.5/94.5%, core 91.0%.
 - SQL: `0001_init.sql`, `0002_tombstones.sql`, `tests/rls_test.sql`.
 
 ## Known gaps / next
 
 1. Run the RLS script against a real Supabase project (needs credentials).
-2. Sync receipt metadata.
-3. Streaming AI responses and conversation memory.
+2. Sync wallets and transfers.
+3. Sync receipt metadata; streaming AI responses.
 4. Money as integer minor units instead of `double`.
 5. Golden/screenshot tests in CI.
 

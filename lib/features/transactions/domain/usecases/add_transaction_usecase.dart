@@ -17,6 +17,7 @@ class AddTransactionParams {
     required this.description,
     required this.date,
     this.receiptImagePath,
+    this.walletId,
     this.id,
   });
 
@@ -26,6 +27,9 @@ class AddTransactionParams {
   final String description;
   final DateTime date;
   final String? receiptImagePath;
+
+  /// Wallet (bank/cash) the transaction belongs to.
+  final String? walletId;
 
   /// Optional explicit id; a UUID v4 is generated when omitted.
   final String? id;

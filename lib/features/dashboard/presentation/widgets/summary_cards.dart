@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/dashboard_entities.dart';
 
@@ -23,25 +24,25 @@ class SummaryCards extends StatelessWidget {
       children: [
         _SummaryCard(
           label: 'Income',
-          value: '\$${summary.totalIncome.toStringAsFixed(2)}',
+          value: MoneyText(summary.totalIncome),
           icon: Icons.south_west,
           color: AppColors.emerald,
         ),
         _SummaryCard(
           label: 'Expenses',
-          value: '\$${summary.totalExpenses.toStringAsFixed(2)}',
+          value: MoneyText(summary.totalExpenses),
           icon: Icons.north_east,
           color: AppColors.danger,
         ),
         _SummaryCard(
           label: 'Balance',
-          value: '\$${summary.balance.toStringAsFixed(2)}',
+          value: MoneyText(summary.balance),
           icon: Icons.account_balance_wallet_outlined,
           color: theme.colorScheme.primary,
         ),
         _SummaryCard(
           label: 'Savings rate',
-          value: '${summary.savingsRate.toStringAsFixed(1)}%',
+          value: Text('${summary.savingsRate.toStringAsFixed(1)}%'),
           icon: Icons.savings_outlined,
           color: theme.colorScheme.tertiary,
         ),
@@ -59,7 +60,7 @@ class _SummaryCard extends StatelessWidget {
   });
 
   final String label;
-  final String value;
+  final Widget value;
   final IconData icon;
   final Color color;
 
@@ -88,13 +89,15 @@ class _SummaryCard extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              value,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+            DefaultTextStyle(
+              style:
+                  theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ) ??
+                  const TextStyle(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              child: value,
             ),
           ],
         ),

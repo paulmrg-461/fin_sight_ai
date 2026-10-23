@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/services/receipt_image_picker.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/receipt_entity.dart';
@@ -169,8 +170,8 @@ class _ReceiptTile extends StatelessWidget {
           '${formatDisplayDate(receipt.date)} • '
           '${receipt.items.length} items',
         ),
-        trailing: Text(
-          '${receipt.currency} ${receipt.totalAmount.toStringAsFixed(2)}',
+        trailing: MoneyText(
+          receipt.totalAmount,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
           ),

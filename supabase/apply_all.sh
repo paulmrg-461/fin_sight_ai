@@ -10,7 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-for migration in 0001_init.sql 0002_tombstones.sql 0003_budgets.sql; do
+for migration in 0001_init.sql 0002_tombstones.sql 0003_budgets.sql 0004_wallet_ids.sql; do
   echo "Applying $migration..."
   psql "$SUPABASE_DB_URL" \
     -v ON_ERROR_STOP=1 \

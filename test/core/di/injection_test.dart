@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:fin_sight_ai/core/di/injection.dart';
+import 'package:fin_sight_ai/core/currency/currency_repository.dart';
+import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
+import 'package:fin_sight_ai/core/currency/hive_currency_repository.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
@@ -64,6 +68,12 @@ import 'package:fin_sight_ai/features/sync/domain/repositories/sync_repository.d
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/data/datasources/hive_wallet_local_data_source.dart';
+import 'package:fin_sight_ai/features/wallets/data/datasources/wallet_local_data_source.dart';
+import 'package:fin_sight_ai/features/wallets/data/repositories/wallet_repository_impl.dart';
+import 'package:fin_sight_ai/features/wallets/domain/repositories/wallet_repository.dart';
+import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -182,6 +192,17 @@ GROQ_API_KEY=groq-key
     expect(getIt<GetBudgetProgressUseCase>(), isNotNull);
     expect(getIt<GetCategoriesUseCase>(), isNotNull);
     expect(getIt<BudgetBloc>(), isA<BudgetBloc>());
+    expect(getIt<CurrencyRepository>(), isA<HiveCurrencyRepository>());
+    expect(getIt<GetCurrencyUseCase>(), isNotNull);
+    expect(getIt<SetCurrencyUseCase>(), isNotNull);
+    expect(getIt<CurrencyBloc>(), isA<CurrencyBloc>());
+
+    expect(getIt<WalletLocalDataSource>(), isA<HiveWalletLocalDataSource>());
+    expect(getIt<WalletRepository>(), isA<WalletRepositoryImpl>());
+    expect(getIt<GetWalletBalancesUseCase>(), isNotNull);
+    expect(getIt<SetWalletBalanceUseCase>(), isNotNull);
+    expect(getIt<TransferBetweenWalletsUseCase>(), isNotNull);
+    expect(getIt<WalletBloc>(), isA<WalletBloc>());
   });
 
   test('resolving before configuration throws', () async {

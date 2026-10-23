@@ -20,4 +20,10 @@ abstract final class AppRoutes {
 
   static const String budgetsName = 'budgets';
   static const String budgetsPath = '/budgets';
+
+  static const String moneyName = 'money';
+  static const String moneyPath = '/money';
+
+  static const String settingsName = 'settings';
+  static const String settingsPath = '/settings';
 }

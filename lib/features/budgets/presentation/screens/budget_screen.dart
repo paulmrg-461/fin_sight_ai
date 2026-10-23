@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/budget_entity.dart';
 import '../bloc/budget_bloc.dart';
@@ -111,14 +112,23 @@ class _BudgetCard extends StatelessWidget {
                     style: theme.textTheme.titleMedium,
                   ),
                 ),
-                Text(
-                  '\$${progress.spent.toStringAsFixed(2)} / '
-                  '\$${budget.monthlyLimit.toStringAsFixed(2)}',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: overBudget
-                        ? AppColors.danger
-                        : theme.colorScheme.onSurface,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    MoneyText(
+                      progress.spent,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: overBudget
+                            ? AppColors.danger
+                            : theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(' / ', style: theme.textTheme.labelLarge),
+                    MoneyText(
+                      budget.monthlyLimit,
+                      style: theme.textTheme.labelLarge,
+                    ),
+                  ],
                 ),
                 IconButton(
                   onPressed: onDelete,
@@ -139,16 +149,31 @@ class _BudgetCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              overBudget
-                  ? 'Over budget by '
-                        '\$${(-progress.remaining).toStringAsFixed(2)}'
-                  : '\$${progress.remaining.toStringAsFixed(2)} remaining',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: overBudget
-                    ? AppColors.danger
-                    : theme.colorScheme.onSurfaceVariant,
-              ),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  overBudget ? 'Over budget by ' : '',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: overBudget ? AppColors.danger : null,
+                  ),
+                ),
+                MoneyText(
+                  overBudget ? -progress.remaining : progress.remaining,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: overBudget
+                        ? AppColors.danger
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                if (!overBudget)
+                  Text(
+                    ' remaining',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

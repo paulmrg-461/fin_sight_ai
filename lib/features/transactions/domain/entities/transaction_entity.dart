@@ -13,6 +13,7 @@ class TransactionEntity extends Entity {
     required this.description,
     required this.date,
     this.receiptImagePath,
+    this.walletId,
     this.updatedAt,
     this.isSynced = false,
     this.deletedAt,
@@ -31,6 +32,9 @@ class TransactionEntity extends Entity {
 
   /// Local path to an attached receipt image, when available.
   final String? receiptImagePath;
+
+  /// Wallet (bank/cash) the money belongs to.
+  final String? walletId;
 
   /// Last local modification, used for last-write-wins merges.
   final DateTime? updatedAt;
@@ -60,6 +64,7 @@ class TransactionEntity extends Entity {
     String? description,
     DateTime? date,
     String? receiptImagePath,
+    String? walletId,
     DateTime? updatedAt,
     bool? isSynced,
     DateTime? deletedAt,
@@ -72,6 +77,7 @@ class TransactionEntity extends Entity {
       description: description ?? this.description,
       date: date ?? this.date,
       receiptImagePath: receiptImagePath ?? this.receiptImagePath,
+      walletId: walletId ?? this.walletId,
       updatedAt: updatedAt ?? this.updatedAt,
       isSynced: isSynced ?? this.isSynced,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -89,6 +95,7 @@ class TransactionEntity extends Entity {
           other.description == description &&
           other.date == date &&
           other.receiptImagePath == receiptImagePath &&
+          other.walletId == walletId &&
           other.updatedAt == updatedAt &&
           other.isSynced == isSynced &&
           other.deletedAt == deletedAt;
@@ -102,6 +109,7 @@ class TransactionEntity extends Entity {
     description,
     date,
     receiptImagePath,
+    walletId,
     updatedAt,
     isSynced,
     deletedAt,

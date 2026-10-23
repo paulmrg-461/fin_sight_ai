@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
 
@@ -40,10 +41,19 @@ class DebtCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              Text(
-                '\$${debt.remainingAmount.toStringAsFixed(2)} remaining '
-                'of \$${debt.totalAmount.toStringAsFixed(2)}',
-                style: theme.textTheme.bodyMedium,
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  MoneyText(
+                    debt.remainingAmount,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                  Text(' remaining of ', style: theme.textTheme.bodyMedium),
+                  MoneyText(
+                    debt.totalAmount,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               ClipRRect(

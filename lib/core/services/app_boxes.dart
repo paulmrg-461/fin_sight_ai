@@ -9,6 +9,9 @@ class AppBoxes {
     required this.syncQueue,
     required this.syncMeta,
     required this.budgets,
+    required this.wallets,
+    required this.walletTransfers,
+    required this.settings,
   });
 
   final Box<dynamic> transactions;
@@ -17,4 +20,7 @@ class AppBoxes {
   final Box<dynamic> syncQueue;
   final Box<dynamic> syncMeta;
   final Box<dynamic> budgets;
+  final Box<dynamic> wallets;
+  final Box<dynamic> walletTransfers;
+  final Box<dynamic> settings;
 }

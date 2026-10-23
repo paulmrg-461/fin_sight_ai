@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../bloc/ocr_bloc.dart';
@@ -312,16 +313,19 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text(_items[index].name),
-                      subtitle: Text(
-                        '${_items[index].quantity} × '
-                        '\$${_items[index].price.toStringAsFixed(2)}',
+                      subtitle: Row(
+                        children: [
+                          Text('${_items[index].quantity} × '),
+                          MoneyText(
+                            _items[index].price,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            '\$${_items[index].lineTotal.toStringAsFixed(2)}',
-                          ),
+                          MoneyText(_items[index].lineTotal),
                           IconButton(
                             onPressed: () => _editExistingItem(index),
                             tooltip: 'Edit item',

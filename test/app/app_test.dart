@@ -1,4 +1,8 @@
 import 'package:fin_sight_ai/app/app.dart';
+import 'package:fin_sight_ai/core/currency/app_currency.dart';
+import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_state.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
@@ -40,6 +44,10 @@ import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/domain/entities/wallet_entity.dart';
+import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -103,6 +111,17 @@ class MockGetBudgetProgress extends Mock implements GetBudgetProgressUseCase {}
 
 class MockGetCategories extends Mock implements GetCategoriesUseCase {}
 
+class MockGetWalletBalances extends Mock implements GetWalletBalancesUseCase {}
+
+class MockSetWalletBalance extends Mock implements SetWalletBalanceUseCase {}
+
+class MockTransferBetweenWallets extends Mock
+    implements TransferBetweenWalletsUseCase {}
+
+class MockGetCurrency extends Mock implements GetCurrencyUseCase {}
+
+class MockSetCurrency extends Mock implements SetCurrencyUseCase {}
+
 class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
 
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
@@ -121,6 +140,8 @@ void main() {
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
   late BudgetBloc budgetBloc;
+  late WalletBloc walletBloc;
+  late CurrencyBloc currencyBloc;
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -209,6 +230,12 @@ void main() {
       MockGetBudgetProgress(),
       MockGetCategories(),
     );
+    walletBloc = WalletBloc(
+      MockGetWalletBalances(),
+      MockSetWalletBalance(),
+      MockTransferBetweenWallets(),
+    );
+    currencyBloc = CurrencyBloc(MockGetCurrency(), MockSetCurrency());
   });
 
   Widget buildApp() {
@@ -223,6 +250,8 @@ void main() {
       syncBloc: syncBloc,
       authBloc: authBloc,
       budgetBloc: budgetBloc,
+      walletBloc: walletBloc,
+      currencyBloc: currencyBloc,
     );
   }
 
@@ -241,6 +270,29 @@ void main() {
     );
     authBloc.emit(const AuthUnauthenticated());
     budgetBloc.emit(const BudgetEmpty(categories: []));
+    walletBloc.emit(
+      WalletLoaded([
+        WalletBalance(
+          wallet: const WalletEntity(
+            id: 'wallet-bank',
+            name: 'Cuenta principal',
+            type: WalletType.bank,
+            openingBalance: 0,
+          ),
+          balance: 0,
+        ),
+        WalletBalance(
+          wallet: const WalletEntity(
+            id: 'wallet-cash',
+            name: 'Efectivo',
+            type: WalletType.cash,
+            openingBalance: 0,
+          ),
+          balance: 0,
+        ),
+      ]),
+    );
+    currencyBloc.emit(const CurrencyLoaded(AppCurrency.cop));
     await tester.pumpWidget(buildApp());
     await tester.pump();
   }

@@ -10,6 +10,11 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 
+import 'package:fin_sight_ai/core/currency/currency_module.dart' as _i827;
+import 'package:fin_sight_ai/core/currency/currency_repository.dart' as _i1029;
+import 'package:fin_sight_ai/core/currency/currency_usecases.dart' as _i192;
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart'
+    as _i542;
 import 'package:fin_sight_ai/core/di/injection.dart' as _i1015;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
@@ -138,6 +143,18 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transacti
     as _i1051;
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart'
     as _i820;
+import 'package:fin_sight_ai/features/wallets/data/datasources/wallet_local_data_source.dart'
+    as _i261;
+import 'package:fin_sight_ai/features/wallets/data/repositories/wallet_repository_impl.dart'
+    as _i532;
+import 'package:fin_sight_ai/features/wallets/data/wallets_module.dart'
+    as _i326;
+import 'package:fin_sight_ai/features/wallets/domain/repositories/wallet_repository.dart'
+    as _i305;
+import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart'
+    as _i1013;
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart'
+    as _i163;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:go_router/go_router.dart' as _i583;
 import 'package:http/http.dart' as _i519;
@@ -153,11 +170,13 @@ extension GetItInjectableX on _i174.GetIt {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final storageModule = _$StorageModule();
     final coreModule = _$CoreModule();
+    final currencyModule = _$CurrencyModule();
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
     final budgetsModule = _$BudgetsModule();
     final ocrModule = _$OcrModule();
     final syncModule = _$SyncModule();
+    final walletsModule = _$WalletsModule();
     final routingModule = _$RoutingModule();
     await gh.factoryAsync<_i422.AppBoxes>(
       () => storageModule.provideAppBoxes(),
@@ -192,6 +211,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i323.AiCoachDatasource>(
       () => _i369.GroqApiDatasource(gh<_i519.Client>(), gh<_i1042.AppEnv>()),
     );
+    gh.lazySingleton<_i1029.CurrencyRepository>(
+      () => currencyModule.provideCurrencyRepository(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i228.TransactionLocalDataSource>(
       () => transactionsModule.provideTransactionLocalDataSource(
         gh<_i422.AppBoxes>(),
@@ -208,6 +230,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i921.SyncLocalDataSource>(
       () => syncModule.provideSyncLocalDataSource(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i261.WalletLocalDataSource>(
+      () => walletsModule.provideWalletLocalDataSource(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i583.GoRouter>(
       () => routingModule.provideGoRouter(
@@ -309,6 +334,26 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
+    gh.lazySingleton<_i305.WalletRepository>(
+      () => _i532.WalletRepositoryImpl(
+        gh<_i261.WalletLocalDataSource>(),
+        gh<_i544.TransactionRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i1013.TransferBetweenWalletsUseCase>(
+      () => _i1013.TransferBetweenWalletsUseCase(
+        gh<_i305.WalletRepository>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
+    gh.lazySingleton<_i192.GetCurrencyUseCase>(
+      () => _i192.GetCurrencyUseCase(gh<_i1029.CurrencyRepository>()),
+    );
+    gh.lazySingleton<_i192.SetCurrencyUseCase>(
+      () => _i192.SetCurrencyUseCase(gh<_i1029.CurrencyRepository>()),
+    );
     gh.lazySingleton<_i268.DebtRepository>(
       () => _i140.DebtRepositoryImpl(
         gh<_i1035.DebtLocalDataSource>(),
@@ -358,6 +403,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i268.DebtRepository>(),
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i542.CurrencyBloc>(
+      () => _i542.CurrencyBloc(
+        gh<_i192.GetCurrencyUseCase>(),
+        gh<_i192.SetCurrencyUseCase>(),
       ),
     );
     gh.factory<_i746.BudgetBloc>(
@@ -419,6 +470,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i826.ScanReceiptUseCase>(
       () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
     );
+    gh.lazySingleton<_i1013.GetWalletBalancesUseCase>(
+      () => _i1013.GetWalletBalancesUseCase(gh<_i305.WalletRepository>()),
+    );
+    gh.lazySingleton<_i1013.SetWalletBalanceUseCase>(
+      () => _i1013.SetWalletBalanceUseCase(gh<_i305.WalletRepository>()),
+    );
     gh.factory<_i1009.DebtBloc>(
       () => _i1009.DebtBloc(
         gh<_i243.GetDebtsUseCase>(),
@@ -432,6 +489,13 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i292.SaveReceiptUseCase(
         gh<_i832.ReceiptRepository>(),
         uuid: gh<_i706.Uuid>(),
+      ),
+    );
+    gh.factory<_i163.WalletBloc>(
+      () => _i163.WalletBloc(
+        gh<_i1013.GetWalletBalancesUseCase>(),
+        gh<_i1013.SetWalletBalanceUseCase>(),
+        gh<_i1013.TransferBetweenWalletsUseCase>(),
       ),
     );
     gh.factory<_i1031.OcrBloc>(
@@ -451,6 +515,8 @@ class _$StorageModule extends _i1015.StorageModule {}
 
 class _$CoreModule extends _i1015.CoreModule {}
 
+class _$CurrencyModule extends _i827.CurrencyModule {}
+
 class _$TransactionsModule extends _i1015.TransactionsModule {}
 
 class _$DebtsModule extends _i1015.DebtsModule {}
@@ -460,5 +526,7 @@ class _$BudgetsModule extends _i950.BudgetsModule {}
 class _$OcrModule extends _i600.OcrModule {}
 
 class _$SyncModule extends _i273.SyncModule {}
+
+class _$WalletsModule extends _i326.WalletsModule {}
 
 class _$RoutingModule extends _i1015.RoutingModule {}

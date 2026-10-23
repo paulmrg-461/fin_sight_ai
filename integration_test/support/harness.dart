@@ -4,6 +4,10 @@ import 'package:fin_sight_ai/app/app.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
+import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
+import 'package:fin_sight_ai/core/currency/hive_currency_repository.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
+import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_event.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
@@ -58,6 +62,11 @@ import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/data/datasources/hive_wallet_local_data_source.dart';
+import 'package:fin_sight_ai/features/wallets/data/repositories/wallet_repository_impl.dart';
+import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
+import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -85,6 +94,9 @@ class IntegrationHarness {
   late Box<dynamic> _syncQueueBox;
   late Box<dynamic> _syncMetaBox;
   late Box<dynamic> _budgetsBox;
+  late Box<dynamic> _walletsBox;
+  late Box<dynamic> _walletTransfersBox;
+  late Box<dynamic> _settingsBox;
 
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
@@ -104,6 +116,8 @@ class IntegrationHarness {
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
   late BudgetBloc budgetBloc;
+  late WalletBloc walletBloc;
+  late CurrencyBloc currencyBloc;
   late GoRouter router;
 
   static Future<IntegrationHarness> create() async {
@@ -124,6 +138,9 @@ class IntegrationHarness {
     _syncQueueBox = await Hive.openBox<dynamic>('sync_queue');
     _syncMetaBox = await Hive.openBox<dynamic>('sync_meta');
     _budgetsBox = await Hive.openBox<dynamic>('budgets');
+    _walletsBox = await Hive.openBox<dynamic>('wallets');
+    _walletTransfersBox = await Hive.openBox<dynamic>('wallet_transfers');
+    _settingsBox = await Hive.openBox<dynamic>('settings');
   }
 
   void _wire() {
@@ -232,6 +249,21 @@ class IntegrationHarness {
       GetCategoriesUseCase(budgetRepository),
     );
 
+    final walletRepository = WalletRepositoryImpl(
+      HiveWalletLocalDataSource(_walletsBox, _walletTransfersBox),
+      transactionRepository,
+    );
+    walletBloc = WalletBloc(
+      GetWalletBalancesUseCase(walletRepository),
+      SetWalletBalanceUseCase(walletRepository),
+      TransferBetweenWalletsUseCase(walletRepository),
+    );
+    final currencyRepository = HiveCurrencyRepository(_settingsBox);
+    currencyBloc = CurrencyBloc(
+      GetCurrencyUseCase(currencyRepository),
+      SetCurrencyUseCase(currencyRepository),
+    );
+
     router = buildRouter(
       themeController: themeController,
       receiptImagePicker: imagePicker,
@@ -250,6 +282,8 @@ class IntegrationHarness {
       syncBloc: syncBloc,
       authBloc: authBloc,
       budgetBloc: budgetBloc,
+      walletBloc: walletBloc,
+      currencyBloc: currencyBloc,
     );
   }
 
@@ -262,6 +296,8 @@ class IntegrationHarness {
     syncBloc.add(const LoadSyncStatus());
     authBloc.add(const RestoreAuthSession());
     budgetBloc.add(const LoadBudgets());
+    walletBloc.add(const LoadWallets());
+    currencyBloc.add(const LoadCurrency());
     await tester.pump();
   }
 
@@ -273,6 +309,9 @@ class IntegrationHarness {
     await _syncQueueBox.close();
     await _syncMetaBox.close();
     await _budgetsBox.close();
+    await _walletsBox.close();
+    await _walletTransfersBox.close();
+    await _settingsBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -287,6 +326,8 @@ class IntegrationHarness {
     await syncBloc.close();
     await authBloc.close();
     await budgetBloc.close();
+    await walletBloc.close();
+    await currencyBloc.close();
   }
 
   Future<void> dispose() async {
@@ -308,6 +349,15 @@ class IntegrationHarness {
     }
     if (_budgetsBox.isOpen) {
       await _budgetsBox.close();
+    }
+    if (_walletsBox.isOpen) {
+      await _walletsBox.close();
+    }
+    if (_walletTransfersBox.isOpen) {
+      await _walletTransfersBox.close();
+    }
+    if (_settingsBox.isOpen) {
+      await _settingsBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {

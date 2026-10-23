@@ -1,4 +1,4 @@
--- FinSight AI — full schema bundle (0001 + 0002 + 0003)
+-- FinSight AI — full schema bundle (0001 + 0002 + 0003 + 0004)
 -- Apply once in the Supabase SQL Editor or with supabase/apply_all.sh.
 
 -- FinSight AI — initial Supabase schema
@@ -71,10 +71,7 @@ grant select, insert, update, delete on table public.debts
 revoke all on table public.debts from anon;
 revoke truncate, references, trigger on table public.debts from authenticated;
 
--- ============================================================
 -- 0002_tombstones.sql
--- ============================================================
-
 -- FinSight AI — soft-delete tombstones
 -- Keeps deleted rows visible to the sync client so deletions can propagate
 -- between devices. UI queries filter deleted_at at the local layer.
@@ -101,10 +98,7 @@ create index if not exists debts_user_active_idx
   on public.debts (user_id, updated_at)
   where deleted_at is null;
 
--- ============================================================
 -- 0003_budgets.sql
--- ============================================================
-
 -- FinSight AI — synced monthly budgets
 create table if not exists public.budgets (
   id text primary key,
@@ -136,3 +130,8 @@ grant select, insert, update, delete on table public.budgets
   to authenticated;
 revoke all on table public.budgets from anon;
 revoke truncate, references, trigger on table public.budgets from authenticated;
+
+-- 0004_wallet_ids.sql
+-- Preserve the local bank/cash wallet assignment across syncs.
+alter table public.transactions
+  add column if not exists wallet_id text;

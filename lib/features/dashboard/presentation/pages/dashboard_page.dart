@@ -71,6 +71,11 @@ class DashboardPage extends StatelessWidget {
                 icon: const Icon(Icons.date_range_outlined),
               ),
               IconButton(
+                onPressed: () => context.pushNamed(AppRoutes.settingsName),
+                tooltip: 'Settings',
+                icon: const Icon(Icons.settings_outlined),
+              ),
+              IconButton(
                 onPressed: themeController.toggle,
                 tooltip: isDark
                     ? 'Switch to light mode'
@@ -250,6 +255,14 @@ class _QuickActions extends StatelessWidget {
                   avatar: const Icon(Icons.pie_chart_outline, size: 18),
                   label: const Text('Budgets'),
                   onPressed: () => onOpen(AppRoutes.budgetsName),
+                ),
+                ActionChip(
+                  avatar: const Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 18,
+                  ),
+                  label: const Text('Money'),
+                  onPressed: () => onOpen(AppRoutes.moneyName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.document_scanner_outlined, size: 18),

@@ -7,6 +7,9 @@ abstract final class AppConstants {
   static const String syncQueueBoxName = 'sync_queue';
   static const String syncMetaBoxName = 'sync_meta';
   static const String budgetsBoxName = 'budgets';
+  static const String walletsBoxName = 'wallets';
+  static const String walletTransfersBoxName = 'wallet_transfers';
+  static const String settingsBoxName = 'settings';
   static const int maxNoteLength = 500;
   static const double maxInterestRate = 100;
 }

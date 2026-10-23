@@ -227,6 +227,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'description': json['description'],
       'date': json['date'],
       'receipt_image_path': json['receiptImagePath'],
+      'wallet_id': json['walletId'],
       'deleted_at': json['deletedAt'],
       'updated_at': json['updatedAt'] ?? json['date'],
     };
@@ -241,6 +242,7 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'description': row['description'],
       'date': row['date'],
       'receiptImagePath': row['receipt_image_path'],
+      'walletId': row['wallet_id'],
       'updatedAt': row['updated_at'],
       'deletedAt': row['deleted_at'],
       'isSynced': true,

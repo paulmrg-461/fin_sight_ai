@@ -18,6 +18,16 @@ void main() {
     });
   });
 
+  test('auth and OCR exceptions expose their payload', () {
+    const auth = AuthException('Invalid credentials.', code: 'auth');
+    const ocr = OcrException('Engine missing.', code: 'ocr');
+
+    expect(auth.message, 'Invalid credentials.');
+    expect(auth.code, 'auth');
+    expect(ocr.message, 'Engine missing.');
+    expect(ocr.code, 'ocr');
+  });
+
   group('NoParams', () {
     test('all instances are equal', () {
       // Arrange

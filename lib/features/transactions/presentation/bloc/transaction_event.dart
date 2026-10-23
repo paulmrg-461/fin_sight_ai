@@ -24,6 +24,7 @@ final class AddTransaction extends TransactionEvent {
     required this.description,
     required this.date,
     this.receiptImagePath,
+    this.walletId,
   });
 
   final double amount;
@@ -32,6 +33,7 @@ final class AddTransaction extends TransactionEvent {
   final String description;
   final DateTime date;
   final String? receiptImagePath;
+  final String? walletId;
 
   @override
   List<Object?> get props => [
@@ -41,6 +43,7 @@ final class AddTransaction extends TransactionEvent {
     description,
     date,
     receiptImagePath,
+    walletId,
   ];
 }
 

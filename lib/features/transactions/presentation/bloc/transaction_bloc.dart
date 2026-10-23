@@ -54,6 +54,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         description: event.description,
         date: event.date,
         receiptImagePath: event.receiptImagePath,
+        walletId: event.walletId,
       ),
     );
 

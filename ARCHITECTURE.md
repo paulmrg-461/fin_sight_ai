@@ -98,13 +98,28 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ### Sync
 
-- Transactions, debts, and budgets stamp `updatedAt` / `isSynced`, persist locally, and enqueue a `SyncOperation` (`<entityType>:<entityId>`).
+- Transactions, debts, and budgets stamp `updatedAt` / `isSynced`, persist locally, and enqueue a `SyncOperation` (`<entityType>:<entityId>`). Transaction `walletId` round-trips through PostgREST.
 - Deletes write `deletedAt` tombstones and enqueue upserts; local queries hide tombstones while sync keeps them idempotent.
 - `HiveSyncLocalDataSource` stores the queue and `lastSyncedAt` in Hive; repeated edits collapse into the latest operation.
 - `SupabaseRestSyncDataSource` talks to PostgREST over `http.Client` with the authenticated JWT, mapping camelCase models to snake_case columns (including `deleted_at`).
 - `SyncRepositoryImpl` pushes pending operations, resolves conflicts last-write-wins by `updatedAt`, pulls newer remote rows/tombstones (transactions, debts, budgets), persists `lastSyncedAt`, retries with exponential backoff, and purges tombstones older than 30 days.
 - `SyncBloc` + `SyncStatusChip` expose pending count, offline/configured/authenticated state, and manual sync. Startup restores auth then syncs.
 - Receipts remain local-only. Without credentials or a session, sync returns a non-fatal offline report.
+
+### Money
+
+- `WalletEntity` (bank/cash) + `WalletTransferEntity`; `WalletCalculator` derives balances from opening balances, transactions, and transfers.
+- Default stable wallets (`wallet-bank`, `wallet-cash`) are created on first load.
+- `WalletRepositoryImpl` reconciles actual balances by adjusting the opening balance and validates transfers against available funds.
+- `WalletBloc` + `WalletScreen` expose total money, per-wallet balances, reconciliation, and account→cash transfers.
+- Transaction `walletId` is persisted and synced (`0004_wallet_ids.sql`); wallet definitions/transfers are local-only for now.
+
+### Currency
+
+- `AppCurrency` supports COP (default, `es_CO`) and USD (`en_US`) with locale-aware `MoneyFormatter`.
+- The preference is stored in the Hive `settings` box; `CurrencyBloc` exposes it app-wide.
+- `MoneyText` renders every monetary surface with the active currency.
+- `SettingsScreen` (`/settings`) switches currency; amounts are **not** converted.
 
 ### Budgets
 
@@ -194,14 +209,15 @@ Domain and data coverage target: ≥ 90%, enforced by `tool/check_coverage.dart`
 | Secure storage for sessions | Keychain/Keystore instead of plaintext | Linux needs libsecret; tests use a fake |
 | Soft-delete tombstones | Deletions propagate across devices | Local tombstones require eventual cleanup |
 | Synced budgets | Consistent offline-first behavior across slices | More rows/tables to migrate |
+| Local wallets/transfers | Simple first money slice | Balances/transfers do not sync yet |
+| App-wide currency setting | Consistent formatting, no FX complexity | No exchange-rate conversion |
 | Persistent receipt images | Previews survive cache cleanup | Requires orphan cleanup/compaction |
 | Exponential sync backoff | Avoids hammering a failing backend | Delayed retries after failures |
 
 ## 11. Roadmap
 
 1. Run RLS verification against a real Supabase project (script ready).
-2. Sync budgets and receipt metadata.
-3. Receipt image storage and cleanup policies.
-4. Tombstone compaction and sync backoff.
-5. Streaming AI responses and conversation memory.
-6. Screenshot/golden tests in CI.
+2. Sync wallets and transfers.
+3. Sync receipt metadata; streaming AI responses.
+4. Money as integer minor units.
+5. Screenshot/golden tests in CI.

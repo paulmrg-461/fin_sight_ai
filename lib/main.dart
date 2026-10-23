@@ -10,6 +10,10 @@ import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/budgets/presentation/bloc/budget_bloc.dart';
 import 'features/budgets/presentation/bloc/budget_event.dart';
+import 'features/wallets/presentation/bloc/wallet_bloc.dart';
+import 'features/wallets/presentation/bloc/wallet_event.dart';
+import 'core/currency/presentation/bloc/currency_bloc.dart';
+import 'core/currency/presentation/bloc/currency_event.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'features/debts/presentation/bloc/debt_event.dart';
@@ -32,6 +36,8 @@ Future<void> main() async {
   final dashboardBloc = getIt<DashboardBloc>()..add(const LoadDashboard());
   final syncBloc = getIt<SyncBloc>();
   final budgetBloc = getIt<BudgetBloc>()..add(const LoadBudgets());
+  final walletBloc = getIt<WalletBloc>()..add(const LoadWallets());
+  final currencyBloc = getIt<CurrencyBloc>()..add(const LoadCurrency());
   final authBloc = getIt<AuthBloc>()..add(const RestoreAuthSession());
   authBloc.stream.listen((state) {
     if (state is AuthAuthenticated) {
@@ -52,6 +58,8 @@ Future<void> main() async {
       syncBloc: syncBloc,
       authBloc: authBloc,
       budgetBloc: budgetBloc,
+      walletBloc: walletBloc,
+      currencyBloc: currencyBloc,
     ),
   );
 }

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/transaction_entity.dart';
@@ -140,9 +141,9 @@ class _TransactionTile extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              '${isIncome ? '+' : '-'}\$'
-              '${transaction.amount.toStringAsFixed(2)}',
+            MoneyText(
+              transaction.signedAmount,
+              signed: true,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: isIncome ? AppColors.success : AppColors.danger,
                 fontWeight: FontWeight.w600,

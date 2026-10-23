@@ -36,6 +36,12 @@ GROQ_API_KEY=groq-key
       expect(env.hasGroq, isFalse);
     });
 
+    test('reports whether Groq is configured', () {
+      dotenv.loadFromString(envString: 'GROQ_API_KEY=key');
+
+      expect(AppEnv.current().hasGroq, isTrue);
+    });
+
     test('does not require dotenv to be initialized', () {
       dotenv.clean();
 

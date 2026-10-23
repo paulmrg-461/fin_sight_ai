@@ -2,7 +2,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/ai_coach/presentation/screens/ai_coach_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../core/currency/presentation/screens/settings_screen.dart';
 import '../../features/budgets/presentation/screens/budget_screen.dart';
+import '../../features/wallets/presentation/screens/wallet_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/debts/presentation/screens/debt_list_screen.dart';
 import '../../features/ocr/presentation/screens/ocr_screen.dart';
@@ -55,6 +57,16 @@ GoRouter buildRouter({
         path: AppRoutes.budgetsPath,
         name: AppRoutes.budgetsName,
         builder: (context, state) => const BudgetScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.moneyPath,
+        name: AppRoutes.moneyName,
+        builder: (context, state) => const WalletScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settingsPath,
+        name: AppRoutes.settingsName,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

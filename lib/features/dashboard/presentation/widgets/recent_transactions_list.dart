@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -48,9 +49,9 @@ class RecentTransactionsList extends StatelessWidget {
                   '${transaction.category} • '
                   '${formatDisplayDate(transaction.date)}',
                 ),
-                trailing: Text(
-                  '${transaction.isIncome ? '+' : '-'}\$'
-                  '${transaction.amount.toStringAsFixed(2)}',
+                trailing: MoneyText(
+                  transaction.signedAmount,
+                  signed: true,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: transaction.isIncome
                         ? AppColors.emerald

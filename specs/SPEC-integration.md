@@ -24,8 +24,9 @@ External networks and platform plugins are never invoked. ML Kit, Groq, and imag
 6. Add a budget and verify category spending progress.
 7. Sign in and out through the dashboard account button.
 8. Filter transactions by date range; only matching records remain.
-9. Restart persistence: close boxes/blocs, reopen the same Hive directory, rebuild the app, and verify transactions, debts, and receipts survive.
-10. Performance smoke benchmarks for launch/dashboard and transactions render.
+9. Manage bank/cash balances: reconcile the bank balance, transfer to cash, and switch COP → USD.
+10. Restart persistence: close boxes/blocs, reopen the same Hive directory, rebuild the app, and verify transactions, debts, receipts, wallets, and currency survive.
+11. Performance smoke benchmarks for launch/dashboard and transactions render.
 
 ## Commands
 
@@ -48,6 +49,7 @@ Thresholds: launch/dashboard `< 5000ms`, transactions render `< 3000ms`.
 - Groq response: `{"type":"suggestion","content":"Automate 10% of your income."}`.
 - Image picker: stable `/tmp/fake-receipt.jpg`.
 - Auth: any valid email + 6-character password signs in with a synthetic session.
+- Currency: starts at COP; the Money test switches to USD through Settings.
 
 ## Verification
 

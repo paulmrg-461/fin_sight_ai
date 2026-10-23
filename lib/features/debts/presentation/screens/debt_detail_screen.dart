@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
@@ -248,17 +249,21 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              '\$${debt.remainingAmount.toStringAsFixed(2)} remaining',
+            MoneyText(
+              debt.remainingAmount,
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: debt.isPaid
                     ? AppColors.success
                     : theme.colorScheme.primary,
               ),
             ),
-            Text(
-              'of \$${debt.totalAmount.toStringAsFixed(2)} total',
-              style: theme.textTheme.bodyMedium,
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text('of ', style: theme.textTheme.bodyMedium),
+                MoneyText(debt.totalAmount, style: theme.textTheme.bodyMedium),
+                Text(' total', style: theme.textTheme.bodyMedium),
+              ],
             ),
             const SizedBox(height: 12),
             ClipRRect(
@@ -271,11 +276,22 @@ class _SummaryCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Text(
-              '${debt.interestRate.toStringAsFixed(2)}% APR • '
-              'Minimum \$${debt.minimumPayment.toStringAsFixed(2)}/mo • '
-              'Due ${formatDisplayDate(debt.dueDate)}',
-              style: theme.textTheme.bodySmall,
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  '${debt.interestRate.toStringAsFixed(2)}% APR • Minimum ',
+                  style: theme.textTheme.bodySmall,
+                ),
+                MoneyText(
+                  debt.minimumPayment,
+                  style: theme.textTheme.bodySmall,
+                ),
+                Text(
+                  '/mo • Due ${formatDisplayDate(debt.dueDate)}',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ),
           ],
         ),

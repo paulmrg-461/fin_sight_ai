@@ -8,6 +8,8 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
+- **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
+- **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
@@ -20,6 +22,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 lib/
 ├── app/                         # App shell + BLoC providers
 ├── core/
+│   ├── currency/                # COP/USD preference + MoneyText
 │   ├── di/                      # get_it + injectable composition root
 │   ├── domain/                  # Entity + Failure hierarchy
 │   ├── error/                   # Infrastructure exceptions
@@ -34,6 +37,7 @@ lib/
     ├── transactions/{domain,data,presentation}
     ├── debts/{domain,data,presentation}
     ├── budgets/{domain,data,presentation}
+    ├── wallets/{domain,data,presentation}
     ├── ocr/{domain,data,presentation}
     ├── ai_coach/{domain,data,presentation}
     ├── dashboard/{domain,data,presentation}
@@ -67,7 +71,7 @@ flutter run \
 
 ### Supabase
 
-1. Apply the migrations: `0001_init.sql`, `0002_tombstones.sql`, and `0003_budgets.sql` (or `supabase db push`).
+1. Apply the migrations: `0001_init.sql` through `0004_wallet_ids.sql` (or `supabase db push`).
 2. Sign in from the dashboard account button. Without a session the app stays offline and the sync chip says “Sign in to sync”.
 3. Verify RLS against a real database:
 
@@ -76,7 +80,7 @@ export SUPABASE_DB_URL="postgresql://postgres:...@db.<project>.supabase.co:5432/
 ./supabase/verify_rls.sh
 ```
 
-See [supabase/README.md](supabase/README.md) for details.
+See [supabase/README.md](supabase/README.md) for details. The app defaults to **COP**; switch to USD from Settings without exchange-rate conversion.
 
 ## Quality gates
 
@@ -89,8 +93,8 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **492 unit/widget tests** passing.
-- **9 integration tests** passing on Linux desktop.
+- **545 unit/widget tests** passing.
+- **10 integration tests** passing on Linux desktop.
 - Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.2%.
 - Integration benchmarks: app launch + dashboard ≈ 175 ms, transactions render ≈ 250 ms.
 - CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.
@@ -103,6 +107,8 @@ Current status:
 | `transactions` | `/transactions` |
 | `debts` | `/debts` |
 | `budgets` | `/budgets` |
+| `money` | `/money` |
+| `settings` | `/settings` |
 | `ocr` | `/ocr` |
 | `ai-coach` | `/ai-coach` |
 | `login` | `/login` |

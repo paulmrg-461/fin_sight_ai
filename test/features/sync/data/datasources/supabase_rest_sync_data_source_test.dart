@@ -23,6 +23,7 @@ Map<String, dynamic> transactionRow({String id = 'tx-1'}) => {
   'description': 'Lunch',
   'date': '2026-10-22T12:00:00.000Z',
   'receipt_image_path': '/tmp/r.jpg',
+  'wallet_id': 'wallet-bank',
   'updated_at': '2026-10-22T12:05:00.000Z',
 };
 
@@ -125,6 +126,7 @@ void main() {
       expect(row, isNotNull);
       expect(row!['id'], 'tx-1');
       expect(row['receiptImagePath'], '/tmp/r.jpg');
+      expect(row['walletId'], 'wallet-bank');
       expect(row['updatedAt'], '2026-10-22T12:05:00.000Z');
       expect(row['isSynced'], isTrue);
       expect(captured.url.path, '/rest/v1/transactions');
@@ -189,12 +191,14 @@ void main() {
         'description': 'Lunch',
         'date': '2026-10-22T12:00:00.000Z',
         'receiptImagePath': '/tmp/r.jpg',
+        'walletId': 'wallet-bank',
         'updatedAt': '2026-10-22T12:05:00.000Z',
         'isSynced': false,
       });
 
       final body = jsonDecode(captured.body) as Map<String, dynamic>;
       expect(body['receipt_image_path'], '/tmp/r.jpg');
+      expect(body['wallet_id'], 'wallet-bank');
       expect(body['updated_at'], '2026-10-22T12:05:00.000Z');
       expect(body.containsKey('isSynced'), isFalse);
       expect(captured.url.queryParameters['on_conflict'], 'id');

@@ -2,6 +2,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/utils/date_formatters.dart';
+import '../../../wallets/domain/entities/wallet_entity.dart';
+import '../../../wallets/presentation/bloc/wallet_bloc.dart';
+import '../../../wallets/presentation/bloc/wallet_state.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -23,6 +26,22 @@ class _TransactionFormState extends State<TransactionForm> {
 
   TransactionType _type = TransactionType.expense;
   DateTime _date = DateTime.now();
+  String? _walletId;
+
+  @override
+  void initState() {
+    super.initState();
+    final walletState = context.read<WalletBloc>().state;
+    if (walletState is WalletLoaded) {
+      _walletId = walletState.balances
+          .firstWhere(
+            (balance) => balance.type == WalletType.bank,
+            orElse: () => walletState.balances.first,
+          )
+          .wallet
+          .id;
+    }
+  }
 
   @override
   void dispose() {
@@ -47,6 +66,7 @@ class _TransactionFormState extends State<TransactionForm> {
         category: _categoryController.text,
         description: _descriptionController.text,
         date: _date,
+        walletId: _walletId,
         receiptImagePath: _receiptController.text.trim().isEmpty
             ? null
             : _receiptController.text.trim(),
@@ -106,6 +126,33 @@ class _TransactionFormState extends State<TransactionForm> {
                 },
               ),
               const SizedBox(height: 16),
+              BlocBuilder<WalletBloc, WalletState>(
+                builder: (context, state) {
+                  final balances = state is WalletLoaded
+                      ? state.balances
+                      : const <WalletBalance>[];
+                  if (balances.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _walletId,
+                      decoration: const InputDecoration(
+                        labelText: 'Account / cash',
+                      ),
+                      items: [
+                        for (final balance in balances)
+                          DropdownMenuItem(
+                            value: balance.wallet.id,
+                            child: Text(balance.name),
+                          ),
+                      ],
+                      onChanged: (value) => setState(() => _walletId = value),
+                    ),
+                  );
+                },
+              ),
               TextFormField(
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(

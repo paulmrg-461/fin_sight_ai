@@ -77,7 +77,16 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] `0003_budgets.sql` with RLS.
 - [x] Unit/data/sync tests.
 
-### Phase 8: Integration and delivery
+### Phase 8: Money and currency
+
+- [x] Wallet entities, calculator, repository, and use cases.
+- [x] Bank/cash defaults, reconciliation, and transfers with insufficient-funds checks.
+- [x] Hive wallets/transfers + Money screen and route.
+- [x] Transaction `walletId` persistence and PostgREST mapping (`0004_wallet_ids.sql`).
+- [x] COP/USD currency preference, formatter, MoneyText, Settings screen.
+- [x] Unit, data, BLoC, and integration tests.
+
+### Phase 9: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.

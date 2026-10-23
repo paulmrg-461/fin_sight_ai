@@ -12,6 +12,7 @@ class TransactionModel extends TransactionEntity {
     required super.description,
     required super.date,
     super.receiptImagePath,
+    super.walletId,
     super.updatedAt,
     super.isSynced,
     super.deletedAt,
@@ -26,6 +27,7 @@ class TransactionModel extends TransactionEntity {
       description: transaction.description,
       date: transaction.date,
       receiptImagePath: transaction.receiptImagePath,
+      walletId: transaction.walletId,
       updatedAt: transaction.updatedAt,
       isSynced: transaction.isSynced,
       deletedAt: transaction.deletedAt,
@@ -40,6 +42,7 @@ class TransactionModel extends TransactionEntity {
     final description = json['description'];
     final date = json['date'];
     final receiptImagePath = json['receiptImagePath'];
+    final walletId = json['walletId'];
     final updatedAt = json['updatedAt'];
     final isSynced = json['isSynced'];
     final deletedAt = json['deletedAt'];
@@ -79,6 +82,7 @@ class TransactionModel extends TransactionEntity {
       description: description,
       date: DateTime.parse(date),
       receiptImagePath: receiptImagePath is String ? receiptImagePath : null,
+      walletId: walletId is String ? walletId : null,
       updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
       isSynced: isSynced is bool ? isSynced : false,
       deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
@@ -94,6 +98,7 @@ class TransactionModel extends TransactionEntity {
       'description': description,
       'date': date.toUtc().toIso8601String(),
       'receiptImagePath': receiptImagePath,
+      'walletId': walletId,
       'updatedAt': updatedAt?.toUtc().toIso8601String(),
       'isSynced': isSynced,
       'deletedAt': deletedAt?.toUtc().toIso8601String(),
@@ -109,6 +114,7 @@ class TransactionModel extends TransactionEntity {
       description: description,
       date: date,
       receiptImagePath: receiptImagePath,
+      walletId: walletId,
       updatedAt: updatedAt,
       isSynced: isSynced,
       deletedAt: deletedAt,
