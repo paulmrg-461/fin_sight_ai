@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../domain/entities/wallet_entity.dart';
 import '../bloc/wallet_bloc.dart';
@@ -49,11 +50,11 @@ class WalletScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Money'),
+        title: Text(context.l10n.moneyTitle),
         actions: [
           IconButton(
             onPressed: () => context.pushNamed(AppRoutes.settingsName),
-            tooltip: 'Settings',
+            tooltip: context.l10n.settings,
             icon: const Icon(Icons.settings_outlined),
           ),
         ],
@@ -61,8 +62,10 @@ class WalletScreen extends StatelessWidget {
       body: BlocBuilder<WalletBloc, WalletState>(
         builder: (context, state) {
           return switch (state) {
-            WalletInitial() || WalletLoading() => const Center(
-              child: CircularProgressIndicator(semanticsLabel: 'Loading money'),
+            WalletInitial() || WalletLoading() => Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: context.l10n.loading,
+              ),
             ),
             WalletFailure(:final message) => _WalletError(
               message: message,
@@ -83,7 +86,7 @@ class WalletScreen extends StatelessWidget {
                 OutlinedButton.icon(
                   onPressed: () => _transfer(context, balances),
                   icon: const Icon(Icons.swap_horiz),
-                  label: const Text('Transfer between wallets'),
+                  label: Text(context.l10n.transferBetweenWallets),
                 ),
               ],
             ),
@@ -98,7 +101,7 @@ class WalletScreen extends StatelessWidget {
           }
         },
         icon: const Icon(Icons.swap_horiz),
-        label: const Text('Transfer'),
+        label: Text(context.l10n.transfer),
       ),
     );
   }
@@ -119,7 +122,10 @@ class _TotalCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total available', style: theme.textTheme.labelLarge),
+            Text(
+              context.l10n.totalAvailable,
+              style: theme.textTheme.labelLarge,
+            ),
             const SizedBox(height: 4),
             MoneyText(
               total,
@@ -128,7 +134,7 @@ class _TotalCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text('Bank account + cash', style: theme.textTheme.bodySmall),
+            Text(context.l10n.bankPlusCash, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
@@ -172,7 +178,7 @@ class _WalletCard extends StatelessWidget {
                 children: [
                   Text(balance.name, style: theme.textTheme.titleMedium),
                   Text(
-                    isBank ? 'Bank account' : 'Cash',
+                    isBank ? context.l10n.bankAccount : context.l10n.cash,
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
@@ -189,7 +195,7 @@ class _WalletCard extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: onSetBalance,
-                  child: const Text('Set balance'),
+                  child: Text(context.l10n.setBalance),
                 ),
               ],
             ),
@@ -226,7 +232,7 @@ class _WalletError extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -259,14 +265,14 @@ class _SetBalanceDialogState extends State<_SetBalanceDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Set ${widget.balance.name} balance'),
+      title: Text(context.l10n.setBalanceTitle(widget.balance.name)),
       content: Form(
         key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Current balance: '
+              '${context.l10n.currentBalance}: '
               '${widget.balance.balance.toStringAsFixed(2)}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
@@ -278,11 +284,13 @@ class _SetBalanceDialogState extends State<_SetBalanceDialog> {
                 decimal: true,
               ),
               onChanged: (value) => _value = value,
-              decoration: const InputDecoration(labelText: 'Actual balance'),
+              decoration: InputDecoration(
+                labelText: context.l10n.actualBalance,
+              ),
               validator: (value) {
                 final parsed = double.tryParse(value?.trim() ?? '');
                 if (parsed == null || !parsed.isFinite || parsed < 0) {
-                  return 'Enter a valid balance.';
+                  return context.l10n.enterValidBalance;
                 }
                 return null;
               },
@@ -293,9 +301,9 @@ class _SetBalanceDialogState extends State<_SetBalanceDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );
   }
@@ -367,7 +375,7 @@ class _TransferDialogState extends State<_TransferDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Transfer money'),
+      title: Text(context.l10n.transferMoney),
       content: Form(
         key: _formKey,
         child: Column(
@@ -375,7 +383,7 @@ class _TransferDialogState extends State<_TransferDialog> {
           children: [
             DropdownButtonFormField<String>(
               initialValue: _fromWalletId,
-              decoration: const InputDecoration(labelText: 'From'),
+              decoration: InputDecoration(labelText: context.l10n.from),
               items: [
                 for (final balance in widget.balances)
                   DropdownMenuItem(
@@ -392,7 +400,7 @@ class _TransferDialogState extends State<_TransferDialog> {
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _toWalletId,
-              decoration: const InputDecoration(labelText: 'To'),
+              decoration: InputDecoration(labelText: context.l10n.to),
               items: [
                 for (final balance in widget.balances)
                   DropdownMenuItem(
@@ -413,14 +421,14 @@ class _TransferDialogState extends State<_TransferDialog> {
                 decimal: true,
               ),
               onChanged: (value) => _amount = value,
-              decoration: const InputDecoration(labelText: 'Amount'),
+              decoration: InputDecoration(labelText: context.l10n.amount),
               validator: (value) {
                 final parsed = double.tryParse(value?.trim() ?? '');
                 if (parsed == null || !parsed.isFinite || parsed <= 0) {
-                  return 'Enter an amount greater than zero.';
+                  return context.l10n.enterAmountGreaterThanZero;
                 }
                 if (_fromWalletId == _toWalletId) {
-                  return 'Choose two different wallets.';
+                  return context.l10n.chooseDifferentWallets;
                 }
                 return null;
               },
@@ -429,7 +437,7 @@ class _TransferDialogState extends State<_TransferDialog> {
             TextFormField(
               initialValue: _note,
               onChanged: (value) => _note = value,
-              decoration: const InputDecoration(labelText: 'Note (optional)'),
+              decoration: InputDecoration(labelText: context.l10n.noteOptional),
             ),
           ],
         ),
@@ -437,9 +445,9 @@ class _TransferDialogState extends State<_TransferDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Transfer')),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.transfer)),
       ],
     );
   }

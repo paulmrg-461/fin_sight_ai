@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
 
@@ -35,7 +36,9 @@ class DebtCard extends StatelessWidget {
                     ),
                   ),
                   Chip(
-                    label: Text(debt.isPaid ? 'Paid' : 'Active'),
+                    label: Text(
+                      debt.isPaid ? context.l10n.paid : context.l10n.active,
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
                 ],
@@ -48,7 +51,10 @@ class DebtCard extends StatelessWidget {
                     debt.remainingAmount,
                     style: theme.textTheme.bodyMedium,
                   ),
-                  Text(' remaining of ', style: theme.textTheme.bodyMedium),
+                  Text(
+                    ' ${context.l10n.remaining} ${context.l10n.ofLabel} ',
+                    style: theme.textTheme.bodyMedium,
+                  ),
                   MoneyText(
                     debt.totalAmount,
                     style: theme.textTheme.bodyMedium,
@@ -61,14 +67,16 @@ class DebtCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   value: debt.progress,
                   minHeight: 8,
-                  semanticsLabel: 'Debt repayment progress',
+                  semanticsLabel: context.l10n.debtRepaymentProgress,
                   semanticsValue: '${(debt.progress * 100).round()}%',
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                '${debt.interestRate.toStringAsFixed(2)}% APR • '
-                'Due ${formatDisplayDate(debt.dueDate)}',
+                context.l10n.aprDue(
+                  debt.interestRate.toStringAsFixed(2),
+                  formatDisplayDate(debt.dueDate),
+                ),
                 style: theme.textTheme.bodySmall,
               ),
             ],

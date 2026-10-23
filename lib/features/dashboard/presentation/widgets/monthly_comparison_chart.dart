@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/dashboard_entities.dart';
 
@@ -30,7 +31,7 @@ class MonthlyComparisonChart extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Monthly expenses',
+                    context.l10n.monthlyExpenses,
                     style: theme.textTheme.titleMedium,
                   ),
                 ),

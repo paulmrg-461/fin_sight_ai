@@ -5,6 +5,7 @@ import '../../../../core/utils/date_formatters.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/transaction_entity.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -105,18 +106,21 @@ class _TransactionFormState extends State<TransactionForm> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('New transaction', style: theme.textTheme.titleLarge),
+              Text(
+                context.l10n.newTransaction,
+                style: theme.textTheme.titleLarge,
+              ),
               const SizedBox(height: 16),
               SegmentedButton<TransactionType>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: TransactionType.expense,
-                    label: Text('Expense'),
+                    label: Text(context.l10n.expense),
                     icon: Icon(Icons.arrow_upward),
                   ),
                   ButtonSegment(
                     value: TransactionType.income,
-                    label: Text('Income'),
+                    label: Text(context.l10n.incomeShort),
                     icon: Icon(Icons.arrow_downward),
                   ),
                 ],
@@ -138,8 +142,8 @@ class _TransactionFormState extends State<TransactionForm> {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: DropdownButtonFormField<String>(
                       initialValue: _walletId,
-                      decoration: const InputDecoration(
-                        labelText: 'Account / cash',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.accountOrCash,
                       ),
                       items: [
                         for (final balance in balances)
@@ -158,14 +162,14 @@ class _TransactionFormState extends State<TransactionForm> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Amount',
+                decoration: InputDecoration(
+                  labelText: context.l10n.amount,
                   prefixText: '\$ ',
                 ),
                 validator: (value) {
                   final amount = double.tryParse(value?.trim() ?? '');
                   if (amount == null || !amount.isFinite || amount <= 0) {
-                    return 'Enter an amount greater than zero.';
+                    return context.l10n.enterAmountGreaterThanZero;
                   }
                   return null;
                 },
@@ -174,9 +178,9 @@ class _TransactionFormState extends State<TransactionForm> {
               TextFormField(
                 controller: _categoryController,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: InputDecoration(labelText: context.l10n.category),
                 validator: (value) => (value?.trim().isEmpty ?? true)
-                    ? 'Category is required.'
+                    ? context.l10n.categoryRequired
                     : null,
               ),
               const SizedBox(height: 12),
@@ -184,28 +188,30 @@ class _TransactionFormState extends State<TransactionForm> {
                 controller: _descriptionController,
                 textCapitalization: TextCapitalization.sentences,
                 maxLength: 500,
-                decoration: const InputDecoration(labelText: 'Description'),
+                decoration: InputDecoration(
+                  labelText: context.l10n.description,
+                ),
               ),
               const SizedBox(height: 4),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today_outlined),
-                title: const Text('Date'),
+                title: Text(context.l10n.date),
                 subtitle: Text(formatDisplayDate(_date)),
                 trailing: const Icon(Icons.edit_outlined),
                 onTap: _pickDate,
               ),
               TextFormField(
                 controller: _receiptController,
-                decoration: const InputDecoration(
-                  labelText: 'Receipt image path (optional)',
+                decoration: InputDecoration(
+                  labelText: context.l10n.receiptPathOptional,
                 ),
               ),
               const SizedBox(height: 20),
               FilledButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.check),
-                label: const Text('Save transaction'),
+                label: Text(context.l10n.saveTransaction),
               ),
             ],
           ),

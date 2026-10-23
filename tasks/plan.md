@@ -86,7 +86,16 @@ Deliver three new feature slices and an end-to-end integration suite on top of t
 - [x] COP/USD currency preference, formatter, MoneyText, Settings screen.
 - [x] Unit, data, BLoC, and integration tests.
 
-### Phase 9: Integration and delivery
+### Phase 9: Internationalization
+
+- [x] ARB catalogs (`app_en.arb`, `app_es.arb`) + `l10n.yaml` generation.
+- [x] `LocaleRepository`, Hive persistence, use cases, and `LocaleBloc`.
+- [x] Locale-aware `MaterialApp.router` with `material_ui`/`cupertino_ui` delegates.
+- [x] System/English/Español selector in Settings.
+- [x] Localize dashboard, transactions, wallets, debts, budgets, OCR, AI coach, auth, sync, and settings.
+- [x] Unit, widget, and integration tests (EN → ES → EN).
+
+### Phase 10: Integration and delivery
 
 - [x] Integration harness with real Hive and fake external services.
 - [x] User flows: empty dashboard, add transaction, receipt scan, add debt, AI insights, date filter.

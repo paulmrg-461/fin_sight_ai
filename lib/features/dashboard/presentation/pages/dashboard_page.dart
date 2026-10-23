@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/theme_controller.dart';
 import '../../../../core/utils/date_formatters.dart';
@@ -38,7 +39,7 @@ class DashboardPage extends StatelessWidget {
         start: DateTime(now.year, now.month),
         end: DateTime(now.year, now.month + 1, 0),
       ),
-      helpText: 'Dashboard period',
+      helpText: context.l10n.period,
     );
     if (selected == null) {
       return;
@@ -61,18 +62,18 @@ class DashboardPage extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('FinSight AI'),
+            title: Text(context.l10n.appName),
             actions: [
               const AccountButton(),
               const SyncStatusChip(),
               IconButton(
                 onPressed: () => _pickRange(context),
-                tooltip: 'Change period',
+                tooltip: context.l10n.changePeriod,
                 icon: const Icon(Icons.date_range_outlined),
               ),
               IconButton(
                 onPressed: () => context.pushNamed(AppRoutes.settingsName),
-                tooltip: 'Settings',
+                tooltip: context.l10n.settings,
                 icon: const Icon(Icons.settings_outlined),
               ),
               IconButton(
@@ -89,9 +90,9 @@ class DashboardPage extends StatelessWidget {
           body: BlocBuilder<DashboardBloc, DashboardState>(
             builder: (context, state) {
               return switch (state) {
-                DashboardInitial() || DashboardLoading() => const Center(
+                DashboardInitial() || DashboardLoading() => Center(
                   child: CircularProgressIndicator(
-                    semanticsLabel: 'Loading dashboard',
+                    semanticsLabel: context.l10n.loading,
                   ),
                 ),
                 DashboardFailure(:final message) => _DashboardError(
@@ -195,10 +196,13 @@ class _EmptyDashboard extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            Text('No transactions yet', style: theme.textTheme.titleMedium),
+            Text(
+              context.l10n.noTransactionsYet,
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
-              'Add your first income or expense to unlock spending insights.',
+              context.l10n.noTransactionsBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -206,7 +210,7 @@ class _EmptyDashboard extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAddTransaction,
               icon: const Icon(Icons.add),
-              label: const Text('Add a transaction'),
+              label: Text(context.l10n.addFirstTransaction),
             ),
           ],
         ),
@@ -232,7 +236,7 @@ class _QuickActions extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
-                'Quick actions',
+                context.l10n.quickActions,
                 style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
@@ -243,17 +247,17 @@ class _QuickActions extends StatelessWidget {
               children: [
                 ActionChip(
                   avatar: const Icon(Icons.swap_vert, size: 18),
-                  label: const Text('Transactions'),
+                  label: Text(context.l10n.transactions),
                   onPressed: () => onOpen(AppRoutes.transactionsName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.account_balance_outlined, size: 18),
-                  label: const Text('Debts'),
+                  label: Text(context.l10n.debts),
                   onPressed: () => onOpen(AppRoutes.debtsName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.pie_chart_outline, size: 18),
-                  label: const Text('Budgets'),
+                  label: Text(context.l10n.budgets),
                   onPressed: () => onOpen(AppRoutes.budgetsName),
                 ),
                 ActionChip(
@@ -261,17 +265,17 @@ class _QuickActions extends StatelessWidget {
                     Icons.account_balance_wallet_outlined,
                     size: 18,
                   ),
-                  label: const Text('Money'),
+                  label: Text(context.l10n.money),
                   onPressed: () => onOpen(AppRoutes.moneyName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.document_scanner_outlined, size: 18),
-                  label: const Text('Scan receipt'),
+                  label: Text(context.l10n.scanReceipt),
                   onPressed: () => onOpen(AppRoutes.ocrName),
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.auto_awesome_outlined, size: 18),
-                  label: const Text('AI coach'),
+                  label: Text(context.l10n.aiCoach),
                   onPressed: () => onOpen(AppRoutes.aiCoachName),
                 ),
               ],
@@ -310,7 +314,7 @@ class _DashboardError extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

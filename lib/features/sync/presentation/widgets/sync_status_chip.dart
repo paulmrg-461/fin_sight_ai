@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 
 import '../bloc/sync_bloc.dart';
@@ -43,16 +44,16 @@ class SyncStatusChip extends StatelessWidget {
             : Icons.cloud_done_outlined;
 
         final tooltip = isSyncing
-            ? 'Synchronizing…'
+            ? context.l10n.synchronizing
             : !configured
-            ? 'Sync offline: Supabase is not configured'
+            ? context.l10n.syncOfflineNotConfigured
             : !authenticated
-            ? 'Sign in to sync'
+            ? context.l10n.signInToSync
             : hasFailure
-            ? 'Sync failed. Tap to retry'
+            ? context.l10n.syncFailedRetry
             : pending > 0
-            ? 'Sync now ($pending pending)'
-            : 'All changes synced';
+            ? context.l10n.syncNowPending(pending)
+            : context.l10n.allChangesSynced;
 
         return IconButton(
           onPressed: isSyncing

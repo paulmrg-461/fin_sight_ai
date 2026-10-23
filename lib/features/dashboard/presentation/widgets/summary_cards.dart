@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/dashboard_entities.dart';
 
@@ -23,25 +24,25 @@ class SummaryCards extends StatelessWidget {
       childAspectRatio: 1.55,
       children: [
         _SummaryCard(
-          label: 'Income',
+          label: context.l10n.income,
           value: MoneyText(summary.totalIncome),
           icon: Icons.south_west,
           color: AppColors.emerald,
         ),
         _SummaryCard(
-          label: 'Expenses',
+          label: context.l10n.expenses,
           value: MoneyText(summary.totalExpenses),
           icon: Icons.north_east,
           color: AppColors.danger,
         ),
         _SummaryCard(
-          label: 'Balance',
+          label: context.l10n.balance,
           value: MoneyText(summary.balance),
           icon: Icons.account_balance_wallet_outlined,
           color: theme.colorScheme.primary,
         ),
         _SummaryCard(
-          label: 'Savings rate',
+          label: context.l10n.savingsRate,
           value: Text('${summary.savingsRate.toStringAsFixed(1)}%'),
           icon: Icons.savings_outlined,
           color: theme.colorScheme.tertiary,

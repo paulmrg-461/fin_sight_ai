@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../bloc/ocr_bloc.dart';
@@ -100,7 +101,9 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
     return showDialog<ReceiptItem>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(initial == null ? 'Add item' : 'Edit item'),
+        title: Text(
+          initial == null ? context.l10n.addItem : context.l10n.editItem,
+        ),
         content: Form(
           key: formKey,
           child: Column(
@@ -108,9 +111,9 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
             children: [
               TextFormField(
                 controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(labelText: context.l10n.itemName),
                 validator: (value) => (value?.trim().isEmpty ?? true)
-                    ? 'Name is required.'
+                    ? context.l10n.nameRequired
                     : null,
               ),
               const SizedBox(height: 8),
@@ -119,7 +122,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(labelText: 'Quantity'),
+                decoration: InputDecoration(labelText: context.l10n.quantity),
                 validator: _positiveNumber,
               ),
               const SizedBox(height: 8),
@@ -128,14 +131,14 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Unit price',
+                decoration: InputDecoration(
+                  labelText: context.l10n.unitPrice,
                   prefixText: '\$ ',
                 ),
                 validator: (value) {
                   final parsed = double.tryParse(value?.trim() ?? '');
                   if (parsed == null || !parsed.isFinite || parsed < 0) {
-                    return 'Enter a valid price.';
+                    return context.l10n.enterValidPrice;
                   }
                   return null;
                 },
@@ -146,7 +149,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -161,7 +164,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                 ),
               );
             },
-            child: const Text('Save'),
+            child: Text(context.l10n.save),
           ),
         ],
       ),
@@ -172,10 +175,10 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
     });
   }
 
-  static String? _positiveNumber(String? value) {
+  String? _positiveNumber(String? value) {
     final parsed = double.tryParse(value?.trim() ?? '');
     if (parsed == null || !parsed.isFinite || parsed <= 0) {
-      return 'Enter a value greater than zero.';
+      return context.l10n.enterAmountGreaterThanZero;
     }
     return null;
   }
@@ -213,7 +216,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
         final isSaving = state is OcrSaving;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Receipt preview')),
+          appBar: AppBar(title: Text(context.l10n.receiptPreview)),
           body: Form(
             key: _formKey,
             child: ListView(
@@ -226,7 +229,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                       File(widget.receipt.imagePath),
                       height: 180,
                       fit: BoxFit.cover,
-                      semanticLabel: 'Receipt image',
+                      semanticLabel: context.l10n.receiptImage,
                       errorBuilder: (context, error, stackTrace) =>
                           const SizedBox.shrink(),
                     ),
@@ -235,9 +238,9 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                 TextFormField(
                   controller: _merchantController,
                   textCapitalization: TextCapitalization.words,
-                  decoration: const InputDecoration(labelText: 'Merchant'),
+                  decoration: InputDecoration(labelText: context.l10n.merchant),
                   validator: (value) => (value?.trim().isEmpty ?? true)
-                      ? 'Merchant is required.'
+                      ? context.l10n.creditorRequired
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -249,7 +252,9 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration: const InputDecoration(labelText: 'Total'),
+                        decoration: InputDecoration(
+                          labelText: context.l10n.totalAmount,
+                        ),
                         validator: _positiveNumber,
                       ),
                     ),
@@ -260,14 +265,14 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                         controller: _currencyController,
                         textCapitalization: TextCapitalization.characters,
                         maxLength: 3,
-                        decoration: const InputDecoration(
-                          labelText: 'Currency',
+                        decoration: InputDecoration(
+                          labelText: context.l10n.currency,
                           counterText: '',
                         ),
                         validator: (value) {
                           final code = value?.trim().toUpperCase() ?? '';
                           if (!RegExp(r'^[A-Z]{3}$').hasMatch(code)) {
-                            return 'ISO';
+                            return context.l10n.isoCode;
                           }
                           return null;
                         },
@@ -279,7 +284,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.calendar_today_outlined),
-                  title: const Text('Date'),
+                  title: Text(context.l10n.date),
                   subtitle: Text(formatDisplayDate(_date)),
                   trailing: const Icon(Icons.edit_outlined),
                   onTap: _pickDate,
@@ -289,14 +294,14 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Items',
+                        context.l10n.items,
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                     ),
                     TextButton.icon(
                       onPressed: _addItem,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add item'),
+                      label: Text(context.l10n.addItem),
                     ),
                   ],
                 ),
@@ -304,7 +309,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'No items extracted. Add them manually if needed.',
+                      context.l10n.noItemsExtracted,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   )
@@ -328,7 +333,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                           MoneyText(_items[index].lineTotal),
                           IconButton(
                             onPressed: () => _editExistingItem(index),
-                            tooltip: 'Edit item',
+                            tooltip: context.l10n.editItem,
                             icon: const Icon(Icons.edit_outlined),
                           ),
                           IconButton(
@@ -336,7 +341,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                               final updated = [..._items]..removeAt(index);
                               _items = updated;
                             }),
-                            tooltip: 'Remove item',
+                            tooltip: context.l10n.removeItem,
                             icon: const Icon(Icons.delete_outline),
                           ),
                         ],
@@ -352,7 +357,7 @@ class _ReceiptPreviewScreenState extends State<ReceiptPreviewScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.check),
-                  label: const Text('Save receipt'),
+                  label: Text(context.l10n.saveReceipt),
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
@@ -30,7 +31,7 @@ class TransactionScreen extends StatelessWidget {
       context: context,
       firstDate: DateTime(now.year - 5),
       lastDate: DateTime(now.year + 5),
-      helpText: 'Filter transactions by date',
+      helpText: context.l10n.filterByDate,
     );
     if (range == null) {
       return;
@@ -47,11 +48,11 @@ class TransactionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text(context.l10n.transactions),
         actions: [
           IconButton(
             onPressed: () => _pickDateRange(context),
-            tooltip: 'Filter by date',
+            tooltip: context.l10n.filterByDate,
             icon: const Icon(Icons.date_range_outlined),
           ),
         ],
@@ -59,7 +60,7 @@ class TransactionScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openForm(context),
         icon: const Icon(Icons.add),
-        label: const Text('Add'),
+        label: Text(context.l10n.add),
       ),
       body: BlocBuilder<TransactionBloc, TransactionState>(
         builder: (context, state) {
@@ -110,8 +111,10 @@ class _LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(semanticsLabel: 'Loading transactions'),
+    return Center(
+      child: CircularProgressIndicator(
+        semanticsLabel: context.l10n.loadingTransactions,
+      ),
     );
   }
 }
@@ -142,7 +145,7 @@ class _ErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -179,16 +182,16 @@ class _EmptyView extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               hasDateFilter
-                  ? 'No transactions in this range.'
-                  : 'No transactions yet.',
+                  ? context.l10n.noTransactionsInRange
+                  : context.l10n.noTransactionsYet,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 4),
             Text(
               hasDateFilter
-                  ? 'Try a different date range or clear the filter.'
-                  : 'Record your first income or expense to get started.',
+                  ? context.l10n.noTransactionsRangeBody
+                  : context.l10n.noTransactionsBody,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
@@ -197,13 +200,13 @@ class _EmptyView extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onClearFilter,
                 icon: const Icon(Icons.filter_alt_off_outlined),
-                label: const Text('Clear filter'),
+                label: Text(context.l10n.clearFilter),
               )
             else
               FilledButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add),
-                label: const Text('Add transaction'),
+                label: Text(context.l10n.addTransaction),
               ),
           ],
         ),
@@ -238,7 +241,7 @@ class _DateFilterBanner extends StatelessWidget {
           TextButton.icon(
             onPressed: onClear,
             icon: const Icon(Icons.close),
-            label: const Text('Clear'),
+            label: Text(context.l10n.clearFilter),
           ),
         ],
       ),

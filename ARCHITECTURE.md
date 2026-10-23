@@ -42,7 +42,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 3. Offline-First Storage
 
-- **Hive CE** boxes (`transactions`, `debts`, `receipts`, `sync_queue`, `sync_meta`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
+- **Hive CE** boxes (`transactions`, `debts`, `receipts`, `budgets`, `wallets`, `wallet_transfers`, `sync_queue`, `sync_meta`, `settings`) are opened once at startup by `StorageModule` and injected via `AppBoxes`.
 - Each feature owns a local data source interface with a Hive implementation; the repository depends on the interface.
 - Records are stored as JSON maps keyed by entity id. This keeps boxes schema-agnostic and migrations explicit.
 - Local writes happen before any network call. Remote sync is a later slice; a remote failure must never roll back a local write.
@@ -121,6 +121,14 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 - `MoneyText` renders every monetary surface with the active currency.
 - `SettingsScreen` (`/settings`) switches currency; amounts are **not** converted.
 
+### Localization
+
+- `lib/l10n/app_en.arb` and `app_es.arb` are the single source of user-facing copy; `flutter gen-l10n` produces `AppLocalizations`.
+- `LocaleRepository` persists `system` / `en` / `es` in the Hive `settings` box; `LocaleBloc` loads and changes it app-wide.
+- `FinSightApp` rebuilds `MaterialApp.router` with the selected locale and `appLocalizationsDelegates` (our ARB delegate plus the `material_ui`/`cupertino_ui` global delegates).
+- Widgets read copy through `context.l10n`; no hardcoded UI strings remain in feature screens.
+- Currency labels are localized; amounts keep their stored numeric value with no FX conversion.
+
 ### Budgets
 
 - `BudgetEntity` holds a category limit for a month; `BudgetProgress` adds spending, percentage, remaining, and over-budget state.
@@ -130,7 +138,7 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 5. Routing and Navigation
 
-- `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/ocr`, `/ai-coach`.
+- `GoRouter` with named routes: `/dashboard`, `/transactions`, `/debts`, `/budgets`, `/money`, `/settings`, `/ocr`, `/ai-coach`, `/login`.
 - `AppRoutes` centralizes names and paths; `buildRouter()` is a pure function for testability.
 - Feature screens are provided by `FinSightApp` through app-level `MultiBlocProvider`, so pushed routes inherit their blocs.
 - The dashboard exposes quick actions that push feature routes and refresh analytics on return.

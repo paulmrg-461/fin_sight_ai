@@ -5,6 +5,10 @@ import 'package:fin_sight_ai/core/currency/currency_repository.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
 import 'package:fin_sight_ai/core/currency/hive_currency_repository.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
+import 'package:fin_sight_ai/core/locale/hive_locale_repository.dart';
+import 'package:fin_sight_ai/core/locale/locale_repository.dart';
+import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
@@ -196,6 +200,10 @@ GROQ_API_KEY=groq-key
     expect(getIt<GetCurrencyUseCase>(), isNotNull);
     expect(getIt<SetCurrencyUseCase>(), isNotNull);
     expect(getIt<CurrencyBloc>(), isA<CurrencyBloc>());
+    expect(getIt<LocaleRepository>(), isA<HiveLocaleRepository>());
+    expect(getIt<GetLocaleUseCase>(), isNotNull);
+    expect(getIt<SetLocaleUseCase>(), isNotNull);
+    expect(getIt<LocaleBloc>(), isA<LocaleBloc>());
 
     expect(getIt<WalletLocalDataSource>(), isA<HiveWalletLocalDataSource>());
     expect(getIt<WalletRepository>(), isA<WalletRepositoryImpl>());

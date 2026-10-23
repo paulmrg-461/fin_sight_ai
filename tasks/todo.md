@@ -83,6 +83,14 @@
 - [x] COP/USD setting, formatting, MoneyText, Settings screen
 - [x] Unit, data, BLoC, and integration tests
 
+## Languages
+
+- [x] English/Spanish ARB catalogs + generated localizations
+- [x] Persisted System/English/Español preference (`LocaleBloc`)
+- [x] Localized all screens, dialogs, validators, and semantic labels
+- [x] Settings language selector
+- [x] Unit + widget + integration coverage for switching
+
 ## Integration
 
 - [x] Integration harness with real Hive + fake OCR/Groq/picker
@@ -94,7 +102,7 @@
 ## Verification
 
 - [x] `flutter analyze` — no issues
-- [x] `flutter test --coverage` — 545 tests passing
-- [x] Integration tests — 10 passing
+- [x] `flutter test --coverage` — 562 tests passing
+- [x] Integration tests — 11 passing
 - [x] Domain and data coverage ≥ 90%
 - [x] Commit and push

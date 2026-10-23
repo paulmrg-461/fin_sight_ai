@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/budget_entity.dart';
 import '../bloc/budget_bloc.dart';
@@ -28,13 +29,13 @@ class BudgetScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Budgets')),
+      appBar: AppBar(title: Text(context.l10n.budgets)),
       body: BlocBuilder<BudgetBloc, BudgetState>(
         builder: (context, state) {
           return switch (state) {
-            BudgetInitial() || BudgetLoading() => const Center(
+            BudgetInitial() || BudgetLoading() => Center(
               child: CircularProgressIndicator(
-                semanticsLabel: 'Loading budgets',
+                semanticsLabel: context.l10n.loading,
               ),
             ),
             BudgetFailure(:final message) => _BudgetError(
@@ -61,7 +62,7 @@ class BudgetScreen extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _addBudget(context, categories),
                     icon: const Icon(Icons.add),
-                    label: const Text('Add another budget'),
+                    label: Text(context.l10n.addAnotherBudget),
                   ),
                 ),
               ],
@@ -80,7 +81,7 @@ class BudgetScreen extends StatelessWidget {
           _addBudget(context, categories);
         },
         icon: const Icon(Icons.add),
-        label: const Text('Add budget'),
+        label: Text(context.l10n.addBudget),
       ),
     );
   }
@@ -132,7 +133,7 @@ class _BudgetCard extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: onDelete,
-                  tooltip: 'Delete budget',
+                  tooltip: context.l10n.deleteBudget,
                   icon: const Icon(Icons.delete_outline),
                 ),
               ],
@@ -144,7 +145,7 @@ class _BudgetCard extends StatelessWidget {
                 value: progress.percentage,
                 minHeight: 8,
                 color: overBudget ? AppColors.danger : AppColors.emerald,
-                semanticsLabel: 'Budget usage for ${budget.category}',
+                semanticsLabel: context.l10n.budgetUsage(budget.category),
                 semanticsValue: '${(progress.percentage * 100).round()}%',
               ),
             ),
@@ -202,10 +203,10 @@ class _BudgetEmpty extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            Text('No budgets yet', style: theme.textTheme.titleMedium),
+            Text(context.l10n.noBudgetsYet, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Set a monthly limit per category and track your progress.',
+              context.l10n.noBudgetsBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -213,7 +214,7 @@ class _BudgetEmpty extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              label: const Text('Add budget'),
+              label: Text(context.l10n.addBudget),
             ),
           ],
         ),
@@ -248,7 +249,7 @@ class _BudgetError extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),
@@ -291,7 +292,7 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('New budget'),
+      title: Text(context.l10n.newBudget),
       content: Form(
         key: _formKey,
         child: Column(
@@ -300,7 +301,7 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
             TextFormField(
               controller: _categoryController,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Category'),
+              decoration: InputDecoration(labelText: context.l10n.category),
               validator: (value) => (value?.trim().isEmpty ?? true)
                   ? 'Category is required.'
                   : null,
@@ -327,14 +328,14 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
-                labelText: 'Monthly limit',
+              decoration: InputDecoration(
+                labelText: context.l10n.monthlyLimit,
                 prefixText: '\$ ',
               ),
               validator: (value) {
                 final parsed = double.tryParse(value?.trim() ?? '');
                 if (parsed == null || !parsed.isFinite || parsed <= 0) {
-                  return 'Enter a limit greater than zero.';
+                  return context.l10n.limitGreaterThanZero;
                 }
                 return null;
               },
@@ -345,9 +346,9 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Save budget')),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.saveBudget)),
       ],
     );
   }

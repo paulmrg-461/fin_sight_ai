@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
 
@@ -16,7 +17,7 @@ class PaymentHistoryList extends StatelessWidget {
 
     if (payments.isEmpty) {
       return Text(
-        'No payments recorded yet.',
+        context.l10n.noPaymentsYet,
         style: theme.textTheme.bodyMedium,
       );
     }

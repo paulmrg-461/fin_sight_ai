@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -25,7 +26,7 @@ class RecentTransactionsList extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: Text(
-                'Recent activity',
+                context.l10n.recentActivity,
                 style: theme.textTheme.titleMedium,
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/receipt_image_picker.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/receipt_entity.dart';
@@ -53,7 +54,7 @@ class OcrScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan receipts')),
+      appBar: AppBar(title: Text(context.l10n.scanReceipts)),
       body: BlocConsumer<OcrBloc, OcrState>(
         listener: (context, state) {
           if (state is OcrScanSuccess) {
@@ -81,7 +82,7 @@ class OcrScreen extends StatelessWidget {
                                   ReceiptImageSource.camera,
                                 ),
                           icon: const Icon(Icons.photo_camera_outlined),
-                          label: const Text('Camera'),
+                          label: Text(context.l10n.camera),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -94,7 +95,7 @@ class OcrScreen extends StatelessWidget {
                                   ReceiptImageSource.gallery,
                                 ),
                           icon: const Icon(Icons.photo_library_outlined),
-                          label: const Text('Gallery'),
+                          label: Text(context.l10n.gallery),
                         ),
                       ),
                     ],
@@ -113,13 +114,15 @@ class OcrScreen extends StatelessWidget {
       OcrInitial() || OcrEmpty() => _EmptyState(
         onScan: () => _pickAndScan(context, ReceiptImageSource.gallery),
       ),
-      OcrLoading() => const Center(
-        child: CircularProgressIndicator(semanticsLabel: 'Loading receipts'),
+      OcrLoading() => Center(
+        child: CircularProgressIndicator(
+          semanticsLabel: context.l10n.loadingReceipts,
+        ),
       ),
-      OcrScanning() => const _BusyState(message: 'Extracting receipt data…'),
-      OcrSaving() => const _BusyState(message: 'Saving receipt…'),
+      OcrScanning() => _BusyState(message: context.l10n.extractingData),
+      OcrSaving() => _BusyState(message: context.l10n.savingReceipt),
       OcrScanSuccess() ||
-      OcrSaved() => const _BusyState(message: 'Finishing up…'),
+      OcrSaved() => _BusyState(message: context.l10n.finishingUp),
       OcrFailure(:final message) => _ErrorState(
         message: message,
         onRetry: () => context.read<OcrBloc>().add(const LoadReceipts()),
@@ -168,7 +171,7 @@ class _ReceiptTile extends StatelessWidget {
         ),
         subtitle: Text(
           '${formatDisplayDate(receipt.date)} • '
-          '${receipt.items.length} items',
+          '${context.l10n.itemsCount(receipt.items.length)}',
         ),
         trailing: MoneyText(
           receipt.totalAmount,
@@ -202,10 +205,13 @@ class _EmptyState extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            Text('No receipts yet', style: theme.textTheme.titleMedium),
+            Text(
+              context.l10n.noReceiptsYet,
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 4),
             Text(
-              'Scan a receipt to extract the merchant, total, and line items.',
+              context.l10n.noReceiptsBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -213,7 +219,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onScan,
               icon: const Icon(Icons.document_scanner_outlined),
-              label: const Text('Scan a receipt'),
+              label: Text(context.l10n.scanAReceipt),
             ),
           ],
         ),
@@ -269,7 +275,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

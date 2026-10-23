@@ -258,10 +258,27 @@ void main() {
     harness.router.goNamed(AppRoutes.settingsName);
     await pumpUntil(tester, find.text('Currency'));
     await tester.tap(find.text('USD'));
-    await pumpUntil(tester, find.text('USD — US Dollar'));
+    await pumpUntil(tester, find.text('USD — US dollar'));
 
     final usdBalance = MoneyFormatter.format(500, AppCurrency.usd);
     expect(find.text(usdBalance), findsWidgets);
+  });
+
+  testWidgets('switches between English and Spanish', (tester) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.settingsName);
+    await pumpUntil(tester, find.text('Settings'));
+    expect(find.text('Language'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Español'));
+    await tester.tap(find.text('Español'));
+    await pumpUntil(tester, find.text('Ajustes'));
+    expect(find.text('Idioma'), findsOneWidget);
+    expect(find.text('Moneda'), findsOneWidget);
+
+    await tester.tap(find.text('English'));
+    await pumpUntil(tester, find.text('Settings'));
+    expect(find.text('Language'), findsOneWidget);
   });
 
   testWidgets('persists state across an app restart', (tester) async {

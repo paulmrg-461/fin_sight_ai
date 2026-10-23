@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/transaction_entity.dart';
@@ -61,7 +62,7 @@ class _TransactionListState extends State<TransactionList> {
             child: Row(
               children: [
                 FilterChip(
-                  label: const Text('All'),
+                  label: Text(context.l10n.all),
                   selected: _category == null,
                   onSelected: (_) => setState(() => _category = null),
                 ),
@@ -81,7 +82,7 @@ class _TransactionListState extends State<TransactionList> {
           child: visible.isEmpty
               ? Center(
                   child: Text(
-                    'No transactions in this category.',
+                    context.l10n.noTransactionsCategory,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 )
@@ -151,7 +152,7 @@ class _TransactionTile extends StatelessWidget {
             ),
             IconButton(
               onPressed: onDelete,
-              tooltip: 'Delete transaction',
+              tooltip: context.l10n.deleteTransaction,
               icon: const Icon(Icons.delete_outline),
             ),
           ],

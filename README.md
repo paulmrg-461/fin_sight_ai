@@ -10,6 +10,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
+- **Languages** — English and Spanish UI with a persisted System/English/Español selector and ARB-based localization.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
@@ -23,6 +24,8 @@ lib/
 ├── app/                         # App shell + BLoC providers
 ├── core/
 │   ├── currency/                # COP/USD preference + MoneyText
+│   ├── l10n/                    # Generated ARB localizations + context.l10n
+│   ├── locale/                  # Language preference, use cases, LocaleBloc
 │   ├── di/                      # get_it + injectable composition root
 │   ├── domain/                  # Entity + Failure hierarchy
 │   ├── error/                   # Infrastructure exceptions
@@ -61,7 +64,7 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-The committed `example.env` contains empty placeholders; `.env` is gitignored. Inject real secrets at build time:
+The committed `example.env` contains empty placeholders; `.env` is gitignored. Localizations are generated with `flutter gen-l10n` (also triggered by `flutter run`/`flutter test`); their sources are `lib/l10n/app_en.arb` and `lib/l10n/app_es.arb`. Inject real secrets at build time:
 
 ```bash
 flutter run \
@@ -94,10 +97,10 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **545 unit/widget tests** passing.
-- **10 integration tests** passing on Linux desktop.
-- Coverage gate passes: auth 94.9/92.0%, budgets 92.5/93.7%, sync 100/92.3%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.2%.
-- Integration benchmarks: app launch + dashboard ≈ 175 ms, transactions render ≈ 250 ms.
+- **562 unit/widget tests** passing.
+- **11 integration tests** passing on Linux desktop.
+- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 91.5%.
+- Integration benchmarks: app launch + dashboard ≈ 207 ms, transactions render ≈ 248 ms.
 - CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.
 
 ## Routes

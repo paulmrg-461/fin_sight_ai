@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../sync/presentation/bloc/sync_bloc.dart';
 import '../../../sync/presentation/bloc/sync_event.dart';
 import '../bloc/auth_bloc.dart';
@@ -75,13 +76,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  _isSignUp ? 'Create your account' : 'Welcome back',
+                  _isSignUp
+                      ? context.l10n.createAccountTitle
+                      : context.l10n.welcomeBack,
                   style: theme.textTheme.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Sign in to sync transactions and debts with Supabase.',
+                  context.l10n.signInSubtitle,
                   style: theme.textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -90,12 +93,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
-                  decoration: const InputDecoration(labelText: 'Email'),
+                  decoration: InputDecoration(labelText: context.l10n.email),
                   validator: (value) {
                     final email = value?.trim() ?? '';
                     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
                         .hasMatch(email)) {
-                      return 'Enter a valid email address.';
+                      return context.l10n.invalidEmail;
                     }
                     return null;
                   },
@@ -105,13 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: context.l10n.password,
                     suffixIcon: IconButton(
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                       tooltip: _obscurePassword
-                          ? 'Show password'
-                          : 'Hide password',
+                          ? context.l10n.showPassword
+                          : context.l10n.hidePassword,
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility_outlined
@@ -121,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   validator: (value) {
                     if ((value ?? '').length < 6) {
-                      return 'Password must be at least 6 characters.';
+                      return context.l10n.weakPassword;
                     }
                     return null;
                   },
@@ -145,7 +148,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.login),
-                  label: Text(_isSignUp ? 'Create account' : 'Sign in'),
+                  label: Text(
+                    _isSignUp
+                        ? context.l10n.createAccount
+                        : context.l10n.signIn,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
@@ -154,8 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       : () => setState(() => _isSignUp = !_isSignUp),
                   child: Text(
                     _isSignUp
-                        ? 'I already have an account'
-                        : 'Create an account',
+                        ? context.l10n.alreadyHaveAccount
+                        : context.l10n.createAccount,
                   ),
                 ),
               ],

@@ -16,6 +16,11 @@ import 'package:fin_sight_ai/core/currency/currency_usecases.dart' as _i192;
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart'
     as _i542;
 import 'package:fin_sight_ai/core/di/injection.dart' as _i1015;
+import 'package:fin_sight_ai/core/locale/locale_module.dart' as _i688;
+import 'package:fin_sight_ai/core/locale/locale_repository.dart' as _i385;
+import 'package:fin_sight_ai/core/locale/locale_usecases.dart' as _i4;
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart'
+    as _i282;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
@@ -173,6 +178,7 @@ extension GetItInjectableX on _i174.GetIt {
     final currencyModule = _$CurrencyModule();
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
+    final localeModule = _$LocaleModule();
     final budgetsModule = _$BudgetsModule();
     final ocrModule = _$OcrModule();
     final syncModule = _$SyncModule();
@@ -222,6 +228,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1035.DebtLocalDataSource>(
       () => debtsModule.provideDebtLocalDataSource(gh<_i422.AppBoxes>()),
     );
+    gh.lazySingleton<_i385.LocaleRepository>(
+      () => localeModule.provideLocaleRepository(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i8.BudgetLocalDataSource>(
       () => budgetsModule.provideBudgetLocalDataSource(gh<_i422.AppBoxes>()),
     );
@@ -246,6 +255,12 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
       ),
+    );
+    gh.lazySingleton<_i4.GetLocaleUseCase>(
+      () => _i4.GetLocaleUseCase(gh<_i385.LocaleRepository>()),
+    );
+    gh.lazySingleton<_i4.SetLocaleUseCase>(
+      () => _i4.SetLocaleUseCase(gh<_i385.LocaleRepository>()),
     );
     gh.lazySingleton<_i998.SignInUseCase>(
       () => _i998.SignInUseCase(gh<_i993.AuthRepository>()),
@@ -292,6 +307,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i228.TransactionLocalDataSource>(),
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i282.LocaleBloc>(
+      () => _i282.LocaleBloc(
+        gh<_i4.GetLocaleUseCase>(),
+        gh<_i4.SetLocaleUseCase>(),
       ),
     );
     gh.lazySingleton<_i575.BudgetRepository>(
@@ -520,6 +541,8 @@ class _$CurrencyModule extends _i827.CurrencyModule {}
 class _$TransactionsModule extends _i1015.TransactionsModule {}
 
 class _$DebtsModule extends _i1015.DebtsModule {}
+
+class _$LocaleModule extends _i688.LocaleModule {}
 
 class _$BudgetsModule extends _i950.BudgetsModule {}
 

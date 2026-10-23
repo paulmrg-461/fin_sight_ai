@@ -14,6 +14,8 @@ import 'features/wallets/presentation/bloc/wallet_bloc.dart';
 import 'features/wallets/presentation/bloc/wallet_event.dart';
 import 'core/currency/presentation/bloc/currency_bloc.dart';
 import 'core/currency/presentation/bloc/currency_event.dart';
+import 'core/locale/presentation/bloc/locale_bloc.dart';
+import 'core/locale/presentation/bloc/locale_event.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'features/debts/presentation/bloc/debt_event.dart';
@@ -38,6 +40,7 @@ Future<void> main() async {
   final budgetBloc = getIt<BudgetBloc>()..add(const LoadBudgets());
   final walletBloc = getIt<WalletBloc>()..add(const LoadWallets());
   final currencyBloc = getIt<CurrencyBloc>()..add(const LoadCurrency());
+  final localeBloc = getIt<LocaleBloc>()..add(const LoadLocale());
   final authBloc = getIt<AuthBloc>()..add(const RestoreAuthSession());
   authBloc.stream.listen((state) {
     if (state is AuthAuthenticated) {
@@ -60,6 +63,7 @@ Future<void> main() async {
       budgetBloc: budgetBloc,
       walletBloc: walletBloc,
       currencyBloc: currencyBloc,
+      localeBloc: localeBloc,
     ),
   );
 }

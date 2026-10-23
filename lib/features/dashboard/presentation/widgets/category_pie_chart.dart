@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/dashboard_entities.dart';
 
 /// Pie chart and legend for expense categories.
@@ -29,11 +30,14 @@ class CategoryPieChart extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Spending by category', style: theme.textTheme.titleMedium),
+            Text(
+              context.l10n.spendingByCategory,
+              style: theme.textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             if (breakdown.isEmpty)
               Text(
-                'No expenses in this period.',
+                context.l10n.noExpensesPeriod,
                 style: theme.textTheme.bodyMedium,
               )
             else ...[

@@ -4,6 +4,9 @@ import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_state.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_state.dart';
 import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
@@ -122,6 +125,10 @@ class MockGetCurrency extends Mock implements GetCurrencyUseCase {}
 
 class MockSetCurrency extends Mock implements SetCurrencyUseCase {}
 
+class MockGetLocale extends Mock implements GetLocaleUseCase {}
+
+class MockSetLocale extends Mock implements SetLocaleUseCase {}
+
 class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
 
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
@@ -142,6 +149,7 @@ void main() {
   late BudgetBloc budgetBloc;
   late WalletBloc walletBloc;
   late CurrencyBloc currencyBloc;
+  late LocaleBloc localeBloc;
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -236,6 +244,7 @@ void main() {
       MockTransferBetweenWallets(),
     );
     currencyBloc = CurrencyBloc(MockGetCurrency(), MockSetCurrency());
+    localeBloc = LocaleBloc(MockGetLocale(), MockSetLocale());
   });
 
   Widget buildApp() {
@@ -252,6 +261,7 @@ void main() {
       budgetBloc: budgetBloc,
       walletBloc: walletBloc,
       currencyBloc: currencyBloc,
+      localeBloc: localeBloc,
     );
   }
 
@@ -293,6 +303,7 @@ void main() {
       ]),
     );
     currencyBloc.emit(const CurrencyLoaded(AppCurrency.cop));
+    localeBloc.emit(const LocaleLoaded(Locale('en')));
     await tester.pumpWidget(buildApp());
     await tester.pump();
   }

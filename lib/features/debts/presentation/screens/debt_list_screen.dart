@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/debt_entity.dart';
 import '../bloc/debt_bloc.dart';
 import '../bloc/debt_event.dart';
@@ -38,17 +39,19 @@ class DebtListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Debts')),
+      appBar: AppBar(title: Text(context.l10n.debts)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openAddDebt(context),
         icon: const Icon(Icons.add),
-        label: const Text('Add debt'),
+        label: Text(context.l10n.addDebt),
       ),
       body: BlocBuilder<DebtBloc, DebtState>(
         builder: (context, state) {
           return switch (state) {
-            DebtInitial() || DebtLoading() => const Center(
-              child: CircularProgressIndicator(semanticsLabel: 'Loading debts'),
+            DebtInitial() || DebtLoading() => Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: context.l10n.loadingDebts,
+              ),
             ),
             DebtFailure(:final message) => _DebtErrorView(
               message: message,
@@ -93,10 +96,10 @@ class _DebtEmptyView extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            Text('No debts tracked.', style: theme.textTheme.titleMedium),
+            Text(context.l10n.noDebtsYet, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Add a debt to track balances and project your payoff date.',
+              context.l10n.noDebtsBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -104,7 +107,7 @@ class _DebtEmptyView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              label: const Text('Add debt'),
+              label: Text(context.l10n.addDebt),
             ),
           ],
         ),
@@ -139,7 +142,7 @@ class _DebtErrorView extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

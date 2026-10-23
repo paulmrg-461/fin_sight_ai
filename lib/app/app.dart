@@ -4,10 +4,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_controller.dart';
-import '../core/utils/app_constants.dart';
 import '../features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../core/currency/presentation/bloc/currency_bloc.dart';
+import '../core/l10n/l10n.dart';
+import '../core/locale/presentation/bloc/locale_bloc.dart';
+import '../core/locale/presentation/bloc/locale_state.dart';
 import '../features/budgets/presentation/bloc/budget_bloc.dart';
 import '../features/wallets/presentation/bloc/wallet_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
@@ -32,6 +34,7 @@ class FinSightApp extends StatelessWidget {
     required this.budgetBloc,
     required this.walletBloc,
     required this.currencyBloc,
+    required this.localeBloc,
   });
 
   final ThemeController themeController;
@@ -46,6 +49,7 @@ class FinSightApp extends StatelessWidget {
   final BudgetBloc budgetBloc;
   final WalletBloc walletBloc;
   final CurrencyBloc currencyBloc;
+  final LocaleBloc localeBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -61,17 +65,25 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<BudgetBloc>.value(value: budgetBloc),
         BlocProvider<WalletBloc>.value(value: walletBloc),
         BlocProvider<CurrencyBloc>.value(value: currencyBloc),
+        BlocProvider<LocaleBloc>.value(value: localeBloc),
       ],
-      child: ListenableBuilder(
-        listenable: themeController,
-        builder: (context, _) {
-          return MaterialApp.router(
-            title: AppConstants.appName,
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: themeController.themeMode,
-            routerConfig: router,
+      child: BlocBuilder<LocaleBloc, LocaleState>(
+        builder: (context, localeState) {
+          return ListenableBuilder(
+            listenable: themeController,
+            builder: (context, _) {
+              return MaterialApp.router(
+                onGenerateTitle: (context) => context.l10n.appName,
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light,
+                darkTheme: AppTheme.dark,
+                themeMode: themeController.themeMode,
+                locale: localeState is LocaleLoaded ? localeState.locale : null,
+                localizationsDelegates: appLocalizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                routerConfig: router,
+              );
+            },
           );
         },
       ),

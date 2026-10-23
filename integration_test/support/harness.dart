@@ -9,6 +9,10 @@ import 'package:fin_sight_ai/core/currency/hive_currency_repository.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_event.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/locale/hive_locale_repository.dart';
+import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
+import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_event.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
@@ -118,6 +122,7 @@ class IntegrationHarness {
   late BudgetBloc budgetBloc;
   late WalletBloc walletBloc;
   late CurrencyBloc currencyBloc;
+  late LocaleBloc localeBloc;
   late GoRouter router;
 
   static Future<IntegrationHarness> create() async {
@@ -263,6 +268,11 @@ class IntegrationHarness {
       GetCurrencyUseCase(currencyRepository),
       SetCurrencyUseCase(currencyRepository),
     );
+    final localeRepository = HiveLocaleRepository(_settingsBox);
+    localeBloc = LocaleBloc(
+      GetLocaleUseCase(localeRepository),
+      SetLocaleUseCase(localeRepository),
+    );
 
     router = buildRouter(
       themeController: themeController,
@@ -284,6 +294,7 @@ class IntegrationHarness {
       budgetBloc: budgetBloc,
       walletBloc: walletBloc,
       currencyBloc: currencyBloc,
+      localeBloc: localeBloc,
     );
   }
 
@@ -298,6 +309,7 @@ class IntegrationHarness {
     budgetBloc.add(const LoadBudgets());
     walletBloc.add(const LoadWallets());
     currencyBloc.add(const LoadCurrency());
+    localeBloc.add(const LoadLocale());
     await tester.pump();
   }
 
@@ -328,6 +340,7 @@ class IntegrationHarness {
     await budgetBloc.close();
     await walletBloc.close();
     await currencyBloc.close();
+    await localeBloc.close();
   }
 
   Future<void> dispose() async {

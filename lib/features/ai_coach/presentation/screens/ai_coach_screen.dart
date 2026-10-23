@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../bloc/ai_coach_bloc.dart';
 import '../bloc/ai_coach_event.dart';
 import '../bloc/ai_coach_state.dart';
@@ -13,7 +14,7 @@ class AiCoachScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('AI coach')),
+      appBar: AppBar(title: Text(context.l10n.aiCoach)),
       body: BlocBuilder<AiCoachBloc, AiCoachState>(
         builder: (context, state) {
           return switch (state) {
@@ -31,13 +32,12 @@ class AiCoachScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               children: [
                 Text(
-                  'Your financial coach',
+                  context.l10n.yourFinancialCoach,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Insights are generated from your recent activity and are '
-                  'not financial advice.',
+                  context.l10n.insightsDisclaimer,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
@@ -59,19 +59,19 @@ class AiCoachScreen extends StatelessWidget {
                 onPressed: () =>
                     context.read<AiCoachBloc>().add(const AnalyzeSpending()),
                 icon: const Icon(Icons.insights_outlined),
-                label: const Text('Analyze spending'),
+                label: Text(context.l10n.analyzeSpending),
               ),
               OutlinedButton.icon(
                 onPressed: () =>
                     context.read<AiCoachBloc>().add(const GetSuggestions()),
                 icon: const Icon(Icons.savings_outlined),
-                label: const Text('Savings tips'),
+                label: Text(context.l10n.savingsTips),
               ),
               TextButton.icon(
                 onPressed: () =>
                     context.read<AiCoachBloc>().add(const LoadInsights()),
                 icon: const Icon(Icons.refresh),
-                label: const Text('Refresh'),
+                label: Text(context.l10n.refresh),
               ),
             ],
           ),
@@ -86,13 +86,13 @@ class _CoachLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Thinking about your finances…'),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
+          Text(context.l10n.thinking),
         ],
       ),
     );
@@ -120,10 +120,10 @@ class _CoachEmpty extends StatelessWidget {
               color: theme.colorScheme.primary,
             ),
             const SizedBox(height: 12),
-            Text('Your coach is ready', style: theme.textTheme.titleMedium),
+            Text(context.l10n.coachReady, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              'Ask for spending analysis or personalized savings suggestions.',
+              context.l10n.coachReadyBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium,
             ),
@@ -131,7 +131,7 @@ class _CoachEmpty extends StatelessWidget {
             FilledButton.icon(
               onPressed: onStart,
               icon: const Icon(Icons.auto_awesome),
-              label: const Text('Get insights'),
+              label: Text(context.l10n.getInsights),
             ),
           ],
         ),
@@ -171,7 +171,7 @@ class _CoachError extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(context.l10n.retry),
             ),
           ],
         ),

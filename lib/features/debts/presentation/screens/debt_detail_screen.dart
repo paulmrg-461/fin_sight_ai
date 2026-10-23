@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
@@ -37,20 +38,20 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     final amount = await showDialog<double>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Make a payment'),
+        title: Text(context.l10n.makePayment),
         content: TextField(
           controller: _paymentController,
           autofocus: true,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Payment amount',
+          decoration: InputDecoration(
+            labelText: context.l10n.paymentAmount,
             prefixText: '\$ ',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -60,7 +61,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
               }
               Navigator.of(dialogContext).pop(value);
             },
-            child: const Text('Pay'),
+            child: Text(context.l10n.pay),
           ),
         ],
       ),
@@ -75,7 +76,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     final value = double.tryParse(_payoffController.text.trim());
     if (value == null || !value.isFinite || value <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid monthly payment.')),
+        SnackBar(content: Text(context.l10n.enterValidMonthlyPayment)),
       );
       return;
     }
@@ -90,16 +91,16 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete debt?'),
-        content: const Text('This removes the debt and its payment history.'),
+        title: Text(context.l10n.deleteDebtQuestion),
+        content: Text(context.l10n.deleteDebtBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Delete'),
+            child: Text(context.l10n.delete),
           ),
         ],
       ),
@@ -115,11 +116,11 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Debt details'),
+        title: Text(context.l10n.debtDetails),
         actions: [
           IconButton(
             onPressed: _deleteDebt,
-            tooltip: 'Delete debt',
+            tooltip: context.l10n.deleteDebt,
             icon: const Icon(Icons.delete_outline),
           ),
         ],
@@ -127,8 +128,10 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
       body: BlocBuilder<DebtBloc, DebtState>(
         builder: (context, state) {
           if (state is DebtLoading) {
-            return const Center(
-              child: CircularProgressIndicator(semanticsLabel: 'Updating debt'),
+            return Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: context.l10n.updatingDebt,
+              ),
             );
           }
           if (state is DebtFailure) {
@@ -145,7 +148,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
               : const <DebtEntity>[];
           final debt = _findDebt(debts, widget.debtId);
           if (debt == null) {
-            return const Center(child: Text('Debt not found.'));
+            return Center(child: Text(context.l10n.debtNotFound));
           }
           final payoff = state is DebtLoaded && state.payoff?.debtId == debt.id
               ? state.payoff
@@ -157,7 +160,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
               _SummaryCard(debt: debt),
               const SizedBox(height: 16),
               Text(
-                'Payoff calculator',
+                context.l10n.payoffCalculator,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -169,8 +172,8 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Monthly payment',
+                      decoration: InputDecoration(
+                        labelText: context.l10n.monthlyPayment,
                         prefixText: '\$ ',
                       ),
                     ),
@@ -178,7 +181,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                   const SizedBox(width: 8),
                   FilledButton(
                     onPressed: _calculatePayoff,
-                    child: const Text('Calculate'),
+                    child: Text(context.l10n.calculate),
                   ),
                 ],
               ),
@@ -186,15 +189,16 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   payoff.expectedDate == null
-                      ? 'This payment does not cover the monthly interest.'
-                      : 'Projected payoff: '
-                            '${formatDisplayDate(payoff.expectedDate!)}',
+                      ? context.l10n.paymentNotCoverInterest
+                      : context.l10n.projectedPayoff(
+                          formatDisplayDate(payoff.expectedDate!),
+                        ),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
               const SizedBox(height: 24),
               Text(
-                'Payment history',
+                context.l10n.paymentHistory,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               PaymentHistoryList(payments: debt.paymentHistory),
@@ -202,7 +206,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
               FilledButton.icon(
                 onPressed: _makePayment,
                 icon: const Icon(Icons.payments_outlined),
-                label: const Text('Make a payment'),
+                label: Text(context.l10n.makePayment),
               ),
             ],
           );
@@ -245,7 +249,11 @@ class _SummaryCard extends StatelessWidget {
                     style: theme.textTheme.titleLarge,
                   ),
                 ),
-                Chip(label: Text(debt.isPaid ? 'Paid' : 'Active')),
+                Chip(
+                  label: Text(
+                    debt.isPaid ? context.l10n.paid : context.l10n.active,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -260,9 +268,15 @@ class _SummaryCard extends StatelessWidget {
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text('of ', style: theme.textTheme.bodyMedium),
+                Text(
+                  '${context.l10n.ofLabel} ',
+                  style: theme.textTheme.bodyMedium,
+                ),
                 MoneyText(debt.totalAmount, style: theme.textTheme.bodyMedium),
-                Text(' total', style: theme.textTheme.bodyMedium),
+                Text(
+                  ' ${context.l10n.total}',
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -271,7 +285,7 @@ class _SummaryCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: debt.progress,
                 minHeight: 8,
-                semanticsLabel: 'Debt repayment progress',
+                semanticsLabel: context.l10n.debtRepaymentProgress,
                 semanticsValue: '${(debt.progress * 100).round()}%',
               ),
             ),
@@ -280,7 +294,8 @@ class _SummaryCard extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(
-                  '${debt.interestRate.toStringAsFixed(2)}% APR • Minimum ',
+                  '${debt.interestRate.toStringAsFixed(2)}% APR • '
+                  '${context.l10n.minimum} ',
                   style: theme.textTheme.bodySmall,
                 ),
                 MoneyText(
@@ -288,7 +303,7 @@ class _SummaryCard extends StatelessWidget {
                   style: theme.textTheme.bodySmall,
                 ),
                 Text(
-                  '/mo • Due ${formatDisplayDate(debt.dueDate)}',
+                  '/mo • ${context.l10n.dueOn(formatDisplayDate(debt.dueDate))}',
                   style: theme.textTheme.bodySmall,
                 ),
               ],

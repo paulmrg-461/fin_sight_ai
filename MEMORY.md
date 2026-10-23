@@ -1,6 +1,6 @@
 # Project Memory — FinSight AI
 
-_Last updated: 2026-10-22. Read this before starting a new session._
+_Last updated: 2026-10-23. Read this before starting a new session._
 
 ## Delivered and pushed
 
@@ -12,14 +12,25 @@ _Last updated: 2026-10-22. Read this before starting a new session._
 | OCR slice (ML Kit + parser + preview + auto expense) | Done |
 | AI Coach slice (Groq + prompts + insights) | Done |
 | Dashboard analytics (fl_chart + aggregation) | Done |
-| Integration suite (7 flows + benchmarks) | Done |
+| Money wallets (bank/cash, reconciliation, transfers) | Done |
+| Currency preference (COP/USD) | Done |
+| Localization (English/Spanish, persisted selector) | Done |
+| Integration suite (11 flows + benchmarks) | Done |
 
-- Last pushed commit: `0f47edc test(integration): add end-to-end flows and performance benchmarks`.
-- Branch: `main`, in sync with `origin/main`.
-- Gates: `flutter analyze` clean, 324 unit/widget tests, 7 integration tests.
+- Last pushed feature commit: `e214877 feat(money): add wallets, transfers, and COP/USD currency`.
+- Branch: `main`, in sync with `origin/main` after each feature push.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
-## Current slice: Money wallets + currency configuration (IMPLEMENTED, pending commit/push)
+## i18n slice (English / Spanish)
+
+- ARBs: `lib/l10n/app_en.arb`, `lib/l10n/app_es.arb`; generation via `l10n.yaml` + `flutter gen-l10n`.
+- `LocaleRepository` (Hive `settings` box) stores `system` / `en` / `es`; `LocaleBloc` drives `MaterialApp.router`.
+- `context.l10n` is the only way screens read copy; currency labels are localized, amounts are not converted.
+- `appLocalizationsDelegates` combines the ARB delegate with `material_ui`/`cupertino_ui` global delegates (Flutter 3.50+ requirement).
+- Settings exposes System/English/Español; integration test switches EN → ES → EN.
+- Known gap: domain `Failure` messages and AI-generated insights are still English-only.
+
+## Sync, auth, and budgets
 
 Goal: queue local writes offline, push them to Supabase, pull remote changes, and resolve conflicts last-write-wins.
 
@@ -67,18 +78,19 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 545 unit/widget tests passing.
-- 10 integration tests passing on Linux.
-- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, sync 100/90.8%, wallets 91.5/94.5%, core 91.0%.
-- SQL: `0001_init.sql`, `0002_tombstones.sql`, `tests/rls_test.sql`.
+- 562 unit/widget tests passing.
+- 11 integration tests passing on Linux.
+- Coverage gate passes: auth 94.9/92.0%, budgets 93.2/95.6%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 91.5%.
+- SQL migrations `0001_init.sql` through `0004_wallet_ids.sql` applied; RLS script available.
 
 ## Known gaps / next
 
-1. Run the RLS script against a real Supabase project (needs credentials).
+1. Localize domain `Failure` messages and AI-generated insight content.
 2. Sync wallets and transfers.
 3. Sync receipt metadata; streaming AI responses.
 4. Money as integer minor units instead of `double`.
 5. Golden/screenshot tests in CI.
+6. Rotate the Groq key and Supabase DB password shared during setup.
 
 ## Conventions to keep
 

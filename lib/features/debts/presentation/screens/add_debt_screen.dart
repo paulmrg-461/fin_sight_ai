@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../bloc/debt_bloc.dart';
 import '../bloc/debt_event.dart';
@@ -68,7 +69,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   String? _validatePositive(String? value) {
     final parsed = double.tryParse(value?.trim() ?? '');
     if (parsed == null || !parsed.isFinite || parsed <= 0) {
-      return 'Enter a value greater than zero.';
+      return context.l10n.minPaymentGreaterThanZero;
     }
     return null;
   }
@@ -76,7 +77,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add debt')),
+      appBar: AppBar(title: Text(context.l10n.addDebt)),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -85,9 +86,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             TextFormField(
               controller: _creditorController,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Creditor name'),
+              decoration: InputDecoration(labelText: context.l10n.creditorName),
               validator: (value) => (value?.trim().isEmpty ?? true)
-                  ? 'Creditor name is required.'
+                  ? context.l10n.creditorRequired
                   : null,
             ),
             const SizedBox(height: 12),
@@ -96,8 +97,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
-                labelText: 'Total amount',
+              decoration: InputDecoration(
+                labelText: context.l10n.totalAmount,
                 prefixText: '\$ ',
               ),
               validator: _validatePositive,
@@ -108,8 +109,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
-                labelText: 'Annual interest rate',
+              decoration: InputDecoration(
+                labelText: context.l10n.annualInterestRate,
                 suffixText: '%',
               ),
               validator: (value) {
@@ -118,7 +119,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     !parsed.isFinite ||
                     parsed < 0 ||
                     parsed > 100) {
-                  return 'Enter a rate between 0 and 100.';
+                  return context.l10n.rateRange;
                 }
                 return null;
               },
@@ -129,8 +130,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: const InputDecoration(
-                labelText: 'Minimum monthly payment',
+              decoration: InputDecoration(
+                labelText: context.l10n.minimumMonthlyPayment,
                 prefixText: '\$ ',
               ),
               validator: _validatePositive,
@@ -139,7 +140,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.calendar_today_outlined),
-              title: const Text('Due date'),
+              title: Text(context.l10n.dueDate),
               subtitle: Text(formatDisplayDate(_dueDate)),
               trailing: const Icon(Icons.edit_outlined),
               onTap: _pickDueDate,
@@ -148,7 +149,7 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
             FilledButton.icon(
               onPressed: _submit,
               icon: const Icon(Icons.check),
-              label: const Text('Save debt'),
+              label: Text(context.l10n.saveDebt),
             ),
           ],
         ),

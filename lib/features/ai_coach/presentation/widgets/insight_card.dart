@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/financial_insight_entity.dart';
@@ -17,17 +18,17 @@ class InsightCard extends StatelessWidget {
       InsightType.suggestion => (
         Icons.lightbulb_outline,
         AppColors.emerald,
-        'Suggestion',
+        context.l10n.suggestion,
       ),
       InsightType.alert => (
         Icons.warning_amber_outlined,
         AppColors.danger,
-        'Alert',
+        context.l10n.alert,
       ),
       InsightType.analysis => (
         Icons.insights_outlined,
         theme.colorScheme.secondary,
-        'Analysis',
+        context.l10n.analysis,
       ),
     };
 

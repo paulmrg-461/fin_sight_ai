@@ -1,0 +1,275 @@
+{
+  "@@locale": "en",
+  "appName": "FinSight AI",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "retry": "Retry",
+  "add": "Add",
+  "settings": "Settings",
+  "loading": "Loading…",
+  "somethingWentWrong": "Something went wrong.",
+  "signIn": "Sign in",
+  "signOut": "Sign out",
+  "email": "Email",
+  "password": "Password",
+  "welcomeBack": "Welcome back",
+  "createAccountTitle": "Create your account",
+  "signInSubtitle": "Sign in to sync transactions and debts with Supabase.",
+  "createAccount": "Create an account",
+  "alreadyHaveAccount": "I already have an account",
+  "signInToSync": "Sign in to sync",
+  "invalidEmail": "Enter a valid email address.",
+  "weakPassword": "Password must be at least 6 characters.",
+  "checkEmailConfirmation": "Check your email to confirm the account.",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "signOutEmail": "Sign out ({email})",
+  "@signOutEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "quickActions": "Quick actions",
+  "transactions": "Transactions",
+  "debts": "Debts",
+  "budgets": "Budgets",
+  "money": "Money",
+  "scanReceipt": "Scan receipt",
+  "aiCoach": "AI coach",
+  "addTransaction": "Add transaction",
+  "noTransactionsYet": "No transactions yet",
+  "noTransactionsBody": "Add your first income or expense to unlock spending insights.",
+  "addFirstTransaction": "Add a transaction",
+  "changePeriod": "Change period",
+  "switchToLight": "Switch to light mode",
+  "switchToDark": "Switch to dark mode",
+  "income": "Income",
+  "expenses": "Expenses",
+  "balance": "Balance",
+  "savingsRate": "Savings rate",
+  "spendingByCategory": "Spending by category",
+  "noExpensesPeriod": "No expenses in this period.",
+  "monthlyExpenses": "Monthly expenses",
+  "recentActivity": "Recent activity",
+  "syncOfflineNotConfigured": "Sync offline: Supabase is not configured",
+  "syncFailedRetry": "Sync failed. Tap to retry",
+  "syncNowPending": "Sync now ({count} pending)",
+  "@syncNowPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "allChangesSynced": "All changes synced",
+  "synchronizing": "Synchronizing…",
+  "newTransaction": "New transaction",
+  "expense": "Expense",
+  "incomeShort": "Income",
+  "amount": "Amount",
+  "category": "Category",
+  "description": "Description",
+  "date": "Date",
+  "receiptPathOptional": "Receipt image path (optional)",
+  "saveTransaction": "Save transaction",
+  "filterByDate": "Filter by date",
+  "noTransactionsInRange": "No transactions in this range.",
+  "noTransactionsRangeBody": "Try a different date range or clear the filter.",
+  "clearFilter": "Clear",
+  "noTransactionsCategory": "No transactions in this category.",
+  "deleteTransaction": "Delete transaction",
+  "loadingTransactions": "Loading transactions",
+  "enterAmountGreaterThanZero": "Enter an amount greater than zero.",
+  "categoryRequired": "Category is required.",
+  "sync": "Sync",
+  "addDebt": "Add debt",
+  "creditorName": "Creditor name",
+  "totalAmount": "Total amount",
+  "annualInterestRate": "Annual interest rate",
+  "minimumMonthlyPayment": "Minimum monthly payment",
+  "dueDate": "Due date",
+  "saveDebt": "Save debt",
+  "active": "Active",
+  "paid": "Paid",
+  "remaining": "remaining",
+  "ofLabel": "of",
+  "total": "total",
+  "minimum": "Minimum",
+  "debtDetails": "Debt details",
+  "makePayment": "Make a payment",
+  "paymentAmount": "Payment amount",
+  "pay": "Pay",
+  "deleteDebt": "Delete debt",
+  "deleteDebtQuestion": "Delete debt?",
+  "deleteDebtBody": "This removes the debt and its payment history.",
+  "payoffCalculator": "Payoff calculator",
+  "monthlyPayment": "Monthly payment",
+  "calculate": "Calculate",
+  "projectedPayoff": "Projected payoff: {date}",
+  "@projectedPayoff": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentNotCoverInterest": "This payment does not cover the monthly interest.",
+  "paymentHistory": "Payment history",
+  "noPaymentsYet": "No payments recorded yet.",
+  "creditorRequired": "Creditor name is required.",
+  "rateRange": "Enter a rate between 0 and 100.",
+  "minPaymentGreaterThanZero": "Enter a value greater than zero.",
+  "newBudget": "New budget",
+  "addBudget": "Add budget",
+  "addAnotherBudget": "Add another budget",
+  "monthlyLimit": "Monthly limit",
+  "saveBudget": "Save budget",
+  "noBudgetsYet": "No budgets yet",
+  "noBudgetsBody": "Set a monthly limit per category and track your progress.",
+  "limitGreaterThanZero": "Enter a limit greater than zero.",
+  "overBudgetBy": "Over budget by ",
+  "scanReceipts": "Scan receipts",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "noReceiptsYet": "No receipts yet",
+  "noReceiptsBody": "Scan a receipt to extract the merchant, total, and line items.",
+  "scanAReceipt": "Scan a receipt",
+  "loadingReceipts": "Loading receipts",
+  "extractingData": "Extracting receipt data…",
+  "savingReceipt": "Saving receipt…",
+  "finishingUp": "Finishing up…",
+  "receiptPreview": "Receipt preview",
+  "merchant": "Merchant",
+  "currency": "Currency",
+  "items": "Items",
+  "addItem": "Add item",
+  "noItemsExtracted": "No items extracted. Add them manually if needed.",
+  "itemName": "Name",
+  "quantity": "Quantity",
+  "unitPrice": "Unit price",
+  "saveReceipt": "Save receipt",
+  "editItem": "Edit item",
+  "removeItem": "Remove item",
+  "nameRequired": "Name is required.",
+  "enterValidPrice": "Enter a valid price.",
+  "totalGreaterThanZero": "Enter an amount greater than zero.",
+  "moneyTitle": "Money",
+  "totalAvailable": "Total available",
+  "bankPlusCash": "Bank account + cash",
+  "bankAccount": "Bank account",
+  "cash": "Cash",
+  "setBalance": "Set balance",
+  "actualBalance": "Actual balance",
+  "currentBalance": "Current balance",
+  "transfer": "Transfer",
+  "transferMoney": "Transfer money",
+  "from": "From",
+  "to": "To",
+  "noteOptional": "Note (optional)",
+  "transferBetweenWallets": "Transfer between wallets",
+  "enterValidBalance": "Enter a valid balance.",
+  "chooseDifferentWallets": "Choose two different wallets.",
+  "settingsTitle": "Settings",
+  "currencyDescription": "Changing the currency updates labels and formatting. Amounts are not converted with exchange rates.",
+  "language": "Language",
+  "languageDescription": "Choose the app language. System follows your device.",
+  "systemLanguage": "System",
+  "english": "English",
+  "spanish": "Español",
+  "yourFinancialCoach": "Your financial coach",
+  "insightsDisclaimer": "Insights are generated from your recent activity and are not financial advice.",
+  "analyzeSpending": "Analyze spending",
+  "savingsTips": "Savings tips",
+  "refresh": "Refresh",
+  "thinking": "Thinking about your finances…",
+  "coachReady": "Your coach is ready",
+  "coachReadyBody": "Ask for spending analysis or personalized savings suggestions.",
+  "getInsights": "Get insights",
+  "insightsError": "Unable to reach the AI coach. Please try again.",
+  "noReceiptText": "No text was detected in the receipt image.",
+  "receiptImageError": "Unable to prepare the receipt image.",
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "viewAll": "View all",
+  "search": "Search",
+  "period": "Period",
+  "copCurrencyLabel": "COP — Colombian peso",
+  "usdCurrencyLabel": "USD — US dollar",
+  "suggestion": "Suggestion",
+  "alert": "Alert",
+  "analysis": "Analysis",
+  "setBalanceTitle": "Set {name} balance",
+  "@setBalanceTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "budgetUsage": "Budget usage for {category}",
+  "@budgetUsage": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "debtPayment": "Debt payment",
+  "transferAmount": "Amount",
+  "all": "All",
+  "accountOrCash": "Account / cash",
+  "noDebtsYet": "No debts tracked.",
+  "noDebtsBody": "Add a debt to track balances and project your payoff date.",
+  "loadingDebts": "Loading debts",
+  "updatingDebt": "Updating debt",
+  "debtNotFound": "Debt not found.",
+  "enterValidMonthlyPayment": "Enter a valid monthly payment.",
+  "debtRepaymentProgress": "Debt repayment progress",
+  "aprDue": "{rate}% APR • Due {date}",
+  "@aprDue": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "minPerMonth": "Minimum {amount}/mo",
+  "@minPerMonth": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dueOn": "Due {date}",
+  "@dueOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteBudget": "Delete budget",
+  "isoCode": "ISO",
+  "receiptImage": "Receipt image",
+  "transactionRef": "Transaction {id}",
+  "@transactionRef": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  }
+}
