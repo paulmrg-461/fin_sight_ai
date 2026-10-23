@@ -2,15 +2,25 @@
 
 ## Apply the schema
 
-Apply the migrations in order to your Supabase project:
+Fastest option: open the Supabase **SQL Editor**, paste `supabase/apply_all.sql`,
+and run it once.
+
+Or apply the migrations with psql / the helper script:
 
 ```bash
-supabase db push
-# or, with psql:
+export SUPABASE_DB_URL="postgresql://postgres:...@db.<project>.supabase.co:5432/postgres"
+./supabase/apply_all.sh
+
+# equivalent manual commands:
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0001_init.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0002_tombstones.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0003_budgets.sql
 ```
+
+For local development, disable **Confirm email** in
+Authentication > Providers > Email (or confirm the email before signing in),
+because Supabase currently reports `mailer_autoconfirm: false` for this
+project.
 
 `0001_init.sql` creates `transactions` and `debts` with owner-only RLS.
 `0002_tombstones.sql` adds `deleted_at` so deletions can propagate between
