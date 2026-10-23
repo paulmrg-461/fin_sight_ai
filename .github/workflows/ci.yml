@@ -17,14 +17,17 @@ jobs:
           channel: beta
           cache: true
 
-      - name: Bootstrap local env
-        run: cp example.env .env
-
       - name: Install dependencies
         run: flutter pub get
 
       - name: Generate DI
         run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      - name: Verify generated files are committed
+        run: git diff --exit-code -- lib/core/di/injection.config.dart lib/l10n
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed lib test integration_test tool
@@ -62,9 +65,6 @@ jobs:
         with:
           channel: beta
           cache: true
-
-      - name: Bootstrap local env
-        run: cp example.env .env
 
       - name: Install dependencies
         run: flutter pub get

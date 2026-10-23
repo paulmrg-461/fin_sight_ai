@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
 import 'core/di/injection.dart';
-import 'core/utils/app_env.dart';
 import 'features/debts/presentation/bloc/debt_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -34,7 +33,6 @@ import 'features/transactions/presentation/bloc/transaction_event.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppEnv.load();
   await configureDependencies();
 
   // Materialize due expenses before the dashboard and wallets read storage.

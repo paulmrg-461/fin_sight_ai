@@ -90,7 +90,6 @@ import 'package:fin_sight_ai/features/wallets/data/repositories/wallet_repositor
 import 'package:fin_sight_ai/features/wallets/domain/repositories/wallet_repository.dart';
 import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.dart';
 import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
@@ -119,13 +118,6 @@ void main() {
     PathProviderPlatform.instance = _FakePathProviderPlatform(
       tempDirectory.path,
     );
-    dotenv.loadFromString(
-      envString: '''
-SUPABASE_URL=https://demo.supabase.co
-SUPABASE_ANON_KEY=anon-key
-GROQ_API_KEY=groq-key
-''',
-    );
     await getIt.reset();
   });
 
@@ -140,8 +132,8 @@ GROQ_API_KEY=groq-key
   test('resolves the complete dependency graph', () async {
     await configureDependencies();
 
-    expect(getIt<AppEnv>().supabaseUrl, 'https://demo.supabase.co');
-    expect(getIt<AppEnv>().hasGroq, isTrue);
+    expect(getIt<AppEnv>().supabaseUrl, isEmpty);
+    expect(getIt<AppEnv>().hasGroq, isFalse);
     expect(getIt<Clock>(), isA<Clock>());
 
     expect(

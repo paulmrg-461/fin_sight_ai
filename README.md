@@ -62,13 +62,13 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and the [specs](specs/) directory for fea
 Requirements: Flutter 3.50 beta / Dart 3.14. OCR runs on Android/iOS via Google ML Kit; integration tests replace OCR, Groq, image picking, and auth with fakes.
 
 ```bash
-cp example.env .env   # then fill your local credentials (never commit .env)
 flutter pub get
 dart run build_runner build --delete-conflicting-outputs
-flutter run
+cp example.env .env   # local development; fill in your credentials
+flutter run --dart-define-from-file=.env
 ```
 
-The committed `example.env` contains empty placeholders; `.env` is gitignored. Localizations are generated with `flutter gen-l10n` (also triggered by `flutter run`/`flutter test`); their sources are `lib/l10n/app_en.arb` and `lib/l10n/app_es.arb`. Inject real secrets at build time:
+`example.env` contains empty placeholders. Copy it to `.env` only for local development: `.env` is gitignored, local-only, and must never be declared as a Flutter asset. Localizations are generated with `flutter gen-l10n` (also triggered by `flutter run`/`flutter test`); their sources are `lib/l10n/app_en.arb` and `lib/l10n/app_es.arb`. Inject real secrets at build time (CI and release builds do not need `.env`):
 
 ```bash
 flutter run \

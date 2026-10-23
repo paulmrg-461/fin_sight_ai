@@ -170,8 +170,8 @@ Error handling is explicit: repositories and use cases return `Either<Failure, T
 
 ## 7. Configuration and Secrets
 
-- `flutter_dotenv` loads `.env` (asset) at startup. The committed `.env` contains empty placeholders only.
-- `AppEnv` prefers `--dart-define` values and falls back to `.env`; missing configuration degrades to empty strings.
+- Configuration is injected with `--dart-define` (or `--dart-define-from-file` for local development). `.env` is local-only and never bundled as an asset.
+- `AppEnv` reads only compile-time definitions; missing configuration degrades to empty strings.
 - Production credentials are injected with `--dart-define=SUPABASE_URL=...` and never committed.
 - `GroqApiDatasource` consumes `AppEnv.groqApiKey` through DI; a missing key fails with `groq_not_configured`.
 - Supabase Auth uses `SUPABASE_URL` + `SUPABASE_ANON_KEY`; the session access token authorizes PostgREST requests.
