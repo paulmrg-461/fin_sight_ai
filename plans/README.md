@@ -9,7 +9,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001 | Remove secrets from release bundles and gate generated files | P1 | S | — | DONE (worktree `plan-001-secrets`, commit `afc4026`) |
-| 002 | Scope local data to one account and clear it safely | P1 | M | — | TODO |
+| 002 | Scope local data to one account and clear it safely | P1 | M | — | DONE (worktree `plan-002-account-scope`, commit `0ed9d23`) |
 | 003 | Fix calendar-day storage for transactions and budgets | P1 | S/M | — | DONE (worktree `plan-003-calendar`, commit `77614a3`) |
 | 004 | Refresh wallet balances, fix OCR posting, and finish i18n | P1 | S | 003 (date normalization) | DONE (worktree `plan-004-wallet-ocr`, commit `873c05b`) |
 | 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | TODO |
@@ -31,6 +31,9 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
   introduced by plan 001.
 - 003 approved and merged as `e739660` (688 unit tests, 14 integration tests,
   coverage gate green).
+- 002 approved and merged as `40cebd4` (706 unit tests, 16 integration tests).
+  The executor moved the scope orchestration to the data layer after review;
+  domain stays free of `SessionStorage`/Hive imports.
 - 004 approved and merged as `1258206` (695 unit tests, 15 integration
   tests). The plan also corrected the login/budget/dashboard hard-coded strings,
   localized default wallet labels, and made OCR post to a real category.
