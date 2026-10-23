@@ -18,6 +18,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | TODO |
 | 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | TODO |
 | 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | TODO |
+| 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | TODO |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
@@ -37,6 +38,10 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
 - 004 approved and merged as `1258206` (695 unit tests, 15 integration
   tests). The plan also corrected the login/budget/dashboard hard-coded strings,
   localized default wallet labels, and made OCR post to a real category.
+- Session persistence landed as `8aa0dcc` with spec
+  `specs/SPEC-session-persistence.md`: transient refresh failures keep the
+  session, `SessionKeeper` renews on resume/timer, and Supabase must set refresh
+  token expiry ≥ 60 days.
 - Separate unplanned fix `208f85e`: Groq retired
   `llama-3.3-70b-versatile`; the coach now uses `openai/gpt-oss-20b` and
   surfaces actionable configuration/API-key errors. A local `.env` command was
