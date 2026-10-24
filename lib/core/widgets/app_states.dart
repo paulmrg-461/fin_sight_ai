@@ -11,6 +11,7 @@ class AppEmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.actionIcon = Icons.add_rounded,
     this.compact = false,
   });
 
@@ -19,6 +20,7 @@ class AppEmptyState extends StatelessWidget {
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final IconData actionIcon;
   final bool compact;
 
   @override
@@ -59,7 +61,7 @@ class AppEmptyState extends StatelessWidget {
           const SizedBox(height: 20),
           FilledButton.icon(
             onPressed: onAction,
-            icon: const Icon(Icons.add_rounded),
+            icon: Icon(actionIcon),
             label: Text(actionLabel!),
           ),
         ],

@@ -401,5 +401,25 @@
   "receivableNotFound": "Receivable not found.",
   "receivableProgress": "Receivable repayment progress",
   "noDueDate": "No due date",
-  "notes": "Notes"
+  "notes": "Notes",
+  "monthlyBudgetSummary": "Monthly budget",
+  "spentLabel": "Spent",
+  "limitLabel": "Limit",
+  "budgetCategoriesCount": "{count, plural, =0{No categories} =1{1 category} other{{count} categories}}",
+  "@budgetCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalDebt": "Total debt",
+  "activeDebts": "{count, plural, =0{No active debts} =1{1 active debt} other{{count} active debts}}",
+  "@activeDebts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

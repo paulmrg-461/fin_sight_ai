@@ -1861,6 +1861,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes'**
   String get notes;
+
+  /// No description provided for @monthlyBudgetSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budget'**
+  String get monthlyBudgetSummary;
+
+  /// No description provided for @spentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent'**
+  String get spentLabel;
+
+  /// No description provided for @limitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Limit'**
+  String get limitLabel;
+
+  /// No description provided for @budgetCategoriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No categories} =1{1 category} other{{count} categories}}'**
+  String budgetCategoriesCount(int count);
+
+  /// No description provided for @totalDebt.
+  ///
+  /// In en, this message translates to:
+  /// **'Total debt'**
+  String get totalDebt;
+
+  /// No description provided for @activeDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No active debts} =1{1 active debt} other{{count} active debts}}'**
+  String activeDebts(int count);
 }
 
 class _AppLocalizationsDelegate

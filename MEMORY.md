@@ -69,6 +69,10 @@ _Last updated: 2026-10-23. Read this before starting a new session._
   login (brand gradient + card), money (hero + account bars), scheduled
   (expected-income hero), settings (grouped cards + brand footer), and drawer
   header.
+- Transactions now use responsive content, card spacing, a date-filter pill, and
+  shared empty/error states. Budgets and debts gained gradient summary heroes,
+  responsive lists, and consistent card rhythm; receivables shipped with the
+  same system.
 - Navigation tab label is the short “Scheduled”/“Pagos”; drawer keeps the long
   label. Haptic selection on bottom tabs.
 - Tests updated for action tiles (`quick-action-<route>`) and text duplicates

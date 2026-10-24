@@ -17,6 +17,7 @@ class DebtCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),

@@ -352,5 +352,25 @@
   "receivableNotFound": "Préstamo no encontrado.",
   "receivableProgress": "Progreso de pago del préstamo",
   "noDueDate": "Sin fecha de pago",
-  "notes": "Notas"
+  "notes": "Notas",
+  "monthlyBudgetSummary": "Presupuesto mensual",
+  "spentLabel": "Gastado",
+  "limitLabel": "Límite",
+  "budgetCategoriesCount": "{count, plural, =0{Sin categorías} =1{1 categoría} other{{count} categorías}}",
+  "@budgetCategoriesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalDebt": "Deuda total",
+  "activeDebts": "{count, plural, =0{Sin deudas activas} =1{1 deuda activa} other{{count} deudas activas}}",
+  "@activeDebts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
 import '../bloc/transaction_state.dart';
@@ -64,45 +66,54 @@ class TransactionScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: Text(context.l10n.add),
       ),
-      body: BlocBuilder<TransactionBloc, TransactionState>(
-        builder: (context, state) {
-          return switch (state) {
-            TransactionInitial() ||
-            TransactionLoading() => const _LoadingView(),
-            TransactionFailure(:final message) => _ErrorView(
-              message: message,
-              onRetry: () =>
-                  context.read<TransactionBloc>().add(const LoadTransactions()),
-            ),
-            TransactionEmpty(:final start, :final end) => _EmptyView(
-              hasDateFilter: start != null && end != null,
-              onAdd: () => _openForm(context),
-              onClearFilter: () =>
-                  context.read<TransactionBloc>().add(const LoadTransactions()),
-            ),
-            TransactionLoaded(:final transactions, :final start, :final end) =>
-              Column(
-                children: [
-                  if (start != null && end != null)
-                    _DateFilterBanner(
-                      start: start,
-                      end: end,
-                      onClear: () => context.read<TransactionBloc>().add(
-                        const LoadTransactions(),
-                      ),
-                    ),
-                  Expanded(
-                    child: TransactionList(
-                      transactions: transactions,
-                      onDelete: (id) => context.read<TransactionBloc>().add(
-                        DeleteTransaction(id),
-                      ),
-                    ),
-                  ),
-                ],
+      body: AppContent(
+        padding: EdgeInsets.zero,
+        child: BlocBuilder<TransactionBloc, TransactionState>(
+          builder: (context, state) {
+            return switch (state) {
+              TransactionInitial() ||
+              TransactionLoading() => const _LoadingView(),
+              TransactionFailure(:final message) => AppErrorState(
+                message: message,
+                onRetry: () => context.read<TransactionBloc>().add(
+                  const LoadTransactions(),
+                ),
               ),
-          };
-        },
+              TransactionEmpty(:final start, :final end) => _EmptyView(
+                hasDateFilter: start != null && end != null,
+                onAdd: () => _openForm(context),
+                onClearFilter: () => context.read<TransactionBloc>().add(
+                  const LoadTransactions(),
+                ),
+              ),
+              TransactionLoaded(
+                :final transactions,
+                :final start,
+                :final end,
+              ) =>
+                Column(
+                  children: [
+                    if (start != null && end != null)
+                      _DateFilterBanner(
+                        start: start,
+                        end: end,
+                        onClear: () => context.read<TransactionBloc>().add(
+                          const LoadTransactions(),
+                        ),
+                      ),
+                    Expanded(
+                      child: TransactionList(
+                        transactions: transactions,
+                        onDelete: (id) => context.read<TransactionBloc>().add(
+                          DeleteTransaction(id),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            };
+          },
+        ),
       ),
     );
   }
@@ -121,41 +132,6 @@ class _LoadingView extends StatelessWidget {
   }
 }
 
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _EmptyView extends StatelessWidget {
   const _EmptyView({
     required this.hasDateFilter,
@@ -169,48 +145,24 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              hasDateFilter
-                  ? context.l10n.noTransactionsInRange
-                  : context.l10n.noTransactionsYet,
-              style: theme.textTheme.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              hasDateFilter
-                  ? context.l10n.noTransactionsRangeBody
-                  : context.l10n.noTransactionsBody,
-              style: theme.textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            if (hasDateFilter)
-              OutlinedButton.icon(
-                onPressed: onClearFilter,
-                icon: const Icon(Icons.filter_alt_off_outlined),
-                label: Text(context.l10n.clearFilter),
-              )
-            else
-              FilledButton.icon(
-                onPressed: onAdd,
-                icon: const Icon(Icons.add),
-                label: Text(context.l10n.addTransaction),
-              ),
-          ],
+      child: AppContent(
+        maxWidth: 620,
+        child: AppEmptyState(
+          icon: Icons.receipt_long_rounded,
+          title: hasDateFilter
+              ? context.l10n.noTransactionsInRange
+              : context.l10n.noTransactionsYet,
+          message: hasDateFilter
+              ? context.l10n.noTransactionsRangeBody
+              : context.l10n.noTransactionsBody,
+          actionLabel: hasDateFilter
+              ? context.l10n.clearFilter
+              : context.l10n.addTransaction,
+          actionIcon: hasDateFilter
+              ? Icons.filter_alt_off_rounded
+              : Icons.add_rounded,
+          onAction: hasDateFilter ? onClearFilter : onAdd,
         ),
       ),
     );
@@ -230,22 +182,37 @@ class _DateFilterBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '${formatDisplayDate(start)} – ${formatDisplayDate(end)}',
-              style: Theme.of(context).textTheme.bodyMedium,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.date_range_outlined,
+              size: 18,
+              color: theme.colorScheme.primary,
             ),
-          ),
-          TextButton.icon(
-            onPressed: onClear,
-            icon: const Icon(Icons.close),
-            label: Text(context.l10n.clearFilter),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${formatDisplayDate(start)} – ${formatDisplayDate(end)}',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.close_rounded, size: 18),
+              label: Text(context.l10n.clearFilter),
+            ),
+          ],
+        ),
       ),
     );
   }

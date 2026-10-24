@@ -5,6 +5,8 @@ import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../../categories/presentation/bloc/category_bloc.dart';
 import '../../../categories/presentation/bloc/category_state.dart';
 import '../../domain/entities/budget_entity.dart';
@@ -52,34 +54,45 @@ class BudgetScreen extends StatelessWidget {
                 semanticsLabel: context.l10n.loading,
               ),
             ),
-            BudgetFailure(:final message) => _BudgetError(
+            BudgetFailure(:final message) => AppErrorState(
               message: message,
               onRetry: () =>
                   context.read<BudgetBloc>().add(const LoadBudgets()),
             ),
-            BudgetEmpty(:final categories) => _BudgetEmpty(
-              onAdd: () => _addBudget(context, categories),
+            BudgetEmpty(:final categories) => AppContent(
+              maxWidth: 720,
+              child: Center(
+                child: AppEmptyState(
+                  icon: Icons.pie_chart_rounded,
+                  title: context.l10n.noBudgetsYet,
+                  message: context.l10n.noBudgetsBody,
+                  actionLabel: context.l10n.addBudget,
+                  onAction: () => _addBudget(context, categories),
+                ),
+              ),
             ),
-            BudgetLoaded(:final progress, :final categories) => ListView(
-              padding: const EdgeInsets.only(top: 8, bottom: 96),
-              children: [
-                for (final item in progress)
-                  _BudgetCard(
-                    progress: item,
-                    onDelete: () => context.read<BudgetBloc>().add(
-                      DeleteBudget(item.budget.id),
+            BudgetLoaded(:final progress, :final categories) => AppContent(
+              padding: EdgeInsets.zero,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                children: [
+                  _BudgetHero(progress: progress),
+                  const SizedBox(height: 16),
+                  for (final item in progress)
+                    _BudgetCard(
+                      progress: item,
+                      onDelete: () => context.read<BudgetBloc>().add(
+                        DeleteBudget(item.budget.id),
+                      ),
                     ),
-                  ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: OutlinedButton.icon(
+                  const SizedBox(height: 4),
+                  OutlinedButton.icon(
                     onPressed: () => _addBudget(context, categories),
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add_rounded),
                     label: Text(context.l10n.addAnotherBudget),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           };
         },
@@ -101,6 +114,79 @@ class BudgetScreen extends StatelessWidget {
   }
 }
 
+class _BudgetHero extends StatelessWidget {
+  const _BudgetHero({required this.progress});
+
+  final List<BudgetProgress> progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final totalSpent = progress.fold<double>(
+      0,
+      (sum, item) => sum + item.spent,
+    );
+    final totalLimit = progress.fold<double>(
+      0,
+      (sum, item) => sum + item.budget.monthlyLimit,
+    );
+    final ratio = totalLimit <= 0
+        ? 0.0
+        : (totalSpent / totalLimit).clamp(0.0, 1.0);
+    final over = totalSpent > totalLimit;
+
+    return BrandGradientCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.monthlyBudgetSummary,
+            style: theme.textTheme.labelLarge?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              MoneyText(
+                totalSpent,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 3),
+                child: Text(
+                  '/ ${context.l10n.limitLabel}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.budgetCategoriesCount(progress.length),
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 8,
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              color: over ? AppColors.danger : Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _BudgetCard extends StatelessWidget {
   const _BudgetCard({required this.progress, required this.onDelete});
 
@@ -114,6 +200,7 @@ class _BudgetCard extends StatelessWidget {
     final overBudget = progress.isOverBudget;
 
     return Card(
+      margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -189,81 +276,6 @@ class _BudgetCard extends StatelessWidget {
                     ),
                   ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BudgetEmpty extends StatelessWidget {
-  const _BudgetEmpty({required this.onAdd});
-
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.pie_chart_outline,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 12),
-            Text(context.l10n.noBudgetsYet, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.noBudgetsBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.addBudget),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BudgetError extends StatelessWidget {
-  const _BudgetError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
             ),
           ],
         ),

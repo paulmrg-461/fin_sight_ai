@@ -957,4 +957,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notes => 'Notes';
+
+  @override
+  String get monthlyBudgetSummary => 'Monthly budget';
+
+  @override
+  String get spentLabel => 'Spent';
+
+  @override
+  String get limitLabel => 'Limit';
+
+  @override
+  String budgetCategoriesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories',
+      one: '1 category',
+      zero: 'No categories',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get totalDebt => 'Total debt';
+
+  @override
+  String activeDebts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count active debts',
+      one: '1 active debt',
+      zero: 'No active debts',
+    );
+    return '$_temp0';
+  }
 }

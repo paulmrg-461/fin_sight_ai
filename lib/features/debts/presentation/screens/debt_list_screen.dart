@@ -1,7 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/debt_entity.dart';
 import '../bloc/debt_bloc.dart';
 import '../bloc/debt_event.dart';
@@ -53,21 +56,36 @@ class DebtListScreen extends StatelessWidget {
                 semanticsLabel: context.l10n.loadingDebts,
               ),
             ),
-            DebtFailure(:final message) => _DebtErrorView(
+            DebtFailure(:final message) => AppErrorState(
               message: message,
               onRetry: () => context.read<DebtBloc>().add(const LoadDebts()),
             ),
-            DebtEmpty() => _DebtEmptyView(onAdd: () => _openAddDebt(context)),
-            DebtLoaded(:final debts) => ListView.builder(
-              padding: const EdgeInsets.only(top: 8, bottom: 96),
-              itemCount: debts.length,
-              itemBuilder: (context, index) {
-                final debt = debts[index];
-                return DebtCard(
-                  debt: debt,
-                  onTap: () => _openDetail(context, debt),
-                );
-              },
+            DebtEmpty() => AppContent(
+              maxWidth: 720,
+              child: Center(
+                child: AppEmptyState(
+                  icon: Icons.account_balance_rounded,
+                  title: context.l10n.noDebtsYet,
+                  message: context.l10n.noDebtsBody,
+                  actionLabel: context.l10n.addDebt,
+                  onAction: () => _openAddDebt(context),
+                ),
+              ),
+            ),
+            DebtLoaded(:final debts) => AppContent(
+              padding: EdgeInsets.zero,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                children: [
+                  _DebtHero(debts: debts),
+                  const SizedBox(height: 16),
+                  for (final debt in debts)
+                    DebtCard(
+                      debt: debt,
+                      onTap: () => _openDetail(context, debt),
+                    ),
+                ],
+              ),
             ),
           };
         },
@@ -76,76 +94,41 @@ class DebtListScreen extends StatelessWidget {
   }
 }
 
-class _DebtEmptyView extends StatelessWidget {
-  const _DebtEmptyView({required this.onAdd});
+class _DebtHero extends StatelessWidget {
+  const _DebtHero({required this.debts});
 
-  final VoidCallback onAdd;
+  final List<DebtEntity> debts;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.account_balance_outlined,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 12),
-            Text(context.l10n.noDebtsYet, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.noDebtsBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.addDebt),
-            ),
-          ],
-        ),
-      ),
+    final active = debts.where((debt) => !debt.isPaid).toList();
+    final total = active.fold<double>(
+      0,
+      (sum, debt) => sum + debt.remainingAmount,
     );
-  }
-}
-
-class _DebtErrorView extends StatelessWidget {
-  const _DebtErrorView({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
+    return BrandGradientCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.totalDebt,
+            style: theme.textTheme.labelLarge?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          MoneyText(
+            total,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
             ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.activeDebts(active.length),
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          ),
+        ],
       ),
     );
   }
