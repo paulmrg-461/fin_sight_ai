@@ -51,6 +51,28 @@ Map<String, dynamic> debtRow({String id = 'debt-1'}) => {
   'updated_at': '2026-10-22T12:05:00.000Z',
 };
 
+Map<String, dynamic> receivableRow({String id = 'receivable-1'}) => {
+  'id': id,
+  'debtor_name': 'Ana',
+  'total_amount': 1000,
+  'remaining_amount': 600,
+  'date_lent': '2026-10-01T00:00:00.000Z',
+  'due_date': '2026-12-01T00:00:00.000Z',
+  'notes': 'Lunch loan',
+  'status': 'active',
+  'payment_history': [
+    {
+      'id': 'p-1',
+      'amount': 400,
+      'paidAt': '2026-10-10T00:00:00.000Z',
+      'note': 'Cash',
+    },
+  ],
+  'created_at': '2026-10-01T09:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -315,6 +337,77 @@ void main() {
       expect(body['monthly_limit'], 100);
       expect(body['month'], '2026-10-01T00:00:00.000Z');
       expect(body['updated_at'], '2026-10-22T12:05:00.000Z');
+    });
+
+    test('fetches and maps receivables', () async {
+      final client = MockClient(
+        (request) async => http.Response(jsonEncode([receivableRow()]), 200),
+      );
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final row = await datasource.fetchReceivable('receivable-1');
+
+      expect(row!['debtorName'], 'Ana');
+      expect(row['remainingAmount'], 600);
+      expect(row['status'], 'active');
+      expect((row['paymentHistory'] as List), hasLength(1));
+      expect(row['isSynced'], isTrue);
+    });
+
+    test('upserts a receivable using snake_case columns', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response('', 201);
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await datasource.upsertReceivable({
+        'id': 'receivable-1',
+        'debtorName': 'Ana',
+        'totalAmount': 1000,
+        'remainingAmount': 600,
+        'dateLent': '2026-10-01T00:00:00.000Z',
+        'dueDate': '2026-12-01T00:00:00.000Z',
+        'notes': 'Lunch loan',
+        'status': 'active',
+        'paymentHistory': const [],
+        'createdAt': '2026-10-01T09:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+        'deletedAt': null,
+      });
+
+      final body = jsonDecode(captured.body) as Map<String, dynamic>;
+      expect(body['debtor_name'], 'Ana');
+      expect(body['remaining_amount'], 600);
+      expect(body['date_lent'], '2026-10-01T00:00:00.000Z');
+      expect(body['payment_history'], isEmpty);
+    });
+
+    test('deletes receivables by id', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response('', 204);
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await datasource.deleteReceivable('receivable-1');
+
+      expect(captured.method, 'DELETE');
+      expect(captured.url.queryParameters['id'], 'eq.receivable-1');
     });
 
     test('maps non-2xx responses to an HTTP failure', () async {

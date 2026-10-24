@@ -21,7 +21,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
-- **Sync** — authenticated Supabase PostgREST push/pull, offline queue, exponential backoff, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
+- **Sync** — authenticated Supabase PostgREST push/pull for transactions, debts, budgets, and receivables, with offline queue, exponential backoff, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
 
 ## Architecture
@@ -84,7 +84,7 @@ flutter run \
 
 ### Supabase
 
-1. Apply the migrations: `0001_init.sql` through `0004_wallet_ids.sql` (or `supabase db push`).
+1. Apply the migrations: `0001_init.sql` through `0005_receivables.sql` (or `supabase db push`).
 2. Sign in from the dashboard account button. Without a session the app stays offline and the sync chip says “Sign in to sync”.
 3. Verify RLS against a real database:
 
@@ -110,9 +110,9 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **852 unit/widget tests** passing.
+- **859 unit/widget tests** passing.
 - **20 integration tests** passing on Linux desktop.
-- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, receivables 98.3/98.2%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
+- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, receivables 98.1/92.3%, sync 100/90.4%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
 - Integration benchmarks: app launch + dashboard ≈ 179 ms, transactions render ≈ 251 ms.
 - CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.
 

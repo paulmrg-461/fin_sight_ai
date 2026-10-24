@@ -10,4 +10,7 @@ abstract interface class ReceivableLocalDataSource {
 
   /// Permanently removes the receivable and its payment history.
   Future<void> deleteReceivable(String id);
+
+  /// Permanently removes tombstones older than [cutoff].
+  Future<void> purgeTombstones(DateTime cutoff);
 }

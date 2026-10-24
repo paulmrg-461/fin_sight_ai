@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/receivables/data/datasources/hive_receivable_local_data_source.dart';
 import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
@@ -14,6 +15,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockReceivableLocalDataSource extends Mock
     implements ReceivableLocalDataSource {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
 
 class FixedClock extends Clock {
   const FixedClock(this.value);
@@ -48,6 +51,55 @@ void main() {
       updatedAt: createdAt,
     );
   }
+
+  group('ReceivableRepositoryImpl synchronization queue', () {
+    late MockReceivableLocalDataSource dataSource;
+    late MockSyncQueue queue;
+    late ReceivableRepositoryImpl repository;
+
+    setUpAll(() {
+      registerFallbackValue(ReceivableModel.fromEntity(buildEntity()));
+      registerFallbackValue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.receivable,
+          entityId: 'fallback',
+          payload: const {},
+          queuedAt: now,
+        ),
+      );
+    });
+
+    setUp(() {
+      dataSource = MockReceivableLocalDataSource();
+      queue = MockSyncQueue();
+      repository = ReceivableRepositoryImpl(
+        dataSource,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+      when(() => queue.enqueue(any())).thenAnswer((_) async {});
+      when(() => dataSource.saveReceivable(any())).thenAnswer((_) async {});
+      when(() => dataSource.getReceivables())
+          .thenAnswer((_) async => [ReceivableModel.fromEntity(buildEntity())]);
+    });
+
+    test('queues adds, payments, and tombstones for sync', () async {
+      await repository.addReceivable(buildEntity());
+      await repository.makePayment('receivable-1', payment);
+      await repository.deleteReceivable('receivable-1');
+
+      final operations = verify(() => queue.enqueue(captureAny())).captured
+          .cast<SyncOperation>();
+      expect(operations, hasLength(3));
+      expect(
+        operations.every(
+          (operation) => operation.entityType == SyncEntityType.receivable,
+        ),
+        isTrue,
+      );
+      expect(operations.last.payload['deletedAt'], isNotNull);
+    });
+  });
 
   group('ReceivableRepositoryImpl with Hive', () {
     late Directory tempDirectory;

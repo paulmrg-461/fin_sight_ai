@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../domain/entities/receivable_entity.dart';
@@ -15,10 +16,12 @@ import '../models/receivable_model.dart';
 class ReceivableRepositoryImpl implements ReceivableRepository {
   const ReceivableRepositoryImpl(
     this._localDataSource, {
+    this.syncQueue,
     this.clock = const Clock(),
   });
 
   final ReceivableLocalDataSource _localDataSource;
+  final SyncQueue? syncQueue;
   final Clock clock;
 
   @override
@@ -87,10 +90,12 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
           payment.copyWith(amount: roundedApplied),
         ],
         updatedAt: clock.now(),
+        isSynced: false,
       );
 
       final model = ReceivableModel.fromEntity(updated);
       await _localDataSource.saveReceivable(model);
+      await _enqueue(model);
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -110,7 +115,9 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
       final models = await _localDataSource.getReceivables();
       return Right(
         List<ReceivableEntity>.unmodifiable(
-          models.map((model) => model.toEntity()),
+          models
+              .where((model) => !model.isDeleted)
+              .map((model) => model.toEntity()),
         ),
       );
     } on CacheException catch (exception) {
@@ -128,7 +135,24 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
   @override
   ResultFuture<void> deleteReceivable(String id) async {
     try {
-      await _localDataSource.deleteReceivable(id);
+      final models = await _localDataSource.getReceivables();
+      ReceivableModel? existing;
+      for (final model in models) {
+        if (model.id == id) {
+          existing = model;
+          break;
+        }
+      }
+      if (existing == null) {
+        return const Right(null);
+      }
+
+      final now = clock.now();
+      final tombstone = ReceivableModel.fromEntity(
+        existing.copyWith(updatedAt: now, isSynced: false, deletedAt: now),
+      );
+      await _localDataSource.saveReceivable(tombstone);
+      await _enqueue(tombstone);
       return const Right(null);
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -150,6 +174,7 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
       final pending = receivable.copyWith(updatedAt: clock.now());
       final model = ReceivableModel.fromEntity(pending);
       await _localDataSource.saveReceivable(model);
+      await _enqueue(model);
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -160,6 +185,25 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
           code: failureCode,
         ),
       );
+    }
+  }
+
+  Future<void> _enqueue(ReceivableModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.receivable,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
     }
   }
 

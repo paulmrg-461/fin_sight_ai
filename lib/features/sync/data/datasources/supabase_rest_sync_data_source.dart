@@ -122,6 +122,33 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
     await _delete('budgets', id);
   }
 
+  @override
+  Future<Map<String, dynamic>?> fetchReceivable(String id) async {
+    final rows = await _fetch('receivables', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _receivableFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchReceivables({
+    DateTime? updatedAfter,
+  }) async {
+    final rows = await _fetch('receivables', _updatedQuery(updatedAfter));
+    return rows.map(_receivableFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertReceivable(Map<String, dynamic> json) async {
+    await _upsert('receivables', _receivableToRow(json));
+  }
+
+  @override
+  Future<void> deleteReceivable(String id) async {
+    await _delete('receivables', id);
+  }
+
   Map<String, String> _updatedQuery(DateTime? updatedAfter) {
     return <String, String>{
       'select': '*',
@@ -285,6 +312,41 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'payment_history': json['paymentHistory'] ?? const [],
       'deleted_at': json['deletedAt'],
       'updated_at': json['updatedAt'] ?? json['dueDate'],
+    };
+  }
+
+  Map<String, dynamic> _receivableToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'debtor_name': json['debtorName'],
+      'total_amount': json['totalAmount'],
+      'remaining_amount': json['remainingAmount'],
+      'date_lent': json['dateLent'],
+      'due_date': json['dueDate'],
+      'notes': json['notes'] ?? '',
+      'status': json['status'],
+      'payment_history': json['paymentHistory'] ?? const [],
+      'created_at': json['createdAt'],
+      'deleted_at': json['deletedAt'],
+      'updated_at': json['updatedAt'] ?? json['dateLent'],
+    };
+  }
+
+  Map<String, dynamic> _receivableFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'debtorName': row['debtor_name'],
+      'totalAmount': row['total_amount'],
+      'remainingAmount': row['remaining_amount'],
+      'dateLent': row['date_lent'],
+      'dueDate': row['due_date'],
+      'notes': row['notes'] ?? '',
+      'status': row['status'],
+      'paymentHistory': row['payment_history'] ?? const [],
+      'createdAt': row['created_at'],
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
     };
   }
 

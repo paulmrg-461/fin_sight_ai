@@ -62,6 +62,8 @@ class ReceivableEntity extends Entity {
     this.notes = '',
     this.status = ReceivableStatus.active,
     this.paymentHistory = const [],
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -75,6 +77,16 @@ class ReceivableEntity extends Entity {
   final String notes;
   final ReceivableStatus status;
   final List<ReceivablePayment> paymentHistory;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt;
 
   /// Audit timestamps for local persistence and future synchronization.
   final DateTime createdAt;
@@ -101,6 +113,8 @@ class ReceivableEntity extends Entity {
     List<ReceivablePayment>? paymentHistory,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return ReceivableEntity(
       id: id ?? this.id,
@@ -114,6 +128,8 @@ class ReceivableEntity extends Entity {
       paymentHistory: paymentHistory ?? this.paymentHistory,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -133,6 +149,8 @@ class ReceivableEntity extends Entity {
           other.status == status &&
           other.createdAt == createdAt &&
           other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt &&
           _sameHistory(other.paymentHistory, paymentHistory);
 
   @override
@@ -147,6 +165,8 @@ class ReceivableEntity extends Entity {
     status,
     createdAt,
     updatedAt,
+    isSynced,
+    deletedAt,
     Object.hashAll(paymentHistory),
   );
 

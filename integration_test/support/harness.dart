@@ -315,6 +315,7 @@ class IntegrationHarness {
       HiveTransactionLocalDataSource(_transactionsBox),
       HiveDebtLocalDataSource(_debtsBox),
       budgetLocal,
+      HiveReceivableLocalDataSource(_receivablesBox),
       appEnv,
       authRepository,
     );

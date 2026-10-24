@@ -9,6 +9,9 @@ import 'package:fin_sight_ai/features/budgets/data/datasources/budget_local_data
 import 'package:fin_sight_ai/features/budgets/data/models/budget_model.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
+import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
+import 'package:fin_sight_ai/features/receivables/data/models/receivable_model.dart';
+import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_remote_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
@@ -28,6 +31,9 @@ class MockTransactionLocalDataSource extends Mock
 class MockDebtLocalDataSource extends Mock implements DebtLocalDataSource {}
 
 class MockBudgetLocalDataSource extends Mock implements BudgetLocalDataSource {}
+
+class MockReceivableLocalDataSource extends Mock
+    implements ReceivableLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -84,6 +90,26 @@ DebtModel buildDebt({
   );
 }
 
+ReceivableModel buildReceivable({
+  String id = 'receivable-1',
+  DateTime? updatedAt,
+  bool isSynced = false,
+  DateTime? deletedAt,
+}) {
+  return ReceivableModel(
+    id: id,
+    debtorName: 'Ana',
+    totalAmount: 1000,
+    remainingAmount: 600,
+    dateLent: DateTime.utc(2026, 10, 1),
+    status: ReceivableStatus.active,
+    createdAt: DateTime.utc(2026, 10, 1),
+    updatedAt: updatedAt ?? DateTime.utc(2026, 10, 22, 12),
+    isSynced: isSynced,
+    deletedAt: deletedAt,
+  );
+}
+
 void main() {
   final now = DateTime.utc(2026, 10, 22, 15);
 
@@ -92,6 +118,7 @@ void main() {
   late MockTransactionLocalDataSource transactionLocal;
   late MockDebtLocalDataSource debtLocal;
   late MockBudgetLocalDataSource budgetLocal;
+  late MockReceivableLocalDataSource receivableLocal;
   late MockAuthRepository auth;
 
   SyncRepositoryImpl buildRepository({
@@ -108,6 +135,7 @@ void main() {
       transactionLocal,
       debtLocal,
       budgetLocal,
+      receivableLocal,
       env,
       auth,
       clock: FixedClock(now),
@@ -124,6 +152,7 @@ void main() {
     );
     registerFallbackValue(buildTransaction());
     registerFallbackValue(buildDebt());
+    registerFallbackValue(buildReceivable());
     registerFallbackValue(
       BudgetModel(
         id: 'fallback',
@@ -141,6 +170,7 @@ void main() {
     transactionLocal = MockTransactionLocalDataSource();
     debtLocal = MockDebtLocalDataSource();
     budgetLocal = MockBudgetLocalDataSource();
+    receivableLocal = MockReceivableLocalDataSource();
     auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
@@ -178,6 +208,15 @@ void main() {
         .thenAnswer((_) async => []);
     when(() => remote.upsertBudget(any())).thenAnswer((_) async {});
     when(() => remote.deleteBudget(any())).thenAnswer((_) async {});
+    when(() => receivableLocal.getReceivables()).thenAnswer((_) async => []);
+    when(() => receivableLocal.saveReceivable(any())).thenAnswer((_) async {});
+    when(() => receivableLocal.purgeTombstones(any()))
+        .thenAnswer((_) async => 0);
+    when(
+      () => remote.fetchReceivables(updatedAfter: any(named: 'updatedAfter')),
+    ).thenAnswer((_) async => []);
+    when(() => remote.upsertReceivable(any())).thenAnswer((_) async {});
+    when(() => remote.deleteReceivable(any())).thenAnswer((_) async {});
   });
 
   group('SyncRepositoryImpl.getStatus', () {
@@ -473,6 +512,66 @@ void main() {
 
       expect(result.getOrElse((_) => fail('Expected report')).pulled, 1);
       verify(() => budgetLocal.saveBudget(any())).called(1);
+    });
+
+    test('pushes a receivable and marks it synced', () async {
+      final model = buildReceivable();
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.receivable,
+        entityId: model.id,
+        payload: model.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => remote.fetchReceivable('receivable-1'))
+          .thenAnswer((_) async => null);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pushed, 1);
+      verify(() => remote.upsertReceivable(any())).called(1);
+      final saved =
+          verify(() => receivableLocal.saveReceivable(captureAny()))
+                  .captured
+                  .single
+              as ReceivableModel;
+      expect(saved.isSynced, isTrue);
+    });
+
+    test('pulls newer remote receivables', () async {
+      final remoteReceivable = buildReceivable(
+        updatedAt: DateTime.utc(2026, 10, 22, 14),
+        isSynced: true,
+      );
+      when(
+        () => remote.fetchReceivables(updatedAfter: any(named: 'updatedAfter')),
+      ).thenAnswer((_) async => [remoteReceivable.toJson()]);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pulled, 1);
+      verify(() => receivableLocal.saveReceivable(any())).called(1);
+    });
+
+    test('does not resurrect a newer local receivable tombstone', () async {
+      final tombstone = buildReceivable(
+        updatedAt: DateTime.utc(2026, 10, 22, 14),
+        deletedAt: DateTime.utc(2026, 10, 22, 14),
+      );
+      final olderRemote = buildReceivable(
+        updatedAt: DateTime.utc(2026, 10, 22, 12),
+        isSynced: true,
+      );
+      when(() => receivableLocal.getReceivables())
+          .thenAnswer((_) async => [tombstone]);
+      when(
+        () => remote.fetchReceivables(updatedAfter: any(named: 'updatedAfter')),
+      ).thenAnswer((_) async => [olderRemote.toJson()]);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pulled, 0);
+      verifyNever(() => receivableLocal.saveReceivable(any()));
     });
 
     test('rejects invalid queued payloads', () async {

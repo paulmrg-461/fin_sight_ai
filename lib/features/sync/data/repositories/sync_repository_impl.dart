@@ -12,6 +12,8 @@ import '../../../budgets/data/datasources/budget_local_data_source.dart';
 import '../../../budgets/data/models/budget_model.dart';
 import '../../../debts/data/datasources/debt_local_data_source.dart';
 import '../../../debts/data/models/debt_model.dart';
+import '../../../receivables/data/datasources/receivable_local_data_source.dart';
+import '../../../receivables/data/models/receivable_model.dart';
 import '../../../transactions/data/datasources/transaction_local_data_source.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../domain/entities/sync_entities.dart';
@@ -28,6 +30,7 @@ class SyncRepositoryImpl implements SyncRepository {
     this._transactionLocalDataSource,
     this._debtLocalDataSource,
     this._budgetLocalDataSource,
+    this._receivableLocalDataSource,
     this._env,
     this._auth, {
     this.clock = const Clock(),
@@ -43,6 +46,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final TransactionLocalDataSource _transactionLocalDataSource;
   final DebtLocalDataSource _debtLocalDataSource;
   final BudgetLocalDataSource _budgetLocalDataSource;
+  final ReceivableLocalDataSource _receivableLocalDataSource;
   final AppEnv _env;
   final AuthRepository _auth;
   final Clock clock;
@@ -162,6 +166,7 @@ class SyncRepositoryImpl implements SyncRepository {
       SyncEntityType.transaction => _pushTransaction(operation),
       SyncEntityType.debt => _pushDebt(operation),
       SyncEntityType.budget => _pushBudget(operation),
+      SyncEntityType.receivable => _pushReceivable(operation),
     };
   }
 
@@ -242,6 +247,33 @@ class SyncRepositoryImpl implements SyncRepository {
     return false;
   }
 
+  Future<bool> _pushReceivable(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      await _remoteDataSource.deleteReceivable(operation.entityId);
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchReceivable(
+      operation.entityId,
+    );
+    if (remoteRow != null) {
+      final remote = ReceivableModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _receivableLocalDataSource.saveReceivable(
+          ReceivableModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertReceivable(operation.payload);
+    final local = ReceivableModel.fromJson(operation.payload);
+    await _receivableLocalDataSource.saveReceivable(
+      ReceivableModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
   Future<int> _pull() async {
     final lastSyncedAt = await _localDataSource.lastSyncedAt();
     var pulled = 0;
@@ -260,6 +292,11 @@ class SyncRepositoryImpl implements SyncRepository {
       updatedAfter: lastSyncedAt,
     );
     pulled += await _mergeBudgets(budgets);
+
+    final receivables = await _remoteDataSource.fetchReceivables(
+      updatedAfter: lastSyncedAt,
+    );
+    pulled += await _mergeReceivables(receivables);
 
     return pulled;
   }
@@ -337,6 +374,30 @@ class SyncRepositoryImpl implements SyncRepository {
     return pulled;
   }
 
+  Future<int> _mergeReceivables(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _receivableLocalDataSource.getReceivables();
+    final byId = <String, ReceivableModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = ReceivableModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _receivableLocalDataSource.saveReceivable(
+          ReceivableModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
   DateTime _payloadUpdatedAt(Map<String, dynamic> payload) {
     final raw = payload['updatedAt'];
     if (raw is String) {
@@ -351,6 +412,7 @@ class SyncRepositoryImpl implements SyncRepository {
       await _transactionLocalDataSource.purgeTombstones(cutoff);
       await _debtLocalDataSource.purgeTombstones(cutoff);
       await _budgetLocalDataSource.purgeTombstones(cutoff);
+      await _receivableLocalDataSource.purgeTombstones(cutoff);
     } catch (_) {
       // Cleanup is best effort and must not fail the sync pass.
     }

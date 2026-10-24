@@ -35,6 +35,35 @@ class HiveReceivableLocalDataSource implements ReceivableLocalDataSource {
   }
 
   @override
+  Future<void> purgeTombstones(DateTime cutoff) async {
+    try {
+      final ids = <String>[];
+      for (final entry in _box.toMap().entries) {
+        final value = entry.value;
+        if (value is! Map) {
+          continue;
+        }
+        final deletedAt = value['deletedAt'];
+        if (deletedAt is! String) {
+          continue;
+        }
+        final parsed = DateTime.tryParse(deletedAt);
+        if (parsed != null && parsed.isBefore(cutoff)) {
+          ids.add(entry.key.toString());
+        }
+      }
+      for (final id in ids) {
+        await _box.delete(id);
+      }
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge receivable tombstones.',
+        code: 'cache_delete_failed',
+      );
+    }
+  }
+
+  @override
   Future<void> deleteReceivable(String id) async {
     try {
       await _box.delete(id);

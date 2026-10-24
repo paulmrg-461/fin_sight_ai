@@ -1,5 +1,5 @@
 /// Entities that participate in remote synchronization.
-enum SyncEntityType { transaction, debt, budget }
+enum SyncEntityType { transaction, debt, budget, receivable }
 
 /// Operations queued while offline.
 enum SyncOperationType { upsert, delete }

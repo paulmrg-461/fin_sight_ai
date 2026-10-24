@@ -328,12 +328,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
       () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
     );
-    gh.lazySingleton<_i554.ReceivableRepository>(
-      () => _i908.ReceivableRepositoryImpl(
-        gh<_i315.ReceivableLocalDataSource>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
@@ -368,18 +362,6 @@ extension GetItInjectableX on _i174.GetIt {
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
       ),
-    );
-    gh.lazySingleton<_i642.UpdateReceivableUseCase>(
-      () => _i642.UpdateReceivableUseCase(
-        gh<_i554.ReceivableRepository>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
-    gh.lazySingleton<_i279.DeleteReceivableUseCase>(
-      () => _i279.DeleteReceivableUseCase(gh<_i554.ReceivableRepository>()),
-    );
-    gh.lazySingleton<_i728.GetReceivablesUseCase>(
-      () => _i728.GetReceivablesUseCase(gh<_i554.ReceivableRepository>()),
     );
     gh.lazySingleton<_i312.ScheduledPaymentRepository>(
       () => _i403.ScheduledPaymentRepositoryImpl(
@@ -498,6 +480,13 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
+    gh.lazySingleton<_i554.ReceivableRepository>(
+      () => _i908.ReceivableRepositoryImpl(
+        gh<_i315.ReceivableLocalDataSource>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i978.MakePaymentUseCase>(
       () => _i978.MakePaymentUseCase(
         gh<_i268.DebtRepository>(),
@@ -552,33 +541,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i41.GetCategoriesUseCase>(),
       ),
     );
-    gh.lazySingleton<_i272.SyncRepository>(
-      () => _i1020.SyncRepositoryImpl(
-        gh<_i921.SyncLocalDataSource>(),
-        gh<_i984.SyncRemoteDataSource>(),
-        gh<_i228.TransactionLocalDataSource>(),
-        gh<_i1035.DebtLocalDataSource>(),
-        gh<_i8.BudgetLocalDataSource>(),
-        gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
     gh.factory<_i850.DashboardBloc>(
       () => _i850.DashboardBloc(
         gh<_i905.GetDashboardSummaryUseCase>(),
         gh<_i905.GetCategoryBreakdownUseCase>(),
         gh<_i905.GetMonthlyComparisonUseCase>(),
         gh<_i271.GetTransactionsByDateRangeUseCase>(),
-      ),
-    );
-    gh.factory<_i9.ReceivableBloc>(
-      () => _i9.ReceivableBloc(
-        gh<_i728.GetReceivablesUseCase>(),
-        gh<_i734.AddReceivableUseCase>(),
-        gh<_i642.UpdateReceivableUseCase>(),
-        gh<_i946.MakeReceivablePaymentUseCase>(),
-        gh<_i279.DeleteReceivableUseCase>(),
       ),
     );
     gh.lazySingleton<_i144.AddDebtUseCase>(
@@ -607,6 +575,18 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i642.UpdateReceivableUseCase>(
+      () => _i642.UpdateReceivableUseCase(
+        gh<_i554.ReceivableRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i279.DeleteReceivableUseCase>(
+      () => _i279.DeleteReceivableUseCase(gh<_i554.ReceivableRepository>()),
+    );
+    gh.lazySingleton<_i728.GetReceivablesUseCase>(
+      () => _i728.GetReceivablesUseCase(gh<_i554.ReceivableRepository>()),
+    );
     gh.lazySingleton<_i1045.CalculatePayoffUseCase>(
       () => _i1045.CalculatePayoffUseCase(gh<_i268.DebtRepository>()),
     );
@@ -623,12 +603,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i363.GetSavingsSuggestionsUseCase>(),
         gh<_i1051.GetTransactionsUseCase>(),
       ),
-    );
-    gh.lazySingleton<_i558.SyncNowUseCase>(
-      () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
-    );
-    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
-      () => _i558.GetSyncStatusUseCase(gh<_i272.SyncRepository>()),
     );
     gh.lazySingleton<_i195.GetCategoryCatalogUseCase>(
       () => _i195.GetCategoryCatalogUseCase(gh<_i888.CategoryRepository>()),
@@ -666,6 +640,19 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
       ),
     );
+    gh.lazySingleton<_i272.SyncRepository>(
+      () => _i1020.SyncRepositoryImpl(
+        gh<_i921.SyncLocalDataSource>(),
+        gh<_i984.SyncRemoteDataSource>(),
+        gh<_i228.TransactionLocalDataSource>(),
+        gh<_i1035.DebtLocalDataSource>(),
+        gh<_i8.BudgetLocalDataSource>(),
+        gh<_i315.ReceivableLocalDataSource>(),
+        gh<_i1042.AppEnv>(),
+        gh<_i993.AuthRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i1013.GetWalletBalancesUseCase>(
       () => _i1013.GetWalletBalancesUseCase(gh<_i305.WalletRepository>()),
     );
@@ -695,10 +682,13 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
-    gh.factory<_i470.SyncBloc>(
-      () => _i470.SyncBloc(
-        gh<_i558.SyncNowUseCase>(),
-        gh<_i558.GetSyncStatusUseCase>(),
+    gh.factory<_i9.ReceivableBloc>(
+      () => _i9.ReceivableBloc(
+        gh<_i728.GetReceivablesUseCase>(),
+        gh<_i734.AddReceivableUseCase>(),
+        gh<_i642.UpdateReceivableUseCase>(),
+        gh<_i946.MakeReceivablePaymentUseCase>(),
+        gh<_i279.DeleteReceivableUseCase>(),
       ),
     );
     gh.factory<_i163.WalletBloc>(
@@ -708,6 +698,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1013.TransferBetweenWalletsUseCase>(),
       ),
     );
+    gh.lazySingleton<_i558.SyncNowUseCase>(
+      () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
+    );
+    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
+      () => _i558.GetSyncStatusUseCase(gh<_i272.SyncRepository>()),
+    );
     gh.factory<_i1031.OcrBloc>(
       () => _i1031.OcrBloc(
         gh<_i826.ScanReceiptUseCase>(),
@@ -715,6 +711,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i937.GetReceiptsUseCase>(),
         gh<_i361.AddTransactionUseCase>(),
         gh<_i666.ReceiptImageStore>(),
+      ),
+    );
+    gh.factory<_i470.SyncBloc>(
+      () => _i470.SyncBloc(
+        gh<_i558.SyncNowUseCase>(),
+        gh<_i558.GetSyncStatusUseCase>(),
       ),
     );
     return this;

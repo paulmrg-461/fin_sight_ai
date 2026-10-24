@@ -20,22 +20,22 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Scheduled payments (monthly/yearly, expense or salary income) | Done |
 | Integration suite (13 flows + benchmarks) | Done |
 
-- Latest feature commits: `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
+- Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 852 unit/widget tests, coverage gate green (receivables 98.2% data / 98.3% domain), 20 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 859 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 20 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Receivables (Me deben)
 
-- Domain/data: `ReceivableEntity`, `ReceivablePayment`, `ReceivableStatus`; Hive `receivables` box behind `ReceivableLocalDataSource`; no sync queue (local-only by design).
+- Domain/data: `ReceivableEntity`, `ReceivablePayment`, `ReceivableStatus`; Hive `receivables` box behind `ReceivableLocalDataSource`; repository enqueues sync upserts/tombstones through `SyncQueue`.
 - Payments are validated in `MakeReceivablePaymentUseCase`, clamped to the remaining balance in `ReceivableRepositoryImpl`, and a full payment flips the record to `paid`.
 - Presentation: `/receivables` list with gradient hero, debtor cards, add form, detail screen, and payment dialog; empty/error use the shared `AppEmptyState`/`AppErrorState`.
 - Entry points: drawer “Me deben” under More, dashboard quick action `quick-action-receivables`, and a compact dashboard summary card driven by `ReceivableBloc`.
 - Localization: EN/ES keys added and localizations regenerated. `LocalDataScope` clears the `receivables` box with the other user-owned boxes on sign-out.
 - Tests: entity/model/data source/repository/use-case/BLoC/widget coverage plus the integration flow (add 1000 → pay 400 → dashboard 600 → restart persistence).
 - In-place editing: debtor, dates, notes and (before any payment) the amount; the amount locks once payments exist.
-- Known gaps: no sync/RLS table for receivables yet.
+- Sync: `receivables` table (`0005_receivables.sql`), queue upserts/tombstones, PostgREST mapping, pull/merge, and tombstone purge. Apply the migration to the live project before relying on remote sync.
 
 ## Categories and scheduled payments
 
@@ -105,7 +105,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 - Use Supabase **PostgREST over `http.Client`** (no `supabase_flutter` dependency).
 - Credentials from `AppEnv` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`); missing config yields `supabase_not_configured` and a non-fatal offline report.
 - Queue lives in `lib/core/sync/sync_operation.dart`; key = `<entityType>:<entityId>` so repeated edits collapse.
-- Sync scope: **transactions, debts, and budgets**. Receipts remain local-only for now.
+- Sync scope: **transactions, debts, budgets, and receivables**. Receipts remain local-only for now.
 - Conflict policy: if remote `updatedAt` is newer than the local payload, remote wins and is written locally; otherwise push local.
 - Deletes write `deletedAt` tombstones and are pushed/pulled; local queries hide tombstones while they remain for idempotent sync.
 - Local store remains the source of truth; a remote failure never rolls back a local write.

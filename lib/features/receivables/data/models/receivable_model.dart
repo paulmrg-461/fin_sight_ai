@@ -14,6 +14,8 @@ class ReceivableModel extends ReceivableEntity {
     super.notes,
     super.status,
     super.paymentHistory,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory ReceivableModel.fromEntity(ReceivableEntity receivable) {
@@ -29,6 +31,8 @@ class ReceivableModel extends ReceivableEntity {
       paymentHistory: receivable.paymentHistory,
       createdAt: receivable.createdAt,
       updatedAt: receivable.updatedAt,
+      isSynced: receivable.isSynced,
+      deletedAt: receivable.deletedAt,
     );
   }
 
@@ -44,6 +48,8 @@ class ReceivableModel extends ReceivableEntity {
     final history = json['paymentHistory'];
     final createdAt = json['createdAt'];
     final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Receivable id is missing or invalid.');
@@ -119,6 +125,8 @@ class ReceivableModel extends ReceivableEntity {
       paymentHistory: List<ReceivablePayment>.unmodifiable(paymentHistory),
       createdAt: parsedCreatedAt ?? parsedDateLent,
       updatedAt: parsedUpdatedAt ?? parsedCreatedAt ?? parsedDateLent,
+      isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
     );
   }
 
@@ -163,6 +171,8 @@ class ReceivableModel extends ReceivableEntity {
       'status': status.name,
       'createdAt': createdAt.toUtc().toIso8601String(),
       'updatedAt': updatedAt.toUtc().toIso8601String(),
+      'isSynced': isSynced,
+      'deletedAt': deletedAt?.toUtc().toIso8601String(),
       'paymentHistory': paymentHistory
           .map(
             (payment) => <String, dynamic>{
@@ -189,6 +199,8 @@ class ReceivableModel extends ReceivableEntity {
       paymentHistory: paymentHistory,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      isSynced: isSynced,
+      deletedAt: deletedAt,
     );
   }
 }
