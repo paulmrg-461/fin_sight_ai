@@ -825,4 +825,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get paidToday => 'Pagado hoy';
+
+  @override
+  String get quickActionsSubtitle => 'Accesos a lo que más usas.';
+
+  @override
+  String get loginFooter => 'Tus datos se guardan primero en tu dispositivo.';
+
+  @override
+  String get accounts => 'Cuentas';
+
+  @override
+  String get settingsFooter => 'FinSight AI · Tus finanzas, a la vista.';
+
+  @override
+  String get scheduledTab => 'Pagos';
+
+  @override
+  String get previousPeriod => 'Anterior';
+
+  @override
+  String get currentPeriod => 'Actual';
 }

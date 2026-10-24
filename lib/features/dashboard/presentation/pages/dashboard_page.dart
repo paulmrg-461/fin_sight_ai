@@ -4,18 +4,23 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/branding/app_logo.dart';
 import '../../../../app/main_shell.dart';
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_section_header.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
+import '../../domain/entities/dashboard_entities.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../../../auth/presentation/widgets/account_button.dart';
 import '../../../sync/presentation/widgets/sync_status_chip.dart';
-import '../widgets/summary_cards.dart';
 
 /// Analytics dashboard with navigation shortcuts.
 class DashboardPage extends StatelessWidget {
@@ -84,23 +89,40 @@ class DashboardPage extends StatelessWidget {
                 semanticsLabel: context.l10n.loading,
               ),
             ),
-            DashboardFailure(:final message) => _DashboardError(
+            DashboardFailure(:final message) => AppErrorState(
               message: message,
               onRetry: () =>
                   context.read<DashboardBloc>().add(const LoadDashboard()),
             ),
-            DashboardEmpty(:final start, :final end) => ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _PeriodLabel(start: start, end: end),
-                const SizedBox(height: 16),
-                _EmptyDashboard(
-                  onAddTransaction: () =>
-                      _openFeature(context, AppRoutes.transactionsName),
-                ),
-                const SizedBox(height: 24),
-                _QuickActions(onOpen: (route) => _openFeature(context, route)),
-              ],
+            DashboardEmpty(:final start, :final end) => AppContent(
+              padding: EdgeInsets.zero,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                children: [
+                  _PeriodPill(
+                    start: start,
+                    end: end,
+                    onTap: () => _pickRange(context),
+                  ),
+                  const SizedBox(height: 14),
+                  AppEmptyState(
+                    icon: Icons.insights_rounded,
+                    title: context.l10n.noTransactionsYet,
+                    message: context.l10n.noTransactionsBody,
+                    actionLabel: context.l10n.addFirstTransaction,
+                    onAction: () =>
+                        _openFeature(context, AppRoutes.transactionsName),
+                  ),
+                  const SizedBox(height: 20),
+                  AppSectionHeader(
+                    title: context.l10n.quickActions,
+                    subtitle: context.l10n.quickActionsSubtitle,
+                  ),
+                  _QuickActions(
+                    onOpen: (route) => _openFeature(context, route),
+                  ),
+                ],
+              ),
             ),
             DashboardLoaded(
               :final summary,
@@ -116,22 +138,34 @@ class DashboardPage extends StatelessWidget {
                   bloc.add(const RefreshData());
                   await Future<void>.delayed(const Duration(milliseconds: 500));
                 },
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    _PeriodLabel(start: start, end: end),
-                    const SizedBox(height: 16),
-                    SummaryCards(summary: summary),
-                    CategoryPieChart(breakdown: breakdown),
-                    MonthlyComparisonChart(comparison: comparison),
-                    RecentTransactionsList(transactions: recentTransactions),
-                    const SizedBox(height: 16),
-                    _QuickActions(
-                      onOpen: (route) => _openFeature(context, route),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                child: AppContent(
+                  padding: EdgeInsets.zero,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                    children: [
+                      _PeriodPill(
+                        start: start,
+                        end: end,
+                        onTap: () => _pickRange(context),
+                      ),
+                      const SizedBox(height: 14),
+                      _BalanceHero(summary: summary),
+                      const SizedBox(height: 16),
+                      CategoryPieChart(breakdown: breakdown),
+                      MonthlyComparisonChart(comparison: comparison),
+                      RecentTransactionsList(transactions: recentTransactions),
+                      const SizedBox(height: 20),
+                      AppSectionHeader(
+                        title: context.l10n.quickActions,
+                        subtitle: context.l10n.quickActionsSubtitle,
+                      ),
+                      _QuickActions(
+                        onOpen: (route) => _openFeature(context, route),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
           };
@@ -141,61 +175,149 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class _PeriodLabel extends StatelessWidget {
-  const _PeriodLabel({required this.start, required this.end});
+class _PeriodPill extends StatelessWidget {
+  const _PeriodPill({
+    required this.start,
+    required this.end,
+    required this.onTap,
+  });
 
   final DateTime start;
   final DateTime end;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '${formatDisplayDate(start)} – ${formatDisplayDate(end)}',
-      style: Theme.of(context).textTheme.bodySmall,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: ActionChip(
+        avatar: const Icon(Icons.date_range_outlined, size: 18),
+        label: Text('${formatDisplayDate(start)} – ${formatDisplayDate(end)}'),
+        onPressed: onTap,
+      ),
     );
   }
 }
 
-class _EmptyDashboard extends StatelessWidget {
-  const _EmptyDashboard({required this.onAddTransaction});
+class _BalanceHero extends StatelessWidget {
+  const _BalanceHero({required this.summary});
 
-  final VoidCallback onAddTransaction;
+  final DashboardSummaryEntity summary;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final onHero = Colors.white.withValues(alpha: 0.78);
+    final valueStyle = theme.textTheme.titleMedium?.copyWith(
+      color: Colors.white,
+      fontWeight: FontWeight.w700,
+    );
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+    return BrandGradientCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.account_balance_wallet_rounded,
+                color: onHero,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                context.l10n.balance,
+                style: theme.textTheme.labelLarge?.copyWith(color: onHero),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          MoneyText(
+            summary.balance,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.8,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroStat(
+                  label: context.l10n.income,
+                  value: MoneyText(summary.totalIncome, style: valueStyle),
+                  icon: Icons.south_west_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _HeroStat(
+                  label: context.l10n.expenses,
+                  value: MoneyText(summary.totalExpenses, style: valueStyle),
+                  icon: Icons.north_east_rounded,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _HeroStat(
+                  label: context.l10n.savingsRate,
+                  value: Text(
+                    '${summary.savingsRate.toStringAsFixed(1)}%',
+                    style: valueStyle,
+                  ),
+                  icon: Icons.savings_outlined,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final Widget value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            Icon(
-              Icons.insights_outlined,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              context.l10n.noTransactionsYet,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.noTransactionsBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onAddTransaction,
-              icon: const Icon(Icons.add),
-              label: Text(context.l10n.addFirstTransaction),
+            Icon(icon, size: 14, color: Colors.white70),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white70,
+                ),
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 4),
+        DefaultTextStyle(
+          style: theme.textTheme.titleSmall ?? const TextStyle(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          child: value,
+        ),
+      ],
     );
   }
 }
@@ -207,102 +329,132 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                context.l10n.quickActions,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ActionChip(
-                  avatar: const Icon(Icons.swap_vert, size: 18),
-                  label: Text(context.l10n.transactions),
-                  onPressed: () => onOpen(AppRoutes.transactionsName),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.account_balance_outlined, size: 18),
-                  label: Text(context.l10n.debts),
-                  onPressed: () => onOpen(AppRoutes.debtsName),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.pie_chart_outline, size: 18),
-                  label: Text(context.l10n.budgets),
-                  onPressed: () => onOpen(AppRoutes.budgetsName),
-                ),
-                ActionChip(
-                  avatar: const Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 18,
-                  ),
-                  label: Text(context.l10n.money),
-                  onPressed: () => onOpen(AppRoutes.moneyName),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.event_repeat, size: 18),
-                  label: Text(context.l10n.scheduledPayments),
-                  onPressed: () => onOpen(AppRoutes.scheduledPaymentsName),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.document_scanner_outlined, size: 18),
-                  label: Text(context.l10n.scanReceipt),
-                  onPressed: () => onOpen(AppRoutes.ocrName),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.auto_awesome_outlined, size: 18),
-                  label: Text(context.l10n.aiCoach),
-                  onPressed: () => onOpen(AppRoutes.aiCoachName),
-                ),
-              ],
-            ),
-          ],
-        ),
+    final actions = [
+      (
+        icon: Icons.swap_vert_rounded,
+        label: context.l10n.transactions,
+        route: AppRoutes.transactionsName,
+        color: AppColors.emerald,
       ),
+      (
+        icon: Icons.event_repeat_rounded,
+        label: context.l10n.scheduledPayments,
+        route: AppRoutes.scheduledPaymentsName,
+        color: AppColors.warning,
+      ),
+      (
+        icon: Icons.account_balance_wallet_rounded,
+        label: context.l10n.money,
+        route: AppRoutes.moneyName,
+        color: AppColors.teal,
+      ),
+      (
+        icon: Icons.pie_chart_rounded,
+        label: context.l10n.budgets,
+        route: AppRoutes.budgetsName,
+        color: AppColors.sky,
+      ),
+      (
+        icon: Icons.account_balance_rounded,
+        label: context.l10n.debts,
+        route: AppRoutes.debtsName,
+        color: AppColors.danger,
+      ),
+      (
+        icon: Icons.document_scanner_rounded,
+        label: context.l10n.scanReceipt,
+        route: AppRoutes.ocrName,
+        color: AppColors.teal,
+      ),
+      (
+        icon: Icons.auto_awesome_rounded,
+        label: context.l10n.aiCoach,
+        route: AppRoutes.aiCoachName,
+        color: AppColors.sky,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 760
+            ? 4
+            : constraints.maxWidth >= 440
+            ? 3
+            : 2;
+        const spacing = 10.0;
+        final width =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: [
+            for (final action in actions)
+              SizedBox(
+                key: ValueKey('quick-action-${action.route}'),
+                width: width,
+                child: _ActionTile(
+                  icon: action.icon,
+                  label: action.label,
+                  color: action.color,
+                  onTap: () => onOpen(action.route),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
 
-class _DashboardError extends StatelessWidget {
-  const _DashboardError({required this.message, required this.onRetry});
+class _ActionTile extends StatelessWidget {
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
-  final String message;
-  final VoidCallback onRetry;
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
-            ),
-          ],
+    return Material(
+      color: theme.colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 21),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium,
+              ),
+            ],
+          ),
         ),
       ),
     );

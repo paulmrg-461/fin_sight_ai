@@ -19,7 +19,7 @@ void main() {
 
       expect(theme.brightness, Brightness.dark);
       expect(theme.colorScheme.primary, AppColors.emerald);
-      expect(theme.scaffoldBackgroundColor, const Color(0xFF0F172A));
+      expect(theme.scaffoldBackgroundColor, AppColors.darkBackground);
     });
 
     test('themes use Material 3', () {

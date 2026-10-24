@@ -370,10 +370,13 @@ void main() {
 
     expect(find.text('FinSight AI'), findsOneWidget);
     expect(find.text('No transactions yet'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Transactions'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Debts'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Scan receipt'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'AI coach'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('quick-action-transactions')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('quick-action-debts')), findsOneWidget);
+    expect(find.byKey(const ValueKey('quick-action-ocr')), findsOneWidget);
+    expect(find.byKey(const ValueKey('quick-action-ai-coach')), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(
       find.descendant(
@@ -403,7 +406,10 @@ void main() {
   testWidgets('navigates to the debts feature', (tester) async {
     await pumpReady(tester);
 
-    await tester.tap(find.text('Debts'));
+    final debtsAction = find.byKey(const ValueKey('quick-action-debts'));
+    await tester.ensureVisible(debtsAction);
+    await tester.pumpAndSettle();
+    await tester.tap(debtsAction);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
@@ -414,7 +420,10 @@ void main() {
   testWidgets('navigates to OCR and AI coach', (tester) async {
     await pumpReady(tester);
 
-    await tester.tap(find.text('Scan receipt'));
+    final ocrAction = find.byKey(const ValueKey('quick-action-ocr'));
+    await tester.ensureVisible(ocrAction);
+    await tester.pumpAndSettle();
+    await tester.tap(ocrAction);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Scan receipts'), findsOneWidget);
@@ -424,7 +433,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    await tester.tap(find.text('AI coach'));
+    final aiAction = find.byKey(const ValueKey('quick-action-ai-coach'));
+    await tester.ensureVisible(aiAction);
+    await tester.pumpAndSettle();
+    await tester.tap(aiAction);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('AI coach'), findsOneWidget);
@@ -471,13 +483,15 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.widgetWithText(AppBar, 'Sign in'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Sign in'), findsOneWidget);
 
     localeBloc.emit(const LocaleLoaded(Locale('es')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.widgetWithText(AppBar, 'Iniciar sesión'), findsOneWidget);
+    expect(find.text('Bienvenido de nuevo'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
   });
 }
 

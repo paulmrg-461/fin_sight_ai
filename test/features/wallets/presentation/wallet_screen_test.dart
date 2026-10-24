@@ -78,7 +78,7 @@ void main() {
     await pumpLoaded(tester, wrap(bloc));
 
     verify(() => getBalances(any())).called(1);
-    expect(find.text('Bank account'), findsOneWidget);
+    expect(find.text('Bank account'), findsWidgets);
     expect(
       find.text(MoneyFormatter.format(100, AppCurrency.cop)),
       findsWidgets,
@@ -128,8 +128,8 @@ void main() {
 
     await pumpLoaded(tester, wrap(bloc, locale: const Locale('es')));
 
-    expect(find.text('Cuenta bancaria'), findsOneWidget);
-    expect(find.text('Efectivo'), findsOneWidget);
+    expect(find.text('Cuenta bancaria'), findsWidgets);
+    expect(find.text('Efectivo'), findsWidgets);
     expect(find.text('Cuenta principal'), findsNothing);
   });
 

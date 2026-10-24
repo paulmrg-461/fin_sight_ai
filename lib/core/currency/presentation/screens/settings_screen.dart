@@ -3,16 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../app_currency.dart';
-import '../../../../core/routing/app_routes.dart';
+import '../../../../app/branding/app_logo.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/locale/presentation/bloc/locale_bloc.dart';
 import '../../../../core/locale/presentation/bloc/locale_event.dart';
 import '../../../../core/locale/presentation/bloc/locale_state.dart';
+import '../../../../core/routing/app_routes.dart';
+import '../../../../core/widgets/app_layout.dart';
 import '../bloc/currency_bloc.dart';
 import '../bloc/currency_event.dart';
 import '../bloc/currency_state.dart';
 
-/// App preferences: currency and language.
+/// App preferences: currency, language, categories, and brand footer.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -26,7 +28,6 @@ class SettingsScreen extends StatelessWidget {
           final currency = currencyState is CurrencyLoaded
               ? currencyState.currency
               : AppCurrency.cop;
-          final theme = Theme.of(context);
 
           return BlocBuilder<LocaleBloc, LocaleState>(
             builder: (context, localeState) {
@@ -35,100 +36,205 @@ class SettingsScreen extends StatelessWidget {
                   : null;
               final localeValue = locale?.languageCode ?? 'system';
 
-              return ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Text(l10n.currency, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.currencyDescription,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<AppCurrency>(
-                    segments: [
-                      for (final option in AppCurrency.values)
-                        ButtonSegment(value: option, label: Text(option.code)),
-                    ],
-                    selected: {currency},
-                    onSelectionChanged: (selection) {
-                      context.read<CurrencyBloc>().add(
-                        ChangeCurrency(selection.first),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    currency == AppCurrency.cop
-                        ? l10n.copCurrencyLabel
-                        : l10n.usdCurrencyLabel,
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  if (currencyState is CurrencyFailure) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      currencyState.message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
+              return AppContent(
+                maxWidth: 760,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                  children: [
+                    _SettingsSection(
+                      icon: Icons.payments_outlined,
+                      title: l10n.currency,
+                      description: l10n.currencyDescription,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: SegmentedButton<AppCurrency>(
+                              showSelectedIcon: false,
+                              segments: [
+                                for (final option in AppCurrency.values)
+                                  ButtonSegment(
+                                    value: option,
+                                    label: Text(option.code),
+                                  ),
+                              ],
+                              selected: {currency},
+                              onSelectionChanged: (selection) {
+                                context.read<CurrencyBloc>().add(
+                                  ChangeCurrency(selection.first),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            currency == AppCurrency.cop
+                                ? l10n.copCurrencyLabel
+                                : l10n.usdCurrencyLabel,
+                          ),
+                          if (currencyState is CurrencyFailure) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              currencyState.message,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsSection(
+                      icon: Icons.translate_rounded,
+                      title: l10n.language,
+                      description: l10n.languageDescription,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: SegmentedButton<String>(
+                              showSelectedIcon: false,
+                              segments: [
+                                ButtonSegment(
+                                  value: 'system',
+                                  label: Text(l10n.systemLanguage),
+                                ),
+                                ButtonSegment(
+                                  value: 'en',
+                                  label: Text(l10n.english),
+                                ),
+                                ButtonSegment(
+                                  value: 'es',
+                                  label: Text(l10n.spanish),
+                                ),
+                              ],
+                              selected: {localeValue},
+                              onSelectionChanged: (selection) {
+                                final value = selection.first;
+                                context.read<LocaleBloc>().add(
+                                  ChangeLocale(
+                                    value == 'system' ? null : Locale(value),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          if (localeState is LocaleFailure) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              localeState.message,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    _SettingsSection(
+                      icon: Icons.label_outline_rounded,
+                      title: l10n.categoriesTitle,
+                      description: l10n.categoriesDescription,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.category_outlined,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          ),
+                        ),
+                        title: Text(l10n.manageCategories),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () =>
+                            context.pushNamed(AppRoutes.categoriesName),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Center(
+                      child: Column(
+                        children: [
+                          const AppLogo(size: 48),
+                          const SizedBox(height: 10),
+                          Text(
+                            l10n.settingsFooter,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                  const SizedBox(height: 32),
-                  Text(l10n.language, style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.languageDescription,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  SegmentedButton<String>(
-                    segments: [
-                      ButtonSegment(
-                        value: 'system',
-                        label: Text(l10n.systemLanguage),
-                      ),
-                      ButtonSegment(value: 'en', label: Text(l10n.english)),
-                      ButtonSegment(value: 'es', label: Text(l10n.spanish)),
-                    ],
-                    selected: {localeValue},
-                    onSelectionChanged: (selection) {
-                      final value = selection.first;
-                      context.read<LocaleBloc>().add(
-                        ChangeLocale(value == 'system' ? null : Locale(value)),
-                      );
-                    },
-                  ),
-                  if (localeState is LocaleFailure) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      localeState.message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.error,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  Text(
-                    l10n.categoriesTitle,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.categoriesDescription,
-                    style: theme.textTheme.bodySmall,
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.label_outline),
-                    title: Text(l10n.manageCategories),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.pushNamed(AppRoutes.categoriesName),
-                  ),
-                ],
+                ),
               );
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _SettingsSection extends StatelessWidget {
+  const _SettingsSection({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.child,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(title, style: theme.textTheme.titleMedium),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 14),
+            child,
+          ],
+        ),
       ),
     );
   }

@@ -347,5 +347,12 @@
       }
     }
   },
-  "paidToday": "Paid today"
+  "paidToday": "Paid today",
+  "quickActionsSubtitle": "Shortcuts to what you do most.",
+  "loginFooter": "Your data stays on your device first.",
+  "accounts": "Accounts",
+  "settingsFooter": "FinSight AI · Your finances, in sight.",
+  "scheduledTab": "Scheduled",
+  "previousPeriod": "Previous",
+  "currentPeriod": "Current"
 }

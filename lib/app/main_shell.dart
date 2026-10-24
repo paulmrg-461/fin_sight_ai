@@ -1,9 +1,11 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/routing/app_routes.dart';
+import '../core/theme/app_colors.dart';
 import '../core/theme/theme_controller.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
@@ -82,6 +84,7 @@ class _MainShellState extends State<MainShell> {
   void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
 
   void _selectBranch(int index) {
+    HapticFeedback.selectionClick();
     _scaffoldKey.currentState?.closeDrawer();
     final navigationShell = widget.navigationShell;
     navigationShell.goBranch(
@@ -144,7 +147,7 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: const Icon(Icons.event_repeat_outlined),
             selectedIcon: const Icon(Icons.event_repeat),
-            label: l10n.scheduledPayments,
+            label: l10n.scheduledTab,
           ),
           NavigationDestination(
             icon: const Icon(Icons.account_balance_wallet_outlined),
@@ -192,15 +195,27 @@ class AppDrawer extends StatelessWidget {
           children: [
             DrawerHeader(
               margin: EdgeInsets.zero,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.navy, Color(0xFF0C3B38)],
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  AppLogo(size: 48, showWordmark: true),
-                  const SizedBox(height: 4),
+                  AppLogo(
+                    size: 48,
+                    showWordmark: true,
+                    wordmarkStyle: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       final label = state is AuthAuthenticated
@@ -210,7 +225,9 @@ class AppDrawer extends StatelessWidget {
                         label,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
+                        ),
                       );
                     },
                   ),

@@ -56,6 +56,8 @@ void main() {
   ) async {
     await harness.pumpApp(tester);
     await pumpUntil(tester, find.text('No transactions yet'));
+    // Let categories seed so the transaction form has a default category.
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('FinSight AI'), findsOneWidget);
     expect(
@@ -83,11 +85,13 @@ void main() {
 
     final fields = find.byType(TextFormField);
     await tester.enterText(fields.at(0), '120');
-    await tester.enterText(fields.at(1), 'Salary');
-    await tester.enterText(fields.at(2), 'Monthly pay');
+    await tester.enterText(fields.at(1), 'Monthly pay');
     await tester.tap(find.text('Income'));
     await tester.pump();
-    await tester.tap(find.text('Save transaction'));
+    final saveTransaction = find.text('Save transaction');
+    await tester.ensureVisible(saveTransaction);
+    await tester.pumpAndSettle();
+    await tester.tap(saveTransaction);
 
     await pumpUntil(tester, find.text('Monthly pay'));
 
@@ -101,7 +105,7 @@ void main() {
     harness.dashboardBloc.add(const LoadDashboard());
     await pumpUntil(tester, find.text(money(120)));
 
-    expect(find.text('Income'), findsOneWidget);
+    expect(find.text('Income'), findsWidgets);
     expect(find.text('No transactions yet'), findsNothing);
   });
 
@@ -109,12 +113,16 @@ void main() {
     tester,
   ) async {
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('Scan receipt'));
-
-    await tester.tap(find.text('Scan receipt'));
+    final ocrAction = find.byKey(const ValueKey('quick-action-ocr'));
+    await pumpUntil(tester, ocrAction);
+    await tester.ensureVisible(ocrAction);
+    await tester.pumpAndSettle();
+    await tester.tap(ocrAction);
     await pumpUntil(tester, find.text('Camera'));
-
-    await tester.tap(find.text('Camera'));
+    await tester.pumpAndSettle();
+    final camera = find.text('Camera');
+    await tester.ensureVisible(camera);
+    await tester.tap(camera);
     await pumpUntil(tester, find.text('Receipt preview'));
 
     expect(find.text('ACME MARKET'), findsOneWidget);
@@ -147,10 +155,13 @@ void main() {
 
   testWidgets('adds a debt and shows it in the list', (tester) async {
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('Debts'));
-
-    await tester.tap(find.widgetWithText(ActionChip, 'Debts'));
+    final debtsAction = find.byKey(const ValueKey('quick-action-debts'));
+    await pumpUntil(tester, debtsAction);
+    await tester.ensureVisible(debtsAction);
+    await tester.pumpAndSettle();
+    await tester.tap(debtsAction);
     await pumpUntil(tester, find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byType(FloatingActionButton));
     await pumpUntil(tester, find.text('Creditor name'));
@@ -499,14 +510,18 @@ void main() {
     harness.router.goNamed(AppRoutes.categoriesName);
     await pumpUntil(tester, find.text('Categories'));
     await pumpUntil(tester, find.text('Show archived'));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FloatingActionButton, 'Add category'));
     await pumpUntil(tester, find.text('New category'));
     await tester.enterText(find.byType(TextFormField).last, 'Pets');
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await pumpUntil(tester, find.text('Pets'));
+    await tester.pumpAndSettle();
 
     final petsTile = find.widgetWithText(ListTile, 'Pets');
+    await tester.ensureVisible(petsTile);
+    await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
         of: petsTile,
@@ -522,6 +537,8 @@ void main() {
     await pumpUntil(tester, find.text('Pets & vet'));
 
     final renamedTile = find.widgetWithText(ListTile, 'Pets & vet');
+    await tester.ensureVisible(renamedTile);
+    await tester.pumpAndSettle();
     await tester.tap(
       find.descendant(
         of: renamedTile,
@@ -534,6 +551,8 @@ void main() {
     await pumpUntil(tester, find.text('Archive category?'));
     await tester.tap(find.widgetWithText(FilledButton, 'Archive'));
     await pumpUntilGone(tester, find.text('Pets & vet'));
+    await tester.drag(find.byType(ListView).last, const Offset(0, 700));
+    await tester.pumpAndSettle();
 
     await tester.tap(find.text('Show archived'));
     await pumpUntil(tester, find.text('Pets & vet'));

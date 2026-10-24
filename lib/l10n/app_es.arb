@@ -298,5 +298,12 @@
   "deleteScheduledPaymentBody": "Se elimina la programación. Los gastos ya registrados se conservan.",
   "notesOptional": "Notas (opcional)",
   "scheduledFor": "Próximo: {date}",
-  "paidToday": "Pagado hoy"
+  "paidToday": "Pagado hoy",
+  "quickActionsSubtitle": "Accesos a lo que más usas.",
+  "loginFooter": "Tus datos se guardan primero en tu dispositivo.",
+  "accounts": "Cuentas",
+  "settingsFooter": "FinSight AI · Tus finanzas, a la vista.",
+  "scheduledTab": "Pagos",
+  "previousPeriod": "Anterior",
+  "currentPeriod": "Actual"
 }

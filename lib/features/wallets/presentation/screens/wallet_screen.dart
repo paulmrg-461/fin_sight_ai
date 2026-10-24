@@ -4,6 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_section_header.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/wallet_entity.dart';
 import '../bloc/wallet_bloc.dart';
 import '../bloc/wallet_event.dart';
@@ -92,31 +95,39 @@ class _WalletScreenState extends State<WalletScreen>
                 semanticsLabel: context.l10n.loading,
               ),
             ),
-            WalletFailure(:final message) => _WalletError(
+            WalletFailure(:final message) => AppErrorState(
               message: message,
               onRetry: () =>
                   context.read<WalletBloc>().add(const LoadWallets()),
             ),
-            WalletLoaded(:final balances) => RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                children: [
-                  _TotalCard(total: state.total),
-                  const SizedBox(height: 16),
-                  for (final balance in balances)
-                    _WalletCard(
-                      balance: balance,
-                      onSetBalance: () => _setBalance(context, balance),
+            WalletLoaded(:final balances) => AppContent(
+              padding: EdgeInsets.zero,
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  children: [
+                    _MoneyHero(total: state.total, balances: balances),
+                    const SizedBox(height: 20),
+                    AppSectionHeader(
+                      title: context.l10n.accounts,
+                      subtitle: context.l10n.bankPlusCash,
                     ),
-                  const SizedBox(height: 8),
-                  OutlinedButton.icon(
-                    onPressed: () => _transfer(context, balances),
-                    icon: const Icon(Icons.swap_horiz),
-                    label: Text(context.l10n.transferBetweenWallets),
-                  ),
-                ],
+                    for (final balance in balances)
+                      _WalletCard(
+                        balance: balance,
+                        total: state.total,
+                        onSetBalance: () => _setBalance(context, balance),
+                      ),
+                    const SizedBox(height: 4),
+                    OutlinedButton.icon(
+                      onPressed: () => _transfer(context, balances),
+                      icon: const Icon(Icons.swap_horiz_rounded),
+                      label: Text(context.l10n.transferBetweenWallets),
+                    ),
+                  ],
+                ),
               ),
             ),
           };
@@ -136,45 +147,136 @@ class _WalletScreenState extends State<WalletScreen>
   }
 }
 
-class _TotalCard extends StatelessWidget {
-  const _TotalCard({required this.total});
+class _MoneyHero extends StatelessWidget {
+  const _MoneyHero({required this.total, required this.balances});
 
   final double total;
+  final List<WalletBalance> balances;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              context.l10n.totalAvailable,
-              style: theme.textTheme.labelLarge,
+    final bank = balances
+        .where((balance) => balance.type == WalletType.bank)
+        .fold<double>(0, (sum, balance) => sum + balance.balance);
+    final cash = balances
+        .where((balance) => balance.type == WalletType.cash)
+        .fold<double>(0, (sum, balance) => sum + balance.balance);
+
+    return BrandGradientCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.totalAvailable,
+            style: theme.textTheme.labelLarge?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 6),
+          MoneyText(
+            total,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.8,
             ),
-            const SizedBox(height: 4),
-            MoneyText(
-              total,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            context.l10n.bankPlusCash,
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroWallet(
+                  icon: Icons.account_balance_rounded,
+                  label: context.l10n.bankAccount,
+                  amount: bank,
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(context.l10n.bankPlusCash, style: theme.textTheme.bodySmall),
-          ],
-        ),
+              Container(
+                width: 1,
+                height: 38,
+                color: Colors.white.withValues(alpha: 0.20),
+              ),
+              Expanded(
+                child: _HeroWallet(
+                  icon: Icons.payments_rounded,
+                  label: context.l10n.cash,
+                  amount: cash,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroWallet extends StatelessWidget {
+  const _HeroWallet({
+    required this.icon,
+    required this.label,
+    required this.amount,
+  });
+
+  final IconData icon;
+  final String label;
+  final double amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 15, color: Colors.white70),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          DefaultTextStyle(
+            style:
+                theme.textTheme.titleSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ) ??
+                const TextStyle(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: MoneyText(amount),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _WalletCard extends StatelessWidget {
-  const _WalletCard({required this.balance, required this.onSetBalance});
+  const _WalletCard({
+    required this.balance,
+    required this.total,
+    required this.onSetBalance,
+  });
 
   final WalletBalance balance;
+  final double total;
   final VoidCallback onSetBalance;
 
   @override
@@ -183,85 +285,86 @@ class _WalletCard extends StatelessWidget {
     final isBank = balance.type == WalletType.bank;
     final displayName = walletDisplayName(context, balance.wallet);
     final typeLabel = isBank ? context.l10n.bankAccount : context.l10n.cash;
+    final share = total > 0 ? (balance.balance / total).clamp(0.0, 1.0) : 0.0;
+    final accent = isBank
+        ? theme.colorScheme.primary
+        : theme.colorScheme.tertiary;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+        padding: const EdgeInsets.fromLTRB(16, 16, 12, 12),
+        child: Column(
           children: [
-            CircleAvatar(
-              backgroundColor: isBank
-                  ? theme.colorScheme.primaryContainer
-                  : theme.colorScheme.tertiaryContainer,
-              child: Icon(
-                isBank
-                    ? Icons.account_balance_outlined
-                    : Icons.payments_outlined,
-                color: isBank
-                    ? theme.colorScheme.onPrimaryContainer
-                    : theme.colorScheme.onTertiaryContainer,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(displayName, style: theme.textTheme.titleMedium),
-                  if (displayName != typeLabel)
-                    Text(typeLabel, style: theme.textTheme.bodySmall),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            Row(
               children: [
-                MoneyText(
-                  balance.balance,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+                CircleAvatar(
+                  backgroundColor: accent.withValues(alpha: 0.14),
+                  child: Icon(
+                    isBank
+                        ? Icons.account_balance_rounded
+                        : Icons.payments_rounded,
+                    color: accent,
                   ),
                 ),
-                TextButton(
-                  onPressed: onSetBalance,
-                  child: Text(context.l10n.setBalance),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      if (displayName != typeLabel)
+                        Text(typeLabel, style: theme.textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    MoneyText(
+                      balance.balance,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    TextButton.icon(
+                      onPressed: onSetBalance,
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                      icon: const Icon(Icons.tune_rounded, size: 16),
+                      label: Text(context.l10n.setBalance),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WalletError extends StatelessWidget {
-  const _WalletError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(99),
+                    child: LinearProgressIndicator(
+                      value: share,
+                      minHeight: 6,
+                      color: accent,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '${(share * 100).round()}%',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

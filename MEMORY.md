@@ -47,6 +47,22 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Locale state changes complete asynchronously; in widget tests wait on `localeBloc.stream` with `tester.runAsync` instead of relying only on `pumpAndSettle`.
 - Known gap: domain `Failure` messages and AI-generated insights are still English-only.
 
+## UI/UX polish (branch `develop`)
+
+- Centralized Material 3 theme: emerald/teal/sky palette, navy canvas, custom
+  typography, 20 px cards, 16 px inputs, 14–16 px buttons, 74 px navigation bar,
+  rounded dialogs/sheets, and fade page transitions.
+- New reusable widgets: `AppContent`, `BrandGradientCard`, `AppSectionHeader`,
+  `AppEmptyState`, `AppErrorState`.
+- Redesigned dashboard (balance hero, period pill, action tiles, donut total),
+  login (brand gradient + card), money (hero + account bars), scheduled
+  (expected-income hero), settings (grouped cards + brand footer), and drawer
+  header.
+- Navigation tab label is the short “Scheduled”/“Pagos”; drawer keeps the long
+  label. Haptic selection on bottom tabs.
+- Tests updated for action tiles (`quick-action-<route>`) and text duplicates
+  introduced by responsive hero cards.
+
 ## Branding
 
 - Source artwork: `assets/branding/logo_mark.svg` (rounded mark),

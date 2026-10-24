@@ -1621,6 +1621,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paid today'**
   String get paidToday;
+
+  /// No description provided for @quickActionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shortcuts to what you do most.'**
+  String get quickActionsSubtitle;
+
+  /// No description provided for @loginFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data stays on your device first.'**
+  String get loginFooter;
+
+  /// No description provided for @accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Accounts'**
+  String get accounts;
+
+  /// No description provided for @settingsFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'FinSight AI · Your finances, in sight.'**
+  String get settingsFooter;
+
+  /// No description provided for @scheduledTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled'**
+  String get scheduledTab;
+
+  /// No description provided for @previousPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get previousPeriod;
+
+  /// No description provided for @currentPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get currentPeriod;
 }
 
 class _AppLocalizationsDelegate

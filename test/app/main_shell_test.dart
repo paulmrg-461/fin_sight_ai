@@ -381,7 +381,7 @@ void main() {
     expect(find.byType(BudgetScreen), findsOneWidget);
     expect(selectedIndex(tester), 2);
 
-    await tapDestination(tester, 'Scheduled payments');
+    await tapDestination(tester, 'Scheduled');
     expect(find.byType(ScheduledPaymentScreen), findsOneWidget);
     expect(selectedIndex(tester), 3);
 
@@ -412,7 +412,7 @@ void main() {
       'Dashboard',
       'Transactions',
       'Budgets',
-      'Scheduled payments',
+      'Scheduled',
       'Money',
     ]) {
       await tapDestination(tester, label);

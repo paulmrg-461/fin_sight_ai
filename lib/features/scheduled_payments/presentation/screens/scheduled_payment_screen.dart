@@ -7,6 +7,8 @@ import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
 import '../../domain/services/expected_income_calculator.dart';
 import '../bloc/scheduled_payment_bloc.dart';
@@ -84,59 +86,85 @@ class ScheduledPaymentScreen extends StatelessWidget {
           return switch (state) {
             ScheduledPaymentInitial() || ScheduledPaymentLoading() =>
               const Center(child: CircularProgressIndicator()),
-            ScheduledPaymentFailure(:final message) => _ScheduledError(
+            ScheduledPaymentFailure(:final message) => AppErrorState(
               message: message,
               onRetry: () => context.read<ScheduledPaymentBloc>().add(
                 const LoadScheduledPayments(),
               ),
             ),
             ScheduledPaymentEmpty(:final autoCreated, :final error) =>
-              _EmptyScheduled(
-                autoCreated: autoCreated,
-                error: error,
-                onAdd: () => _openForm(context),
+              AppContent(
+                padding: EdgeInsets.zero,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  children: [
+                    if (autoCreated > 0) ...[
+                      _AutoCreatedBanner(count: autoCreated),
+                      const SizedBox(height: 12),
+                    ],
+                    if (error != null) ...[
+                      _ErrorBanner(message: error),
+                      const SizedBox(height: 12),
+                    ],
+                    Text(
+                      l10n.scheduledPaymentsDescription,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 16),
+                    AppEmptyState(
+                      icon: Icons.event_repeat_rounded,
+                      title: l10n.noScheduledPayments,
+                      message: l10n.noScheduledPaymentsBody,
+                      actionLabel: l10n.addFirstScheduledPayment,
+                      onAction: () => _openForm(context),
+                    ),
+                  ],
+                ),
               ),
             ScheduledPaymentLoaded(
               :final payments,
               :final autoCreated,
               :final error,
             ) =>
-              ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-                children: [
-                  Text(
-                    l10n.scheduledPaymentsDescription,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  const SizedBox(height: 12),
-                  if (incomeSummary != null && incomeSummary.isNotEmpty) ...[
-                    _ExpectedIncomeCard(summary: incomeSummary),
-                    const SizedBox(height: 12),
-                  ],
-                  if (autoCreated > 0) ...[
-                    _AutoCreatedBanner(count: autoCreated),
-                    const SizedBox(height: 12),
-                  ],
-                  if (error != null) ...[
-                    _ErrorBanner(message: error),
-                    const SizedBox(height: 12),
-                  ],
-                  for (final payment in payments)
-                    ScheduledPaymentCard(
-                      payment: payment,
-                      onPayNow: () => context.read<ScheduledPaymentBloc>().add(
-                        PayScheduledPayment(payment.id),
-                      ),
-                      onToggleActive: () =>
-                          context.read<ScheduledPaymentBloc>().add(
-                            SetScheduledPaymentActive(
-                              id: payment.id,
-                              isActive: !payment.isActive,
-                            ),
-                          ),
-                      onDelete: () => _delete(context, payment),
+              AppContent(
+                padding: EdgeInsets.zero,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  children: [
+                    Text(
+                      l10n.scheduledPaymentsDescription,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
-                ],
+                    const SizedBox(height: 12),
+                    if (incomeSummary != null && incomeSummary.isNotEmpty) ...[
+                      _ExpectedIncomeCard(summary: incomeSummary),
+                      const SizedBox(height: 12),
+                    ],
+                    if (autoCreated > 0) ...[
+                      _AutoCreatedBanner(count: autoCreated),
+                      const SizedBox(height: 12),
+                    ],
+                    if (error != null) ...[
+                      _ErrorBanner(message: error),
+                      const SizedBox(height: 12),
+                    ],
+                    for (final payment in payments)
+                      ScheduledPaymentCard(
+                        payment: payment,
+                        onPayNow: () => context
+                            .read<ScheduledPaymentBloc>()
+                            .add(PayScheduledPayment(payment.id)),
+                        onToggleActive: () =>
+                            context.read<ScheduledPaymentBloc>().add(
+                              SetScheduledPaymentActive(
+                                id: payment.id,
+                                isActive: !payment.isActive,
+                              ),
+                            ),
+                        onDelete: () => _delete(context, payment),
+                      ),
+                  ],
+                ),
               ),
           };
         },
@@ -156,65 +184,77 @@ class _ExpectedIncomeCard extends StatelessWidget {
     final l10n = context.l10n;
     final nextIncomeDate = summary.nextIncomeDate;
 
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return BrandGradientCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.trending_up_rounded,
+                  color: Colors.white,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.incomeSchedule,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
+                    Text(
+                      l10n.expectedMonthlyIncome,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          MoneyText(
+            summary.monthlyAmount,
+            style: theme.textTheme.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.6,
+            ),
+          ),
+          if (nextIncomeDate != null) ...[
+            const SizedBox(height: 6),
             Row(
               children: [
-                Icon(Icons.trending_up, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.incomeSchedule,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      Text(
-                        l10n.expectedMonthlyIncome,
-                        style: theme.textTheme.titleSmall,
-                      ),
-                    ],
+                const Icon(
+                  Icons.event_outlined,
+                  size: 16,
+                  color: Colors.white70,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  l10n.nextIncome(formatDisplayDate(nextIncomeDate)),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            MoneyText(
-              summary.monthlyAmount,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            if (nextIncomeDate != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.event_outlined,
-                    size: 16,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    l10n.nextIncome(formatDisplayDate(nextIncomeDate)),
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
-        ),
+        ],
       ),
     );
   }
@@ -282,100 +322,6 @@ class _ErrorBanner extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _EmptyScheduled extends StatelessWidget {
-  const _EmptyScheduled({
-    required this.autoCreated,
-    required this.onAdd,
-    this.error,
-  });
-
-  final int autoCreated;
-  final String? error;
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = context.l10n;
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (autoCreated > 0) ...[
-          _AutoCreatedBanner(count: autoCreated),
-          const SizedBox(height: 12),
-        ],
-        if (error != null) ...[
-          _ErrorBanner(message: error!),
-          const SizedBox(height: 12),
-        ],
-        Card(
-          margin: EdgeInsets.zero,
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                Icon(
-                  Icons.event_repeat,
-                  size: 56,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  l10n.noScheduledPayments,
-                  style: theme.textTheme.titleMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.noScheduledPaymentsBody,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: onAdd,
-                  icon: const Icon(Icons.add),
-                  label: Text(l10n.addFirstScheduledPayment),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ScheduledError extends StatelessWidget {
-  const _ScheduledError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton(onPressed: onRetry, child: Text(context.l10n.retry)),
-          ],
-        ),
       ),
     );
   }

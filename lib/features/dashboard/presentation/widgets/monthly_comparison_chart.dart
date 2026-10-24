@@ -37,9 +37,19 @@ class MonthlyComparisonChart extends StatelessWidget {
                 ),
                 Chip(
                   visualDensity: VisualDensity.compact,
+                  backgroundColor: comparison.expenseChangePercentage <= 0
+                      ? AppColors.emerald.withValues(alpha: 0.14)
+                      : AppColors.danger.withValues(alpha: 0.14),
+                  side: BorderSide.none,
                   label: Text(
                     '${comparison.expenseChangePercentage >= 0 ? '+' : ''}'
                     '${comparison.expenseChangePercentage.toStringAsFixed(1)}%',
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: comparison.expenseChangePercentage <= 0
+                          ? AppColors.emerald
+                          : AppColors.danger,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -52,7 +62,16 @@ class MonthlyComparisonChart extends StatelessWidget {
                   maxY: maxY,
                   alignment: BarChartAlignment.spaceAround,
                   borderData: FlBorderData(show: false),
-                  gridData: const FlGridData(show: false),
+                  gridData: FlGridData(
+                    drawVerticalLine: false,
+                    horizontalInterval: maxY / 4,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.6,
+                      ),
+                      strokeWidth: 1,
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
@@ -67,7 +86,9 @@ class MonthlyComparisonChart extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final label = value == 0 ? 'Previous' : 'Current';
+                          final label = value == 0
+                              ? context.l10n.previousPeriod
+                              : context.l10n.currentPeriod;
                           return Padding(
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
@@ -85,10 +106,10 @@ class MonthlyComparisonChart extends StatelessWidget {
                       barRods: [
                         BarChartRodData(
                           toY: comparison.previousExpenses,
-                          width: 28,
-                          color: theme.colorScheme.outline,
+                          width: 30,
+                          color: theme.colorScheme.outlineVariant,
                           borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(6),
+                            top: Radius.circular(8),
                           ),
                         ),
                       ],
@@ -98,10 +119,10 @@ class MonthlyComparisonChart extends StatelessWidget {
                       barRods: [
                         BarChartRodData(
                           toY: comparison.currentExpenses,
-                          width: 28,
+                          width: 30,
                           color: AppColors.emerald,
                           borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(6),
+                            top: Radius.circular(8),
                           ),
                         ),
                       ],
