@@ -16,13 +16,13 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Currency preference (COP/USD) | Done |
 | Localization (English/Spanish, persisted selector) | Done |
 | Category catalog (defaults, create, rename, archive) | Done |
-| Scheduled payments (monthly/yearly, auto-expense) | Done |
+| Scheduled payments (monthly/yearly, expense or salary income) | Done |
 | Integration suite (13 flows + benchmarks) | Done |
 
 - Latest feature commits: `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 722 unit/widget tests, coverage gate green (core 93.1%, auth 94.9/92.7%, categories 97.9/100%, scheduled payments 100/100%), 17 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 750 unit/widget tests, coverage gate green (scheduled payments 94.1/100%), 19 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Categories and scheduled payments
@@ -116,9 +116,9 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Verification
 
 - `flutter analyze` clean.
-- 722 unit/widget tests passing.
-- 17 integration tests passing on Linux.
-- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 100/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 93.1%.
+- 750 unit/widget tests passing.
+- 19 integration tests passing on Linux.
+- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, core 93.1%.
 - SQL migrations `0001_init.sql` through `0004_wallet_ids.sql` applied; RLS script available.
 
 ## Known gaps / next

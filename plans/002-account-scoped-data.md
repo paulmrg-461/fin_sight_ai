@@ -111,9 +111,10 @@ Register it with a `@module` provider (add to `CoreModule` or a new
    `clearAllUserData()` and `setOwnerUserId(null)`. If clearing fails, return
    `CacheFailure('Could not clear local data.', code: 'local_clear_failed')`
    and keep the session signed out only if storage clear succeeded.
-4. Add an auth use case `EnsureAccountScopeUseCase` in
-   `lib/features/auth/domain/usecases/auth_usecases.dart` that takes
-   `SessionStorage` + `LocalDataScope`:
+4. Add an `AccountScopeService` in
+   `lib/features/auth/data/services/account_scope_service.dart` (data layer,
+   where importing `SessionStorage` and the Hive-backed `LocalDataScope` is
+   legal) that takes both dependencies:
    - no stored session → `Right(false)`;
    - owner null → set to session.userId → `Right(false)`;
    - owner == session.userId → `Right(false)`;
@@ -121,8 +122,9 @@ Register it with a `@module` provider (add to `CoreModule` or a new
      `Right(true)`.
 5. In `lib/main.dart`, immediately after `configureDependencies()` and **before**
    due-payment processing/BLoC creation, run
-   `await getIt<EnsureAccountScopeUseCase>()(const NoParams());`. This ensures
-   no feature bloc loads another account's data on startup.
+   `await getIt<AccountScopeService>().ensure();`. This ensures no feature bloc
+   loads another account's data on startup. Do NOT place this orchestration in
+   the domain layer: AGENTS.md forbids domain imports of data/infrastructure.
 
 **Verify**: unit tests for both branches; `flutter test test/features/auth` green.
 
@@ -156,7 +158,8 @@ Unit:
 - `test/core/services/local_data_scope_test.dart`: real temp Hive; write a
   record in each box, set owner, clear, assert all data boxes empty and
   settings preferences preserved.
-- `test/features/auth/...`: `EnsureAccountScopeUseCase` sets/clears owner;
+- `test/features/auth/data/services/account_scope_service_test.dart`:
+  `AccountScopeService` sets/clears owner and wipes on mismatch;
   `AuthRepositoryImpl.signOut` clears local data; signIn records owner.
 
 Integration (`integration_test/app_flow_test.dart`):

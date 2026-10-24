@@ -38,6 +38,9 @@ Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED 
 - 004 approved and merged as `1258206` (695 unit tests, 15 integration
   tests). The plan also corrected the login/budget/dashboard hard-coded strings,
   localized default wallet labels, and made OCR post to a real category.
+- Recurring salary income landed as `ce7d15b` (750 unit tests, 19 integration
+  tests): `ScheduledPaymentEntity.type` supports income, the scheduler creates
+  income transactions, and the screen shows expected monthly income.
 - 011 approved and merged as `89fd188` (730 unit tests, 18 integration
   tests): five-branch `StatefulShellRoute`, bottom `NavigationBar`, drawer for
   Debts/Categories/OCR/AI/Settings/theme, and contextual app bars.

@@ -10,7 +10,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
 - **Categories** — shared category catalog with localized defaults, manual create/rename, and archive/restore.
-- **Scheduled payments** — monthly or yearly recurring expenses (rent, credits, subscriptions, phone plan) that are recorded automatically when due, with in-app notice, pause/resume, pay-now, and delete.
+- **Scheduled payments & salary** — monthly or yearly recurring expenses (rent, credits, subscriptions, phone plan) or income (salary) that is recorded automatically when due, with in-app notice, pause/resume, pay-now, delete, and an expected-monthly-income summary.
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
 - **Languages** — English and Spanish UI with a persisted System/English/Español selector and ARB-based localization.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
@@ -105,9 +105,9 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **722 unit/widget tests** passing.
-- **17 integration tests** passing on Linux desktop.
-- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 100/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
+- **750 unit/widget tests** passing.
+- **19 integration tests** passing on Linux desktop.
+- Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
 - Integration benchmarks: app launch + dashboard ≈ 179 ms, transactions render ≈ 251 ms.
 - CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.
 
