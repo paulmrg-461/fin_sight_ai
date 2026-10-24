@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1220"/>
+      <stop offset="0.55" stop-color="#0F1B2D"/>
+      <stop offset="1" stop-color="#12253A"/>
+    </linearGradient>
+    <linearGradient id="emerald" gradientUnits="userSpaceOnUse" x1="300" y1="760" x2="800" y2="170">
+      <stop offset="0" stop-color="#059669"/>
+      <stop offset="0.45" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#5EEAD4"/>
+    </linearGradient>
+    <linearGradient id="arrow" gradientUnits="userSpaceOnUse" x1="660" y1="300" x2="810" y2="170">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#A7F3D0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.72" cy="0.28" r="0.65">
+      <stop offset="0" stop-color="#10B981" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#10B981" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="22" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1024" height="1024" rx="230" fill="url(#bg)"/>
+  <circle cx="512" cy="512" r="392" fill="url(#glow)"/>
+  <circle cx="512" cy="512" r="372" fill="none" stroke="#34D399" stroke-opacity="0.14" stroke-width="3"/>
+  <circle cx="512" cy="512" r="300" fill="none" stroke="#5EEAD4" stroke-opacity="0.08" stroke-width="2"/>
+
+  <g filter="url(#softGlow)">
+    <!-- Monogram F -->
+    <path d="M 342 736 L 342 328 Q 342 286 384 286 L 676 286"
+          fill="none" stroke="url(#emerald)" stroke-width="112"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 384 516 L 612 516"
+          fill="none" stroke="url(#emerald)" stroke-width="112"
+          stroke-linecap="round"/>
+
+    <!-- Growth arrow rising from the top bar -->
+    <path d="M 676 286 L 784 178"
+          fill="none" stroke="url(#arrow)" stroke-width="64"
+          stroke-linecap="round"/>
+    <path d="M 716 178 L 784 178 L 784 246"
+          fill="none" stroke="url(#arrow)" stroke-width="64"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <circle cx="784" cy="178" r="30" fill="#A7F3D0"/>
+  <circle cx="784" cy="178" r="54" fill="#5EEAD4" fill-opacity="0.16"/>
+
+  <!-- Insight spark -->
+  <path d="M 300 820 L 330 820 M 315 805 L 315 835"
+        stroke="#5EEAD4" stroke-opacity="0.55" stroke-width="6" stroke-linecap="round"/>
+</svg>

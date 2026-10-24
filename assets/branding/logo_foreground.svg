@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="emerald" gradientUnits="userSpaceOnUse" x1="300" y1="760" x2="800" y2="170">
+      <stop offset="0" stop-color="#059669"/>
+      <stop offset="0.45" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#5EEAD4"/>
+    </linearGradient>
+    <linearGradient id="arrow" gradientUnits="userSpaceOnUse" x1="660" y1="300" x2="810" y2="170">
+      <stop offset="0" stop-color="#34D399"/>
+      <stop offset="1" stop-color="#A7F3D0"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(512 512) scale(0.92) translate(-512 -512)">
+    <path d="M 342 736 L 342 328 Q 342 286 384 286 L 676 286"
+          fill="none" stroke="url(#emerald)" stroke-width="112"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 384 516 L 612 516"
+          fill="none" stroke="url(#emerald)" stroke-width="112"
+          stroke-linecap="round"/>
+    <path d="M 676 286 L 784 178"
+          fill="none" stroke="url(#arrow)" stroke-width="64"
+          stroke-linecap="round"/>
+    <path d="M 716 178 L 784 178 L 784 246"
+          fill="none" stroke="url(#arrow)" stroke-width="64"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="784" cy="178" r="30" fill="#A7F3D0"/>
+  </g>
+</svg>

@@ -1,5 +1,9 @@
 # FinSight AI
 
+<p align="center">
+  <img src="assets/branding/logo_mark_512.png" width="128" alt="FinSight AI logo" />
+</p>
+
 Offline-first personal finance app built with Flutter. Local Hive storage is the source of truth for the UI; Supabase (PostgreSQL + RLS) is the remote system of record.
 
 ## Features

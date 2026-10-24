@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/branding/app_logo.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../sync/presentation/bloc/sync_bloc.dart';
 import '../../../sync/presentation/bloc/sync_event.dart';
@@ -73,11 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 56,
-                  color: theme.colorScheme.primary,
-                ),
+                const Center(child: AppLogo(size: 80)),
                 const SizedBox(height: 16),
                 Text(
                   _isSignUp

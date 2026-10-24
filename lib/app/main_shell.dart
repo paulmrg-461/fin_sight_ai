@@ -8,6 +8,7 @@ import '../core/theme/theme_controller.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/sync/presentation/widgets/sync_status_chip.dart';
+import 'branding/app_logo.dart';
 
 /// Route names rendered inside the navigation shell, in bottom-bar order.
 const List<String> primaryRouteNames = [
@@ -198,7 +199,7 @@ class AppDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(l10n.appName, style: theme.textTheme.titleLarge),
+                  AppLogo(size: 48, showWordmark: true),
                   const SizedBox(height: 4),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../app/branding/app_logo.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
@@ -59,7 +60,12 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: const AppMenuButton(),
-        title: Text(context.l10n.appName),
+        title: AppLogo(
+          size: 30,
+          showWordmark: true,
+          wordmarkStyle: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
         actions: [
           const AccountButton(),
           const SyncStatusChip(),
