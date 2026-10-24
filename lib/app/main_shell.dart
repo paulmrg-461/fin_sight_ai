@@ -251,6 +251,11 @@ class AppDrawer extends StatelessWidget {
               onTap: () => onSecondarySelected(AppRoutes.debtsName),
             ),
             ListTile(
+              leading: const Icon(Icons.handshake_outlined),
+              title: Text(l10n.owedToMe),
+              onTap: () => onSecondarySelected(AppRoutes.receivablesName),
+            ),
+            ListTile(
               leading: const Icon(Icons.category_outlined),
               title: Text(l10n.categoriesTitle),
               onTap: () => onSecondarySelected(AppRoutes.categoriesName),

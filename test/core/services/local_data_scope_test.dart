@@ -19,6 +19,7 @@ void main() {
     boxes = AppBoxes(
       transactions: await Hive.openBox<dynamic>('scope_transactions'),
       debts: await Hive.openBox<dynamic>('scope_debts'),
+      receivables: await Hive.openBox<dynamic>('scope_receivables'),
       receipts: await Hive.openBox<dynamic>('scope_receipts'),
       syncQueue: await Hive.openBox<dynamic>('scope_sync_queue'),
       syncMeta: await Hive.openBox<dynamic>('scope_sync_meta'),
@@ -38,6 +39,7 @@ void main() {
     for (final box in [
       boxes.transactions,
       boxes.debts,
+      boxes.receivables,
       boxes.receipts,
       boxes.syncQueue,
       boxes.syncMeta,
@@ -72,6 +74,7 @@ void main() {
   test('clears every data box and preserves settings preferences', () async {
     await boxes.transactions.put('t1', {'id': 't1'});
     await boxes.debts.put('d1', {'id': 'd1'});
+    await boxes.receivables.put('r1', {'id': 'r1'});
     await boxes.receipts.put('r1', {'id': 'r1'});
     await boxes.budgets.put('b1', {'id': 'b1'});
     await boxes.wallets.put('w1', {'id': 'w1'});
@@ -89,6 +92,7 @@ void main() {
 
     expect(boxes.transactions.isEmpty, isTrue);
     expect(boxes.debts.isEmpty, isTrue);
+    expect(boxes.receivables.isEmpty, isTrue);
     expect(boxes.receipts.isEmpty, isTrue);
     expect(boxes.budgets.isEmpty, isTrue);
     expect(boxes.wallets.isEmpty, isTrue);

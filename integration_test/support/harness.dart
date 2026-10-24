@@ -59,6 +59,15 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.da
 import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_event.dart';
+import 'package:fin_sight_ai/features/receivables/data/datasources/hive_receivable_local_data_source.dart';
+import 'package:fin_sight_ai/features/receivables/data/repositories/receivable_repository_impl.dart';
+import 'package:fin_sight_ai/features/receivables/domain/repositories/receivable_repository.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_event.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/hive_receipt_local_data_source.dart';
 import 'package:fin_sight_ai/features/ocr/data/repositories/receipt_repository_impl.dart';
 import 'package:fin_sight_ai/features/ocr/domain/repositories/receipt_repository.dart';
@@ -110,6 +119,7 @@ class IntegrationHarness {
 
   late Box<dynamic> _transactionsBox;
   late Box<dynamic> _debtsBox;
+  late Box<dynamic> _receivablesBox;
   late Box<dynamic> _receiptsBox;
   late Box<dynamic> _syncQueueBox;
   late Box<dynamic> _syncMetaBox;
@@ -124,6 +134,7 @@ class IntegrationHarness {
   late AuthRepository authRepository;
   late TransactionRepository transactionRepository;
   late DebtRepository debtRepository;
+  late ReceivableRepository receivableRepository;
   late ReceiptRepository receiptRepository;
   late CategoryRepository categoryRepository;
   late ScheduledPaymentRepository scheduledPaymentRepository;
@@ -132,10 +143,12 @@ class IntegrationHarness {
   late GetTransactionsUseCase getTransactions;
   late GetTransactionsByDateRangeUseCase getTransactionsByDateRange;
   late AddDebtUseCase addDebt;
+  late AddReceivableUseCase addReceivable;
   late SaveReceiptUseCase saveReceipt;
 
   late TransactionBloc transactionBloc;
   late DebtBloc debtBloc;
+  late ReceivableBloc receivableBloc;
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
@@ -164,6 +177,7 @@ class IntegrationHarness {
     Hive.init(directory.path);
     _transactionsBox = await Hive.openBox<dynamic>('transactions');
     _debtsBox = await Hive.openBox<dynamic>('debts');
+    _receivablesBox = await Hive.openBox<dynamic>('receivables');
     _receiptsBox = await Hive.openBox<dynamic>('receipts');
     _syncQueueBox = await Hive.openBox<dynamic>('sync_queue');
     _syncMetaBox = await Hive.openBox<dynamic>('sync_meta');
@@ -179,6 +193,7 @@ class IntegrationHarness {
     final boxes = AppBoxes(
       transactions: _transactionsBox,
       debts: _debtsBox,
+      receivables: _receivablesBox,
       receipts: _receiptsBox,
       syncQueue: _syncQueueBox,
       syncMeta: _syncMetaBox,
@@ -195,6 +210,9 @@ class IntegrationHarness {
       HiveTransactionLocalDataSource(_transactionsBox),
     );
     debtRepository = DebtRepositoryImpl(HiveDebtLocalDataSource(_debtsBox));
+    receivableRepository = ReceivableRepositoryImpl(
+      HiveReceivableLocalDataSource(_receivablesBox),
+    );
     receiptRepository = ReceiptRepositoryImpl(
       HiveReceiptLocalDataSource(_receiptsBox),
       ocr,
@@ -220,6 +238,13 @@ class IntegrationHarness {
     final makePayment = MakePaymentUseCase(debtRepository);
     final deleteDebt = DeleteDebtUseCase(debtRepository);
     final calculatePayoff = CalculatePayoffUseCase(debtRepository);
+
+    addReceivable = AddReceivableUseCase(receivableRepository);
+    final getReceivables = GetReceivablesUseCase(receivableRepository);
+    final makeReceivablePayment = MakeReceivablePaymentUseCase(
+      receivableRepository,
+    );
+    final deleteReceivable = DeleteReceivableUseCase(receivableRepository);
 
     final scanReceipt = ScanReceiptUseCase(receiptRepository);
     saveReceipt = SaveReceiptUseCase(receiptRepository);
@@ -247,6 +272,12 @@ class IntegrationHarness {
       makePayment,
       deleteDebt,
       calculatePayoff,
+    );
+    receivableBloc = ReceivableBloc(
+      getReceivables,
+      addReceivable,
+      makeReceivablePayment,
+      deleteReceivable,
     );
     ocrBloc = OcrBloc(
       scanReceipt,
@@ -348,6 +379,7 @@ class IntegrationHarness {
       if (state is AuthUnauthenticated) {
         transactionBloc.add(const LoadTransactions());
         debtBloc.add(const LoadDebts());
+        receivableBloc.add(const LoadReceivables());
         ocrBloc.add(const LoadReceipts());
         dashboardBloc.add(const LoadDashboard());
         budgetBloc.add(const LoadBudgets());
@@ -369,6 +401,7 @@ class IntegrationHarness {
       router: router,
       transactionBloc: transactionBloc,
       debtBloc: debtBloc,
+      receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
@@ -387,6 +420,7 @@ class IntegrationHarness {
     await tester.pumpWidget(buildApp());
     transactionBloc.add(const LoadTransactions());
     debtBloc.add(const LoadDebts());
+    receivableBloc.add(const LoadReceivables());
     ocrBloc.add(const LoadReceipts());
     dashboardBloc.add(const LoadDashboard());
     syncBloc.add(const LoadSyncStatus());
@@ -419,6 +453,7 @@ class IntegrationHarness {
     await _closeBlocs();
     await _transactionsBox.close();
     await _debtsBox.close();
+    await _receivablesBox.close();
     await _receiptsBox.close();
     await _syncQueueBox.close();
     await _syncMetaBox.close();
@@ -450,6 +485,7 @@ class IntegrationHarness {
   Future<void> _closeBlocs() async {
     await transactionBloc.close();
     await debtBloc.close();
+    await receivableBloc.close();
     await ocrBloc.close();
     await aiCoachBloc.close();
     await dashboardBloc.close();
@@ -470,6 +506,9 @@ class IntegrationHarness {
     }
     if (_debtsBox.isOpen) {
       await _debtsBox.close();
+    }
+    if (_receivablesBox.isOpen) {
+      await _receivablesBox.close();
     }
     if (_receiptsBox.isOpen) {
       await _receiptsBox.close();

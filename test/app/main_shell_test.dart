@@ -41,6 +41,14 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.da
 import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
 import 'package:fin_sight_ai/features/debts/presentation/screens/debt_list_screen.dart';
+import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_state.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/screens/receivable_list_screen.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart';
@@ -89,6 +97,15 @@ class MockMakePayment extends Mock implements MakePaymentUseCase {}
 class MockDeleteDebt extends Mock implements DeleteDebtUseCase {}
 
 class MockCalculatePayoff extends Mock implements CalculatePayoffUseCase {}
+
+class MockGetReceivables extends Mock implements GetReceivablesUseCase {}
+
+class MockAddReceivable extends Mock implements AddReceivableUseCase {}
+
+class MockMakeReceivablePayment extends Mock
+    implements MakeReceivablePaymentUseCase {}
+
+class MockDeleteReceivable extends Mock implements DeleteReceivableUseCase {}
 
 class MockCategoryCatalog extends Mock
     implements categories.GetCategoryCatalogUseCase {}
@@ -192,6 +209,7 @@ void main() {
   late GoRouter router;
   late TransactionBloc transactionBloc;
   late DebtBloc debtBloc;
+  late ReceivableBloc receivableBloc;
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
@@ -230,6 +248,16 @@ void main() {
       MockDeleteDebt(),
       MockCalculatePayoff(),
     );
+    final getReceivables = MockGetReceivables();
+    when(() => getReceivables(any()))
+        .thenAnswer((_) async => const Right(<ReceivableEntity>[]));
+    receivableBloc = ReceivableBloc(
+      getReceivables,
+      MockAddReceivable(),
+      MockMakeReceivablePayment(),
+      MockDeleteReceivable(),
+    );
+    addTearDown(receivableBloc.close);
     ocrBloc = OcrBloc(
       MockScanReceipt(),
       MockSaveReceipt(),
@@ -296,6 +324,7 @@ void main() {
       router: router,
       transactionBloc: transactionBloc,
       debtBloc: debtBloc,
+      receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
@@ -326,6 +355,7 @@ void main() {
     );
     authBloc.emit(const AuthUnauthenticated());
     budgetBloc.emit(const BudgetEmpty(categories: []));
+    receivableBloc.emit(const ReceivableEmpty());
     categoryBloc.emit(const CategoryEmpty());
     scheduledPaymentBloc.emit(const ScheduledPaymentEmpty());
     walletBloc.emit(const WalletLoaded([]));
@@ -474,6 +504,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.byType(DebtListScreen), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    await tester.pageBack();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(DashboardPage), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
+  });
+
+  testWidgets('pushes receivables over the shell and returns on back', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+    await openDrawer(tester);
+
+    await scrollDrawerTo(tester, find.widgetWithText(ListTile, 'Owed to me'));
+    await tester.tap(find.widgetWithText(ListTile, 'Owed to me'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.byType(ReceivableListScreen), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
 
     await tester.pageBack();

@@ -848,4 +848,113 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cardLabel => 'Card';
+
+  @override
+  String get receivablesTitle => 'Owed to me';
+
+  @override
+  String get owedToMe => 'Owed to me';
+
+  @override
+  String get owedToMeBody => 'Money you lent and are waiting to get back.';
+
+  @override
+  String get addReceivable => 'Add money lent';
+
+  @override
+  String get saveReceivable => 'Save receivable';
+
+  @override
+  String get debtorName => 'Who owes you';
+
+  @override
+  String get amountLent => 'Amount lent';
+
+  @override
+  String get dateLent => 'Date lent';
+
+  @override
+  String get dueDateOptional => 'Due date (optional)';
+
+  @override
+  String get remainingAmount => 'Remaining';
+
+  @override
+  String get received => 'Received';
+
+  @override
+  String get addPayment => 'Add payment';
+
+  @override
+  String get receivableDetails => 'Receivable details';
+
+  @override
+  String get noReceivables => 'No money lent yet';
+
+  @override
+  String get noReceivablesBody =>
+      'Add money you lent and track payments until it is paid back.';
+
+  @override
+  String peopleOweYou(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people owe you',
+      one: '1 person owes you',
+      zero: 'No one owes you',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get markPaid => 'Mark as paid';
+
+  @override
+  String get receivablePaid => 'Paid back';
+
+  @override
+  String get deleteReceivable => 'Delete receivable';
+
+  @override
+  String get deleteReceivableQuestion => 'Delete receivable?';
+
+  @override
+  String get deleteReceivableBody =>
+      'This removes the receivable and its payment history.';
+
+  @override
+  String get debtorRequired => 'Enter who owes you.';
+
+  @override
+  String get invalidLentAmount => 'Enter an amount greater than zero.';
+
+  @override
+  String get paymentTooHigh => 'Payment cannot exceed the remaining amount.';
+
+  @override
+  String get noPaymentsReceived => 'No payments received yet.';
+
+  @override
+  String lentOn(String date) {
+    return 'Lent on $date';
+  }
+
+  @override
+  String get loadingReceivables => 'Loading receivables';
+
+  @override
+  String get updatingReceivable => 'Updating receivable';
+
+  @override
+  String get receivableNotFound => 'Receivable not found.';
+
+  @override
+  String get receivableProgress => 'Receivable repayment progress';
+
+  @override
+  String get noDueDate => 'No due date';
+
+  @override
+  String get notes => 'Notes';
 }

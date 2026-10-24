@@ -40,6 +40,14 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/delete_debt_usecase.
 import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
+import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_state.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/screens/receivable_list_screen.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart';
@@ -83,6 +91,15 @@ class MockMakePayment extends Mock implements MakePaymentUseCase {}
 class MockDeleteDebt extends Mock implements DeleteDebtUseCase {}
 
 class MockCalculatePayoff extends Mock implements CalculatePayoffUseCase {}
+
+class MockGetReceivables extends Mock implements GetReceivablesUseCase {}
+
+class MockAddReceivable extends Mock implements AddReceivableUseCase {}
+
+class MockMakeReceivablePayment extends Mock
+    implements MakeReceivablePaymentUseCase {}
+
+class MockDeleteReceivable extends Mock implements DeleteReceivableUseCase {}
 
 class MockCategoryCatalog extends Mock
     implements categories.GetCategoryCatalogUseCase {}
@@ -178,6 +195,7 @@ void main() {
   late GoRouter router;
   late TransactionBloc transactionBloc;
   late DebtBloc debtBloc;
+  late ReceivableBloc receivableBloc;
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late DashboardBloc dashboardBloc;
@@ -230,6 +248,16 @@ void main() {
       MockDeleteDebt(),
       MockCalculatePayoff(),
     );
+    final getReceivables = MockGetReceivables();
+    when(() => getReceivables(any()))
+        .thenAnswer((_) async => const Right(<ReceivableEntity>[]));
+    receivableBloc = ReceivableBloc(
+      getReceivables,
+      MockAddReceivable(),
+      MockMakeReceivablePayment(),
+      MockDeleteReceivable(),
+    );
+    addTearDown(receivableBloc.close);
     ocrBloc = OcrBloc(
       MockScanReceipt(),
       MockSaveReceipt(),
@@ -306,6 +334,7 @@ void main() {
       router: router,
       transactionBloc: transactionBloc,
       debtBloc: debtBloc,
+      receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       dashboardBloc: dashboardBloc,
@@ -335,6 +364,7 @@ void main() {
     );
     authBloc.emit(const AuthUnauthenticated());
     budgetBloc.emit(const BudgetEmpty(categories: []));
+    receivableBloc.emit(const ReceivableEmpty());
     categoryBloc.emit(const CategoryEmpty());
     scheduledPaymentBloc.emit(const ScheduledPaymentEmpty());
     walletBloc.emit(
@@ -425,6 +455,26 @@ void main() {
 
     expect(find.text('Debts'), findsOneWidget);
     expect(find.text('Add debt'), findsOneWidget);
+  });
+
+  testWidgets('navigates to receivables from the dashboard', (tester) async {
+    await pumpReady(tester);
+
+    final receivablesAction = find.byKey(
+      const ValueKey('quick-action-receivables'),
+    );
+    await tester.scrollUntilVisible(
+      receivablesAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(receivablesAction);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(ReceivableListScreen), findsOneWidget);
+    expect(find.text('Add money lent'), findsWidgets);
   });
 
   testWidgets('navigates to OCR and AI coach', (tester) async {

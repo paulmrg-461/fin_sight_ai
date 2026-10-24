@@ -9,6 +9,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Core infrastructure (DI, routing, theme, env, domain base) | Done |
 | Transactions slice | Done |
 | Debts slice | Done |
+| Receivables / money lent (local-only) | Done |
 | OCR slice (ML Kit + parser + preview + auto expense) | Done |
 | AI Coach slice (Groq + prompts + insights) | Done |
 | Dashboard analytics (fl_chart + aggregation) | Done |
@@ -19,11 +20,21 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Scheduled payments (monthly/yearly, expense or salary income) | Done |
 | Integration suite (13 flows + benchmarks) | Done |
 
-- Latest feature commits: `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
+- Latest feature commits: `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 750 unit/widget tests, coverage gate green (scheduled payments 94.1/100%), 19 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 846 unit/widget tests, coverage gate green (receivables 98.2% data / 98.3% domain), 20 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Receivables (Me deben)
+
+- Domain/data: `ReceivableEntity`, `ReceivablePayment`, `ReceivableStatus`; Hive `receivables` box behind `ReceivableLocalDataSource`; no sync queue (local-only by design).
+- Payments are validated in `MakeReceivablePaymentUseCase`, clamped to the remaining balance in `ReceivableRepositoryImpl`, and a full payment flips the record to `paid`.
+- Presentation: `/receivables` list with gradient hero, debtor cards, add form, detail screen, and payment dialog; empty/error use the shared `AppEmptyState`/`AppErrorState`.
+- Entry points: drawer “Me deben” under More, dashboard quick action `quick-action-receivables`, and a compact dashboard summary card driven by `ReceivableBloc`.
+- Localization: EN/ES keys added and localizations regenerated. `LocalDataScope` clears the `receivables` box with the other user-owned boxes on sign-out.
+- Tests: entity/model/data source/repository/use-case/BLoC/widget coverage plus the integration flow (add 1000 → pay 400 → dashboard 600 → restart persistence).
+- Known gaps: no sync/RLS table for receivables yet, and no edit-in-place for an existing receivable.
 
 ## Categories and scheduled payments
 

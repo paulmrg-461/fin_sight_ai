@@ -8,6 +8,8 @@ import 'package:uuid/uuid.dart';
 
 import '../../features/debts/data/datasources/debt_local_data_source.dart';
 import '../../features/debts/data/datasources/hive_debt_local_data_source.dart';
+import '../../features/receivables/data/datasources/hive_receivable_local_data_source.dart';
+import '../../features/receivables/data/datasources/receivable_local_data_source.dart';
 import '../../features/transactions/data/datasources/hive_transaction_local_data_source.dart';
 import '../../features/transactions/data/datasources/transaction_local_data_source.dart';
 import '../routing/app_router.dart';
@@ -54,6 +56,7 @@ abstract class StorageModule {
         AppConstants.transactionsBoxName,
       ),
       debts: await Hive.openBox<dynamic>(AppConstants.debtsBoxName),
+      receivables: await Hive.openBox<dynamic>(AppConstants.receivablesBoxName),
       receipts: await Hive.openBox<dynamic>(AppConstants.receiptsBoxName),
       syncQueue: await Hive.openBox<dynamic>(AppConstants.syncQueueBoxName),
       syncMeta: await Hive.openBox<dynamic>(AppConstants.syncMetaBoxName),
@@ -91,6 +94,13 @@ abstract class DebtsModule {
   @lazySingleton
   DebtLocalDataSource provideDebtLocalDataSource(AppBoxes boxes) =>
       HiveDebtLocalDataSource(boxes.debts);
+}
+
+@module
+abstract class ReceivablesModule {
+  @lazySingleton
+  ReceivableLocalDataSource provideReceivableLocalDataSource(AppBoxes boxes) =>
+      HiveReceivableLocalDataSource(boxes.receivables);
 }
 
 @module

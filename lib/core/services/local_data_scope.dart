@@ -54,6 +54,7 @@ class HiveLocalDataScope implements LocalDataScope {
   Iterable<Box<dynamic>> get _userDataBoxes => [
     _boxes.transactions,
     _boxes.debts,
+    _boxes.receivables,
     _boxes.receipts,
     _boxes.budgets,
     _boxes.wallets,

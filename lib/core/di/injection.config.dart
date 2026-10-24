@@ -130,6 +130,22 @@ import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.d
     as _i826;
 import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart'
     as _i1031;
+import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart'
+    as _i315;
+import 'package:fin_sight_ai/features/receivables/data/repositories/receivable_repository_impl.dart'
+    as _i908;
+import 'package:fin_sight_ai/features/receivables/domain/repositories/receivable_repository.dart'
+    as _i554;
+import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable_usecase.dart'
+    as _i734;
+import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart'
+    as _i279;
+import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart'
+    as _i728;
+import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart'
+    as _i946;
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart'
+    as _i9;
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart'
     as _i462;
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart'
@@ -204,6 +220,7 @@ extension GetItInjectableX on _i174.GetIt {
     final localDataModule = _$LocalDataModule();
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
+    final receivablesModule = _$ReceivablesModule();
     final localeModule = _$LocaleModule();
     final budgetsModule = _$BudgetsModule();
     final categoriesModule = _$CategoriesModule();
@@ -251,6 +268,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1035.DebtLocalDataSource>(
       () => debtsModule.provideDebtLocalDataSource(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i315.ReceivableLocalDataSource>(
+      () => receivablesModule.provideReceivableLocalDataSource(
+        gh<_i422.AppBoxes>(),
+      ),
     );
     gh.lazySingleton<_i385.LocaleRepository>(
       () => localeModule.provideLocaleRepository(gh<_i422.AppBoxes>()),
@@ -304,6 +326,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
       () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
     );
+    gh.lazySingleton<_i554.ReceivableRepository>(
+      () => _i908.ReceivableRepositoryImpl(
+        gh<_i315.ReceivableLocalDataSource>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
@@ -338,6 +366,12 @@ extension GetItInjectableX on _i174.GetIt {
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
       ),
+    );
+    gh.lazySingleton<_i279.DeleteReceivableUseCase>(
+      () => _i279.DeleteReceivableUseCase(gh<_i554.ReceivableRepository>()),
+    );
+    gh.lazySingleton<_i728.GetReceivablesUseCase>(
+      () => _i728.GetReceivablesUseCase(gh<_i554.ReceivableRepository>()),
     );
     gh.lazySingleton<_i312.ScheduledPaymentRepository>(
       () => _i403.ScheduledPaymentRepositoryImpl(
@@ -463,6 +497,20 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i734.AddReceivableUseCase>(
+      () => _i734.AddReceivableUseCase(
+        gh<_i554.ReceivableRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i946.MakeReceivablePaymentUseCase>(
+      () => _i946.MakeReceivablePaymentUseCase(
+        gh<_i554.ReceivableRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.factory<_i542.CurrencyBloc>(
       () => _i542.CurrencyBloc(
         gh<_i192.GetCurrencyUseCase>(),
@@ -540,6 +588,14 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i160.ProcessDueScheduledPaymentsUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i9.ReceivableBloc>(
+      () => _i9.ReceivableBloc(
+        gh<_i728.GetReceivablesUseCase>(),
+        gh<_i734.AddReceivableUseCase>(),
+        gh<_i946.MakeReceivablePaymentUseCase>(),
+        gh<_i279.DeleteReceivableUseCase>(),
       ),
     );
     gh.lazySingleton<_i1045.CalculatePayoffUseCase>(
@@ -667,6 +723,8 @@ class _$LocalDataModule extends _i1015.LocalDataModule {}
 class _$TransactionsModule extends _i1015.TransactionsModule {}
 
 class _$DebtsModule extends _i1015.DebtsModule {}
+
+class _$ReceivablesModule extends _i1015.ReceivablesModule {}
 
 class _$LocaleModule extends _i688.LocaleModule {}
 

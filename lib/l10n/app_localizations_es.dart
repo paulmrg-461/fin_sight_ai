@@ -849,4 +849,113 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cardLabel => 'Tarjeta';
+
+  @override
+  String get receivablesTitle => 'Me deben';
+
+  @override
+  String get owedToMe => 'Me deben';
+
+  @override
+  String get owedToMeBody => 'Dinero que prestaste y esperas recuperar.';
+
+  @override
+  String get addReceivable => 'Añadir dinero prestado';
+
+  @override
+  String get saveReceivable => 'Guardar préstamo';
+
+  @override
+  String get debtorName => 'Quién te debe';
+
+  @override
+  String get amountLent => 'Monto prestado';
+
+  @override
+  String get dateLent => 'Fecha del préstamo';
+
+  @override
+  String get dueDateOptional => 'Fecha de pago (opcional)';
+
+  @override
+  String get remainingAmount => 'Pendiente';
+
+  @override
+  String get received => 'Recibido';
+
+  @override
+  String get addPayment => 'Abonar';
+
+  @override
+  String get receivableDetails => 'Detalle del préstamo';
+
+  @override
+  String get noReceivables => 'Aún no has prestado dinero';
+
+  @override
+  String get noReceivablesBody =>
+      'Añade el dinero que prestaste y sigue los abonos hasta recuperarlo.';
+
+  @override
+  String peopleOweYou(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personas te deben',
+      one: '1 persona te debe',
+      zero: 'Nadie te debe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get markPaid => 'Marcar como pagado';
+
+  @override
+  String get receivablePaid => 'Pagado';
+
+  @override
+  String get deleteReceivable => 'Eliminar préstamo';
+
+  @override
+  String get deleteReceivableQuestion => '¿Eliminar préstamo?';
+
+  @override
+  String get deleteReceivableBody =>
+      'Esto elimina el préstamo y su historial de abonos.';
+
+  @override
+  String get debtorRequired => 'Indica quién te debe.';
+
+  @override
+  String get invalidLentAmount => 'Introduce un monto mayor que cero.';
+
+  @override
+  String get paymentTooHigh => 'El abono no puede superar el monto pendiente.';
+
+  @override
+  String get noPaymentsReceived => 'Aún no has recibido abonos.';
+
+  @override
+  String lentOn(String date) {
+    return 'Prestado el $date';
+  }
+
+  @override
+  String get loadingReceivables => 'Cargando préstamos';
+
+  @override
+  String get updatingReceivable => 'Actualizando préstamo';
+
+  @override
+  String get receivableNotFound => 'Préstamo no encontrado.';
+
+  @override
+  String get receivableProgress => 'Progreso de pago del préstamo';
+
+  @override
+  String get noDueDate => 'Sin fecha de pago';
+
+  @override
+  String get notes => 'Notas';
 }

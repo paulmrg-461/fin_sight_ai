@@ -306,5 +306,51 @@
   "scheduledTab": "Pagos",
   "previousPeriod": "Anterior",
   "currentPeriod": "Actual",
-  "cardLabel": "Tarjeta"
+  "cardLabel": "Tarjeta",
+  "receivablesTitle": "Me deben",
+  "owedToMe": "Me deben",
+  "owedToMeBody": "Dinero que prestaste y esperas recuperar.",
+  "addReceivable": "Añadir dinero prestado",
+  "saveReceivable": "Guardar préstamo",
+  "debtorName": "Quién te debe",
+  "amountLent": "Monto prestado",
+  "dateLent": "Fecha del préstamo",
+  "dueDateOptional": "Fecha de pago (opcional)",
+  "remainingAmount": "Pendiente",
+  "received": "Recibido",
+  "addPayment": "Abonar",
+  "receivableDetails": "Detalle del préstamo",
+  "noReceivables": "Aún no has prestado dinero",
+  "noReceivablesBody": "Añade el dinero que prestaste y sigue los abonos hasta recuperarlo.",
+  "peopleOweYou": "{count, plural, =0{Nadie te debe} =1{1 persona te debe} other{{count} personas te deben}}",
+  "@peopleOweYou": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markPaid": "Marcar como pagado",
+  "receivablePaid": "Pagado",
+  "deleteReceivable": "Eliminar préstamo",
+  "deleteReceivableQuestion": "¿Eliminar préstamo?",
+  "deleteReceivableBody": "Esto elimina el préstamo y su historial de abonos.",
+  "debtorRequired": "Indica quién te debe.",
+  "invalidLentAmount": "Introduce un monto mayor que cero.",
+  "paymentTooHigh": "El abono no puede superar el monto pendiente.",
+  "noPaymentsReceived": "Aún no has recibido abonos.",
+  "lentOn": "Prestado el {date}",
+  "@lentOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingReceivables": "Cargando préstamos",
+  "updatingReceivable": "Actualizando préstamo",
+  "receivableNotFound": "Préstamo no encontrado.",
+  "receivableProgress": "Progreso de pago del préstamo",
+  "noDueDate": "Sin fecha de pago",
+  "notes": "Notas"
 }

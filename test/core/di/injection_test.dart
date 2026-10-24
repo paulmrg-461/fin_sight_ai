@@ -58,6 +58,15 @@ import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repo
 import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart';
+import 'package:fin_sight_ai/features/receivables/data/datasources/hive_receivable_local_data_source.dart';
+import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
+import 'package:fin_sight_ai/features/receivables/data/repositories/receivable_repository_impl.dart';
+import 'package:fin_sight_ai/features/receivables/domain/repositories/receivable_repository.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/hive_receipt_local_data_source.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/receipt_local_data_source.dart';
@@ -141,8 +150,13 @@ void main() {
       isA<HiveTransactionLocalDataSource>(),
     );
     expect(getIt<DebtLocalDataSource>(), isA<HiveDebtLocalDataSource>());
+    expect(
+      getIt<ReceivableLocalDataSource>(),
+      isA<HiveReceivableLocalDataSource>(),
+    );
     expect(getIt<TransactionRepository>(), isA<TransactionRepositoryImpl>());
     expect(getIt<DebtRepository>(), isA<DebtRepositoryImpl>());
+    expect(getIt<ReceivableRepository>(), isA<ReceivableRepositoryImpl>());
 
     expect(getIt<GetTransactionsUseCase>(), isNotNull);
     expect(getIt<AddTransactionUseCase>(), isNotNull);
@@ -153,9 +167,14 @@ void main() {
     expect(getIt<MakePaymentUseCase>(), isNotNull);
     expect(getIt<DeleteDebtUseCase>(), isNotNull);
     expect(getIt<CalculatePayoffUseCase>(), isNotNull);
+    expect(getIt<GetReceivablesUseCase>(), isNotNull);
+    expect(getIt<AddReceivableUseCase>(), isNotNull);
+    expect(getIt<MakeReceivablePaymentUseCase>(), isNotNull);
+    expect(getIt<DeleteReceivableUseCase>(), isNotNull);
 
     expect(getIt<TransactionBloc>(), isA<TransactionBloc>());
     expect(getIt<DebtBloc>(), isA<DebtBloc>());
+    expect(getIt<ReceivableBloc>(), isA<ReceivableBloc>());
     expect(getIt<ThemeController>(), isA<ThemeController>());
     expect(getIt<GoRouter>(), isA<GoRouter>());
     expect(getIt<http.Client>(), isA<http.Client>());

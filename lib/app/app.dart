@@ -18,6 +18,7 @@ import '../features/wallets/presentation/bloc/wallet_event.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_event.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
+import '../features/receivables/presentation/bloc/receivable_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
 import '../features/sync/presentation/bloc/sync_bloc.dart';
 import '../features/sync/presentation/bloc/sync_state.dart';
@@ -33,6 +34,7 @@ class FinSightApp extends StatelessWidget {
     required this.router,
     required this.transactionBloc,
     required this.debtBloc,
+    required this.receivableBloc,
     required this.ocrBloc,
     required this.aiCoachBloc,
     required this.dashboardBloc,
@@ -50,6 +52,7 @@ class FinSightApp extends StatelessWidget {
   final GoRouter router;
   final TransactionBloc transactionBloc;
   final DebtBloc debtBloc;
+  final ReceivableBloc receivableBloc;
   final OcrBloc ocrBloc;
   final AiCoachBloc aiCoachBloc;
   final DashboardBloc dashboardBloc;
@@ -68,6 +71,7 @@ class FinSightApp extends StatelessWidget {
       providers: [
         BlocProvider<TransactionBloc>.value(value: transactionBloc),
         BlocProvider<DebtBloc>.value(value: debtBloc),
+        BlocProvider<ReceivableBloc>.value(value: receivableBloc),
         BlocProvider<OcrBloc>.value(value: ocrBloc),
         BlocProvider<AiCoachBloc>.value(value: aiCoachBloc),
         BlocProvider<DashboardBloc>.value(value: dashboardBloc),

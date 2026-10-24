@@ -9,6 +9,9 @@ abstract final class AppRoutes {
   static const String debtsName = 'debts';
   static const String debtsPath = '/debts';
 
+  static const String receivablesName = 'receivables';
+  static const String receivablesPath = '/receivables';
+
   static const String ocrName = 'ocr';
   static const String ocrPath = '/ocr';
 

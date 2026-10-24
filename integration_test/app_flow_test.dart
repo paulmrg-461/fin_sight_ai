@@ -6,6 +6,7 @@ import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
+import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
@@ -186,6 +187,81 @@ void main() {
     final debts = result.getOrElse((_) => const <DebtEntity>[]);
     expect(debts.single.creditorName, 'Bank');
     expect(debts.single.totalAmount, 1000);
+  });
+
+  testWidgets('tracks money lent, receives a payment, and persists restart', (
+    tester,
+  ) async {
+    await harness.pumpApp(tester);
+    final receivablesAction = find.byKey(
+      const ValueKey('quick-action-receivables'),
+    );
+    await tester.scrollUntilVisible(
+      receivablesAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(receivablesAction);
+    await pumpUntil(tester, find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntil(tester, find.text('Who owes you'));
+
+    await tester.enterText(
+      find.byKey(const ValueKey('receivable-debtor-field')),
+      'Ana',
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('receivable-amount-field')),
+      '1000',
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('receivable-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('receivable-save')));
+
+    await pumpUntil(tester, find.text('Ana'));
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text(money(1000)), findsWidgets);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Add payment'));
+    await pumpUntil(tester, find.text('Payment amount'));
+    await tester.enterText(
+      find.byKey(const ValueKey('receivable-payment-amount-field')),
+      '400',
+    );
+    await tester.tap(find.byKey(const ValueKey('receivable-payment-submit')));
+
+    await pumpUntil(tester, find.text(money(600)));
+    expect(find.text(money(600)), findsWidgets);
+    await tester.pumpAndSettle();
+
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView).first, const Offset(0, 600));
+    await tester.pumpAndSettle();
+    final summary = find.byKey(const ValueKey('receivables-summary-card'));
+    await pumpUntil(tester, summary);
+    await tester.ensureVisible(summary);
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(of: summary, matching: find.text(money(600))),
+      findsOneWidget,
+    );
+    expect(find.text('1 person owes you'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await harness.restart();
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.receivablesName);
+    await pumpUntil(tester, find.text('Ana'));
+    expect(find.text(money(600)), findsWidgets);
+
+    final result = await harness.receivableRepository.getReceivables();
+    final receivables = result.getOrElse((_) => const <ReceivableEntity>[]);
+    expect(receivables.single.remainingAmount, 600);
+    expect(receivables.single.paymentHistory, hasLength(1));
   });
 
   testWidgets('requests AI insights and renders a suggestion card', (

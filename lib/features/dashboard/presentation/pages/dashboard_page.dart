@@ -24,6 +24,7 @@ import '../../../sync/presentation/widgets/sync_status_chip.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
+import '../../../receivables/presentation/widgets/receivables_summary_card.dart';
 
 /// Analytics dashboard with navigation shortcuts.
 class DashboardPage extends StatelessWidget {
@@ -110,6 +111,11 @@ class DashboardPage extends StatelessWidget {
                   const SizedBox(height: 14),
                   const _AccountsOverview(),
                   const SizedBox(height: 14),
+                  ReceivablesSummaryCard(
+                    onTap: () =>
+                        _openFeature(context, AppRoutes.receivablesName),
+                  ),
+                  const SizedBox(height: 14),
                   AppEmptyState(
                     icon: Icons.insights_rounded,
                     title: context.l10n.noTransactionsYet,
@@ -158,6 +164,11 @@ class DashboardPage extends StatelessWidget {
                       _BalanceHero(summary: summary),
                       const SizedBox(height: 12),
                       const _AccountsOverview(),
+                      const SizedBox(height: 14),
+                      ReceivablesSummaryCard(
+                        onTap: () =>
+                            _openFeature(context, AppRoutes.receivablesName),
+                      ),
                       const SizedBox(height: 16),
                       CategoryPieChart(breakdown: breakdown),
                       MonthlyComparisonChart(comparison: comparison),
@@ -527,6 +538,12 @@ class _QuickActions extends StatelessWidget {
         label: context.l10n.debts,
         route: AppRoutes.debtsName,
         color: AppColors.danger,
+      ),
+      (
+        icon: Icons.handshake_rounded,
+        label: context.l10n.owedToMe,
+        route: AppRoutes.receivablesName,
+        color: AppColors.teal,
       ),
       (
         icon: Icons.document_scanner_rounded,

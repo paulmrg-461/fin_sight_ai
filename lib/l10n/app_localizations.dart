@@ -1669,6 +1669,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Card'**
   String get cardLabel;
+
+  /// No description provided for @receivablesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed to me'**
+  String get receivablesTitle;
+
+  /// No description provided for @owedToMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Owed to me'**
+  String get owedToMe;
+
+  /// No description provided for @owedToMeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Money you lent and are waiting to get back.'**
+  String get owedToMeBody;
+
+  /// No description provided for @addReceivable.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money lent'**
+  String get addReceivable;
+
+  /// No description provided for @saveReceivable.
+  ///
+  /// In en, this message translates to:
+  /// **'Save receivable'**
+  String get saveReceivable;
+
+  /// No description provided for @debtorName.
+  ///
+  /// In en, this message translates to:
+  /// **'Who owes you'**
+  String get debtorName;
+
+  /// No description provided for @amountLent.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount lent'**
+  String get amountLent;
+
+  /// No description provided for @dateLent.
+  ///
+  /// In en, this message translates to:
+  /// **'Date lent'**
+  String get dateLent;
+
+  /// No description provided for @dueDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Due date (optional)'**
+  String get dueDateOptional;
+
+  /// No description provided for @remainingAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get remainingAmount;
+
+  /// No description provided for @received.
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get received;
+
+  /// No description provided for @addPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payment'**
+  String get addPayment;
+
+  /// No description provided for @receivableDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Receivable details'**
+  String get receivableDetails;
+
+  /// No description provided for @noReceivables.
+  ///
+  /// In en, this message translates to:
+  /// **'No money lent yet'**
+  String get noReceivables;
+
+  /// No description provided for @noReceivablesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money you lent and track payments until it is paid back.'**
+  String get noReceivablesBody;
+
+  /// No description provided for @peopleOweYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No one owes you} =1{1 person owes you} other{{count} people owe you}}'**
+  String peopleOweYou(int count);
+
+  /// No description provided for @markPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as paid'**
+  String get markPaid;
+
+  /// No description provided for @receivablePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid back'**
+  String get receivablePaid;
+
+  /// No description provided for @deleteReceivable.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete receivable'**
+  String get deleteReceivable;
+
+  /// No description provided for @deleteReceivableQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete receivable?'**
+  String get deleteReceivableQuestion;
+
+  /// No description provided for @deleteReceivableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the receivable and its payment history.'**
+  String get deleteReceivableBody;
+
+  /// No description provided for @debtorRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter who owes you.'**
+  String get debtorRequired;
+
+  /// No description provided for @invalidLentAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount greater than zero.'**
+  String get invalidLentAmount;
+
+  /// No description provided for @paymentTooHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cannot exceed the remaining amount.'**
+  String get paymentTooHigh;
+
+  /// No description provided for @noPaymentsReceived.
+  ///
+  /// In en, this message translates to:
+  /// **'No payments received yet.'**
+  String get noPaymentsReceived;
+
+  /// No description provided for @lentOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Lent on {date}'**
+  String lentOn(String date);
+
+  /// No description provided for @loadingReceivables.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading receivables'**
+  String get loadingReceivables;
+
+  /// No description provided for @updatingReceivable.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating receivable'**
+  String get updatingReceivable;
+
+  /// No description provided for @receivableNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Receivable not found.'**
+  String get receivableNotFound;
+
+  /// No description provided for @receivableProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Receivable repayment progress'**
+  String get receivableProgress;
+
+  /// No description provided for @noDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No due date'**
+  String get noDueDate;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
 }
 
 class _AppLocalizationsDelegate

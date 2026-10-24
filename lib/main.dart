@@ -5,6 +5,7 @@ import 'core/di/injection.dart';
 import 'core/services/app_boxes.dart';
 import 'core/services/calendar_migration.dart';
 import 'features/debts/presentation/bloc/debt_bloc.dart';
+import 'features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'features/auth/data/services/account_scope_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -31,6 +32,7 @@ import 'features/scheduled_payments/presentation/bloc/scheduled_payment_event.da
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'features/debts/presentation/bloc/debt_event.dart';
+import 'features/receivables/presentation/bloc/receivable_event.dart';
 import 'features/ocr/presentation/bloc/ocr_bloc.dart';
 import 'features/ocr/presentation/bloc/ocr_event.dart';
 import 'features/sync/presentation/bloc/sync_bloc.dart';
@@ -66,6 +68,7 @@ Future<void> main() async {
   final transactionBloc = getIt<TransactionBloc>()
     ..add(const LoadTransactions());
   final debtBloc = getIt<DebtBloc>()..add(const LoadDebts());
+  final receivableBloc = getIt<ReceivableBloc>()..add(const LoadReceivables());
   final ocrBloc = getIt<OcrBloc>()..add(const LoadReceipts());
   final dashboardBloc = getIt<DashboardBloc>()..add(const LoadDashboard());
   final syncBloc = getIt<SyncBloc>();
@@ -86,6 +89,7 @@ Future<void> main() async {
       // empty states without recreating the blocs.
       transactionBloc.add(const LoadTransactions());
       debtBloc.add(const LoadDebts());
+      receivableBloc.add(const LoadReceivables());
       ocrBloc.add(const LoadReceipts());
       dashboardBloc.add(const LoadDashboard());
       budgetBloc.add(const LoadBudgets());
@@ -102,6 +106,7 @@ Future<void> main() async {
       router: getIt(),
       transactionBloc: transactionBloc,
       debtBloc: debtBloc,
+      receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: getIt<AiCoachBloc>(),
       dashboardBloc: dashboardBloc,

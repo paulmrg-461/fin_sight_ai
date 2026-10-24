@@ -30,6 +30,10 @@ void main() {
         AppRoutes.transactionsPath,
       );
       expect(router.namedLocation(AppRoutes.debtsName), AppRoutes.debtsPath);
+      expect(
+        router.namedLocation(AppRoutes.receivablesName),
+        AppRoutes.receivablesPath,
+      );
       expect(router.namedLocation(AppRoutes.ocrName), AppRoutes.ocrPath);
       expect(
         router.namedLocation(AppRoutes.aiCoachName),

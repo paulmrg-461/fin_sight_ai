@@ -5,6 +5,7 @@ class AppBoxes {
   const AppBoxes({
     required this.transactions,
     required this.debts,
+    required this.receivables,
     required this.receipts,
     required this.syncQueue,
     required this.syncMeta,
@@ -18,6 +19,7 @@ class AppBoxes {
 
   final Box<dynamic> transactions;
   final Box<dynamic> debts;
+  final Box<dynamic> receivables;
   final Box<dynamic> receipts;
   final Box<dynamic> syncQueue;
   final Box<dynamic> syncMeta;

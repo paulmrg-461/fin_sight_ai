@@ -355,5 +355,51 @@
   "scheduledTab": "Scheduled",
   "previousPeriod": "Previous",
   "currentPeriod": "Current",
-  "cardLabel": "Card"
+  "cardLabel": "Card",
+  "receivablesTitle": "Owed to me",
+  "owedToMe": "Owed to me",
+  "owedToMeBody": "Money you lent and are waiting to get back.",
+  "addReceivable": "Add money lent",
+  "saveReceivable": "Save receivable",
+  "debtorName": "Who owes you",
+  "amountLent": "Amount lent",
+  "dateLent": "Date lent",
+  "dueDateOptional": "Due date (optional)",
+  "remainingAmount": "Remaining",
+  "received": "Received",
+  "addPayment": "Add payment",
+  "receivableDetails": "Receivable details",
+  "noReceivables": "No money lent yet",
+  "noReceivablesBody": "Add money you lent and track payments until it is paid back.",
+  "peopleOweYou": "{count, plural, =0{No one owes you} =1{1 person owes you} other{{count} people owe you}}",
+  "@peopleOweYou": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "markPaid": "Mark as paid",
+  "receivablePaid": "Paid back",
+  "deleteReceivable": "Delete receivable",
+  "deleteReceivableQuestion": "Delete receivable?",
+  "deleteReceivableBody": "This removes the receivable and its payment history.",
+  "debtorRequired": "Enter who owes you.",
+  "invalidLentAmount": "Enter an amount greater than zero.",
+  "paymentTooHigh": "Payment cannot exceed the remaining amount.",
+  "noPaymentsReceived": "No payments received yet.",
+  "lentOn": "Lent on {date}",
+  "@lentOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "loadingReceivables": "Loading receivables",
+  "updatingReceivable": "Updating receivable",
+  "receivableNotFound": "Receivable not found.",
+  "receivableProgress": "Receivable repayment progress",
+  "noDueDate": "No due date",
+  "notes": "Notes"
 }

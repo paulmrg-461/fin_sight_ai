@@ -10,6 +10,7 @@ import '../../features/scheduled_payments/presentation/screens/scheduled_payment
 import '../../features/wallets/presentation/screens/wallet_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/debts/presentation/screens/debt_list_screen.dart';
+import '../../features/receivables/presentation/screens/receivable_list_screen.dart';
 import '../../features/ocr/presentation/screens/ocr_screen.dart';
 import '../../features/transactions/presentation/screens/transaction_screen.dart';
 import '../services/receipt_image_picker.dart';
@@ -82,6 +83,11 @@ GoRouter buildRouter({
         path: AppRoutes.debtsPath,
         name: AppRoutes.debtsName,
         builder: (context, state) => const DebtListScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.receivablesPath,
+        name: AppRoutes.receivablesName,
+        builder: (context, state) => const ReceivableListScreen(),
       ),
       GoRoute(
         path: AppRoutes.ocrPath,
