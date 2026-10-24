@@ -993,4 +993,14 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get editReceivable => 'Edit receivable';
+
+  @override
+  String get amountLockedAfterPayments =>
+      'The amount cannot change after receiving payments.';
+
+  @override
+  String get saveChanges => 'Save changes';
 }

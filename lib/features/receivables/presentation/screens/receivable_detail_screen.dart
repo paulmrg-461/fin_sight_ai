@@ -13,6 +13,7 @@ import '../bloc/receivable_event.dart';
 import '../bloc/receivable_state.dart';
 import '../widgets/payment_dialog.dart';
 import '../widgets/payment_history_list.dart';
+import 'add_receivable_screen.dart';
 
 /// Receivable details, dates, notes, and payment history.
 class ReceivableDetailScreen extends StatelessWidget {
@@ -83,10 +84,31 @@ class ReceivableDetailScreen extends StatelessWidget {
               if (receivable == null) {
                 return const SizedBox.shrink();
               }
-              return IconButton(
-                onPressed: () => _deleteReceivable(context, receivable),
-                tooltip: l10n.deleteReceivable,
-                icon: const Icon(Icons.delete_outline),
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    key: const ValueKey('receivable-edit'),
+                    onPressed: () {
+                      final bloc = context.read<ReceivableBloc>();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => BlocProvider.value(
+                            value: bloc,
+                            child: AddReceivableScreen(initial: receivable),
+                          ),
+                        ),
+                      );
+                    },
+                    tooltip: l10n.editReceivable,
+                    icon: const Icon(Icons.edit_outlined),
+                  ),
+                  IconButton(
+                    onPressed: () => _deleteReceivable(context, receivable),
+                    tooltip: l10n.deleteReceivable,
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
               );
             },
           ),

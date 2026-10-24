@@ -7,6 +7,7 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable
 import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -399,6 +400,129 @@ void main() {
       );
 
       expect(result.getLeft().toNullable(), failure);
+    });
+  });
+
+  group('UpdateReceivableUseCase', () {
+    late UpdateReceivableUseCase useCase;
+
+    setUp(() {
+      useCase = UpdateReceivableUseCase(repository, clock: FixedClock(now));
+    });
+
+    test('updates metadata and the amount before payments', () async {
+      when(() => repository.getReceivables())
+          .thenAnswer((_) async => Right([buildReceivable(remaining: 1000)]));
+      when(() => repository.updateReceivable(any())).thenAnswer((
+        invocation,
+      ) async {
+        return Right(invocation.positionalArguments.first as ReceivableEntity);
+      });
+
+      final result = await useCase(
+        UpdateReceivableParams(
+          id: 'receivable-1',
+          debtorName: 'Ana María',
+          totalAmount: 1200,
+          dateLent: DateTime(2026, 10, 2),
+          dueDate: DateTime(2026, 12, 2),
+          notes: 'Updated',
+        ),
+      );
+
+      final updated = result.getOrElse((_) => fail('Expected update'));
+      expect(updated.debtorName, 'Ana María');
+      expect(updated.totalAmount, 1200);
+      expect(updated.remainingAmount, 1200);
+      expect(updated.dateLent, DateTime(2026, 10, 2));
+      expect(updated.notes, 'Updated');
+      verify(() => repository.updateReceivable(any())).called(1);
+    });
+
+    test('locks the amount after payments were received', () async {
+      when(() => repository.getReceivables()).thenAnswer(
+        (_) async => Right([
+          buildReceivable().copyWith(
+            paymentHistory: [
+              ReceivablePayment(id: 'p1', amount: 400, paidAt: now),
+            ],
+          ),
+        ]),
+      );
+
+      final result = await useCase(
+        UpdateReceivableParams(
+          id: 'receivable-1',
+          debtorName: 'Ana',
+          totalAmount: 1200,
+          dateLent: dateLent,
+        ),
+      );
+
+      expect(result.getLeft().toNullable()?.code, 'amount_locked');
+      verifyNever(() => repository.updateReceivable(any()));
+    });
+
+    test('allows metadata changes after payments', () async {
+      when(() => repository.getReceivables()).thenAnswer(
+        (_) async => Right([
+          buildReceivable().copyWith(
+            paymentHistory: [
+              ReceivablePayment(id: 'p1', amount: 400, paidAt: now),
+            ],
+          ),
+        ]),
+      );
+      when(() => repository.updateReceivable(any())).thenAnswer((
+        invocation,
+      ) async {
+        return Right(invocation.positionalArguments.first as ReceivableEntity);
+      });
+
+      final result = await useCase(
+        UpdateReceivableParams(
+          id: 'receivable-1',
+          debtorName: 'Ana María',
+          totalAmount: 1000,
+          dateLent: dateLent,
+          notes: 'Renamed',
+        ),
+      );
+
+      expect(
+        result.getOrElse((_) => fail('Expected update')).debtorName,
+        'Ana María',
+      );
+    });
+
+    test('rejects a due date before the lent date', () async {
+      final result = await useCase(
+        UpdateReceivableParams(
+          id: 'receivable-1',
+          debtorName: 'Ana',
+          totalAmount: 1000,
+          dateLent: DateTime(2026, 10, 10),
+          dueDate: DateTime(2026, 10, 1),
+        ),
+      );
+
+      expect(result.getLeft().toNullable()?.code, 'invalid_due_date');
+    });
+
+    test('rejects a missing receivable', () async {
+      when(() => repository.getReceivables())
+          .thenAnswer((_) async => const Right([]));
+
+      final result = await useCase(
+        UpdateReceivableParams(
+          id: 'missing',
+          debtorName: 'Ana',
+          totalAmount: 1000,
+          dateLent: dateLent,
+        ),
+      );
+
+      expect(result.getLeft().toNullable()?.code, 'receivable_not_found');
     });
   });
 

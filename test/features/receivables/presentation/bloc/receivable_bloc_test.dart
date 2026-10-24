@@ -6,6 +6,7 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable
 import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_event.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_state.dart';
@@ -22,6 +23,8 @@ class MockMakeReceivablePayment extends Mock
 
 class MockDeleteReceivable extends Mock implements DeleteReceivableUseCase {}
 
+class MockUpdateReceivable extends Mock implements UpdateReceivableUseCase {}
+
 void main() {
   final dateLent = DateTime.utc(2026, 10, 1);
   final receivable = ReceivableEntity(
@@ -37,6 +40,7 @@ void main() {
 
   late MockGetReceivables getReceivables;
   late MockAddReceivable addReceivable;
+  late MockUpdateReceivable updateReceivable;
   late MockMakeReceivablePayment makePayment;
   late MockDeleteReceivable deleteReceivable;
 
@@ -44,6 +48,14 @@ void main() {
     registerFallbackValue(const NoParams());
     registerFallbackValue(
       AddReceivableParams(
+        debtorName: 'Ana',
+        totalAmount: 10,
+        dateLent: dateLent,
+      ),
+    );
+    registerFallbackValue(
+      UpdateReceivableParams(
+        id: 'receivable-1',
         debtorName: 'Ana',
         totalAmount: 10,
         dateLent: dateLent,
@@ -60,6 +72,7 @@ void main() {
   setUp(() {
     getReceivables = MockGetReceivables();
     addReceivable = MockAddReceivable();
+    updateReceivable = MockUpdateReceivable();
     makePayment = MockMakeReceivablePayment();
     deleteReceivable = MockDeleteReceivable();
   });
@@ -67,6 +80,7 @@ void main() {
   ReceivableBloc buildBloc() => ReceivableBloc(
     getReceivables,
     addReceivable,
+    updateReceivable,
     makePayment,
     deleteReceivable,
   );
@@ -152,6 +166,32 @@ void main() {
         const ReceivableLoading(),
         const ReceivableFailure('Debtor name is required.'),
       ],
+    );
+
+    blocTest<ReceivableBloc, ReceivableState>(
+      'updates a receivable and reloads',
+      setUp: () {
+        when(() => updateReceivable(any()))
+            .thenAnswer((_) async => Right(receivable));
+        when(() => getReceivables(any()))
+            .thenAnswer((_) async => Right([receivable]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        UpdateReceivable(
+          id: 'receivable-1',
+          debtorName: 'Ana',
+          totalAmount: 1000,
+          dateLent: dateLent,
+        ),
+      ),
+      expect: () => [
+        const ReceivableLoading(),
+        ReceivableLoaded(receivables: [receivable]),
+      ],
+      verify: (_) {
+        verify(() => updateReceivable(any())).called(1);
+      },
     );
 
     blocTest<ReceivableBloc, ReceivableState>(

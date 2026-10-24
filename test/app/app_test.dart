@@ -45,6 +45,7 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable
 import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_state.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/screens/receivable_list_screen.dart';
@@ -98,6 +99,8 @@ class MockAddReceivable extends Mock implements AddReceivableUseCase {}
 
 class MockMakeReceivablePayment extends Mock
     implements MakeReceivablePaymentUseCase {}
+
+class MockUpdateReceivable extends Mock implements UpdateReceivableUseCase {}
 
 class MockDeleteReceivable extends Mock implements DeleteReceivableUseCase {}
 
@@ -254,6 +257,7 @@ void main() {
     receivableBloc = ReceivableBloc(
       getReceivables,
       MockAddReceivable(),
+      MockUpdateReceivable(),
       MockMakeReceivablePayment(),
       MockDeleteReceivable(),
     );

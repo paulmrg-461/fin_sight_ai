@@ -994,4 +994,14 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get editReceivable => 'Editar cuenta por cobrar';
+
+  @override
+  String get amountLockedAfterPayments =>
+      'El monto no se puede cambiar después de recibir abonos.';
+
+  @override
+  String get saveChanges => 'Guardar cambios';
 }

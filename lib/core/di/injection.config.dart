@@ -144,6 +144,8 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivable
     as _i728;
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart'
     as _i946;
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart'
+    as _i642;
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart'
     as _i9;
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart'
@@ -367,6 +369,12 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i642.UpdateReceivableUseCase>(
+      () => _i642.UpdateReceivableUseCase(
+        gh<_i554.ReceivableRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i279.DeleteReceivableUseCase>(
       () => _i279.DeleteReceivableUseCase(gh<_i554.ReceivableRepository>()),
     );
@@ -564,6 +572,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i271.GetTransactionsByDateRangeUseCase>(),
       ),
     );
+    gh.factory<_i9.ReceivableBloc>(
+      () => _i9.ReceivableBloc(
+        gh<_i728.GetReceivablesUseCase>(),
+        gh<_i734.AddReceivableUseCase>(),
+        gh<_i642.UpdateReceivableUseCase>(),
+        gh<_i946.MakeReceivablePaymentUseCase>(),
+        gh<_i279.DeleteReceivableUseCase>(),
+      ),
+    );
     gh.lazySingleton<_i144.AddDebtUseCase>(
       () => _i144.AddDebtUseCase(
         gh<_i268.DebtRepository>(),
@@ -588,14 +605,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i160.ProcessDueScheduledPaymentsUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
         clock: gh<_i956.Clock>(),
-      ),
-    );
-    gh.factory<_i9.ReceivableBloc>(
-      () => _i9.ReceivableBloc(
-        gh<_i728.GetReceivablesUseCase>(),
-        gh<_i734.AddReceivableUseCase>(),
-        gh<_i946.MakeReceivablePaymentUseCase>(),
-        gh<_i279.DeleteReceivableUseCase>(),
       ),
     );
     gh.lazySingleton<_i1045.CalculatePayoffUseCase>(

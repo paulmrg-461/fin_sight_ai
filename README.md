@@ -11,7 +11,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Dashboard** — balance hero, cash/card balances, receivables summary, income/expense/savings KPIs, category donut, monthly comparison, recent activity, date-range filtering, and pull-to-refresh.
 - **Transactions** — income/expense tracking with date-range and category filters, receipt paths, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
-- **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, and payment history; local-only.
+- **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, payment history, and in-place editing; local-only.
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
 - **Categories** — shared category catalog with localized defaults, manual create/rename, and archive/restore.
@@ -110,7 +110,7 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **846 unit/widget tests** passing.
+- **852 unit/widget tests** passing.
 - **20 integration tests** passing on Linux desktop.
 - Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, receivables 98.3/98.2%, sync 100/90.9%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
 - Integration benchmarks: app launch + dashboard ≈ 179 ms, transactions render ≈ 251 ms.

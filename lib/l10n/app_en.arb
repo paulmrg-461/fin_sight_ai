@@ -421,5 +421,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "editReceivable": "Edit receivable",
+  "amountLockedAfterPayments": "The amount cannot change after receiving payments.",
+  "saveChanges": "Save changes"
 }

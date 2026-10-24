@@ -8,6 +8,7 @@ import '../../domain/usecases/add_receivable_usecase.dart';
 import '../../domain/usecases/delete_receivable_usecase.dart';
 import '../../domain/usecases/get_receivables_usecase.dart';
 import '../../domain/usecases/make_receivable_payment_usecase.dart';
+import '../../domain/usecases/update_receivable_usecase.dart';
 import 'receivable_event.dart';
 import 'receivable_state.dart';
 
@@ -17,17 +18,20 @@ class ReceivableBloc extends Bloc<ReceivableEvent, ReceivableState> {
   ReceivableBloc(
     this._getReceivables,
     this._addReceivable,
+    this._updateReceivable,
     this._makePayment,
     this._deleteReceivable,
   ) : super(const ReceivableInitial()) {
     on<LoadReceivables>(_onLoad);
     on<AddReceivable>(_onAdd);
+    on<UpdateReceivable>(_onUpdate);
     on<RecordReceivablePayment>(_onPayment);
     on<DeleteReceivable>(_onDelete);
   }
 
   final GetReceivablesUseCase _getReceivables;
   final AddReceivableUseCase _addReceivable;
+  final UpdateReceivableUseCase _updateReceivable;
   final MakeReceivablePaymentUseCase _makePayment;
   final DeleteReceivableUseCase _deleteReceivable;
 
@@ -41,6 +45,28 @@ class ReceivableBloc extends Bloc<ReceivableEvent, ReceivableState> {
     emit(const ReceivableLoading());
     final result = await _addReceivable(
       AddReceivableParams(
+        debtorName: event.debtorName,
+        totalAmount: event.totalAmount,
+        dateLent: event.dateLent,
+        dueDate: event.dueDate,
+        notes: event.notes,
+      ),
+    );
+    if (result.isLeft()) {
+      emit(ReceivableFailure(_messageOf(result)));
+      return;
+    }
+    await _reload(emit);
+  }
+
+  Future<void> _onUpdate(
+    UpdateReceivable event,
+    Emitter<ReceivableState> emit,
+  ) async {
+    emit(const ReceivableLoading());
+    final result = await _updateReceivable(
+      UpdateReceivableParams(
+        id: event.id,
         debtorName: event.debtorName,
         totalAmount: event.totalAmount,
         dateLent: event.dateLent,

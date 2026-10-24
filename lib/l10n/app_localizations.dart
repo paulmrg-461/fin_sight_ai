@@ -1897,6 +1897,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =0{No active debts} =1{1 active debt} other{{count} active debts}}'**
   String activeDebts(int count);
+
+  /// No description provided for @editReceivable.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit receivable'**
+  String get editReceivable;
+
+  /// No description provided for @amountLockedAfterPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount cannot change after receiving payments.'**
+  String get amountLockedAfterPayments;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get saveChanges;
 }
 
 class _AppLocalizationsDelegate

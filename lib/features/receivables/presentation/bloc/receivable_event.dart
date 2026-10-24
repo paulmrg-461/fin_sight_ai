@@ -39,6 +39,35 @@ final class AddReceivable extends ReceivableEvent {
   ];
 }
 
+/// Updates a receivable and reloads the list.
+final class UpdateReceivable extends ReceivableEvent {
+  const UpdateReceivable({
+    required this.id,
+    required this.debtorName,
+    required this.totalAmount,
+    required this.dateLent,
+    this.dueDate,
+    this.notes,
+  });
+
+  final String id;
+  final String debtorName;
+  final double totalAmount;
+  final DateTime dateLent;
+  final DateTime? dueDate;
+  final String? notes;
+
+  @override
+  List<Object?> get props => [
+    id,
+    debtorName,
+    totalAmount,
+    dateLent,
+    dueDate,
+    notes,
+  ];
+}
+
 /// Records a received payment and reloads the list.
 final class RecordReceivablePayment extends ReceivableEvent {
   const RecordReceivablePayment({

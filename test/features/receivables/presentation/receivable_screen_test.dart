@@ -11,6 +11,7 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable
 import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/screens/receivable_list_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -135,6 +136,7 @@ void main() {
     return ReceivableBloc(
       GetReceivablesUseCase(repository),
       AddReceivableUseCase(repository),
+      UpdateReceivableUseCase(repository),
       MakeReceivablePaymentUseCase(repository),
       DeleteReceivableUseCase(repository),
     );

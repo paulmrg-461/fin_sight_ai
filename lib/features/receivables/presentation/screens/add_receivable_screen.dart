@@ -7,10 +7,16 @@ import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../bloc/receivable_bloc.dart';
 import '../bloc/receivable_event.dart';
+import '../../domain/entities/receivable_entity.dart';
 
 /// Form for recording money lent to someone.
 class AddReceivableScreen extends StatefulWidget {
-  const AddReceivableScreen({super.key});
+  const AddReceivableScreen({super.key, this.initial});
+
+  /// When provided, the form edits this receivable instead of creating one.
+  final ReceivableEntity? initial;
+
+  bool get isEditing => initial != null;
 
   @override
   State<AddReceivableScreen> createState() => _AddReceivableScreenState();
@@ -24,6 +30,22 @@ class _AddReceivableScreenState extends State<AddReceivableScreen> {
 
   DateTime _dateLent = DateTime.now();
   DateTime? _dueDate;
+  bool _amountLocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial == null) {
+      return;
+    }
+    _debtorController.text = initial.debtorName;
+    _amountController.text = initial.totalAmount.toStringAsFixed(2);
+    _notesController.text = initial.notes;
+    _dateLent = initial.dateLent;
+    _dueDate = initial.dueDate;
+    _amountLocked = initial.paymentHistory.isNotEmpty;
+  }
 
   @override
   void dispose() {
@@ -66,15 +88,28 @@ class _AddReceivableScreenState extends State<AddReceivableScreen> {
     final navigator = Navigator.of(context);
     final notes = _notesController.text.trim();
 
-    bloc.add(
-      AddReceivable(
-        debtorName: _debtorController.text,
-        totalAmount: double.parse(_amountController.text.trim()),
-        dateLent: _dateLent,
-        dueDate: _dueDate,
-        notes: notes.isEmpty ? null : notes,
-      ),
-    );
+    if (widget.isEditing) {
+      bloc.add(
+        UpdateReceivable(
+          id: widget.initial!.id,
+          debtorName: _debtorController.text,
+          totalAmount: double.parse(_amountController.text.trim()),
+          dateLent: _dateLent,
+          dueDate: _dueDate,
+          notes: notes.isEmpty ? null : notes,
+        ),
+      );
+    } else {
+      bloc.add(
+        AddReceivable(
+          debtorName: _debtorController.text,
+          totalAmount: double.parse(_amountController.text.trim()),
+          dateLent: _dateLent,
+          dueDate: _dueDate,
+          notes: notes.isEmpty ? null : notes,
+        ),
+      );
+    }
     navigator.pop();
   }
 
@@ -82,7 +117,11 @@ class _AddReceivableScreenState extends State<AddReceivableScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.addReceivable)),
+      appBar: AppBar(
+        title: Text(
+          widget.isEditing ? l10n.editReceivable : l10n.addReceivable,
+        ),
+      ),
       body: AppContent(
         padding: EdgeInsets.zero,
         child: Form(
@@ -104,12 +143,17 @@ class _AddReceivableScreenState extends State<AddReceivableScreen> {
               TextFormField(
                 key: const ValueKey('receivable-amount-field'),
                 controller: _amountController,
+                readOnly: _amountLocked,
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 decoration: InputDecoration(
                   labelText: l10n.amountLent,
                   prefixText: '\$ ',
+                  helperText: _amountLocked
+                      ? l10n.amountLockedAfterPayments
+                      : null,
+                  helperMaxLines: 2,
                 ),
                 validator: (value) {
                   final parsed = double.tryParse(value?.trim() ?? '');
@@ -163,7 +207,9 @@ class _AddReceivableScreenState extends State<AddReceivableScreen> {
                 key: const ValueKey('receivable-save'),
                 onPressed: _submit,
                 icon: const Icon(Icons.check),
-                label: Text(l10n.saveReceivable),
+                label: Text(
+                  widget.isEditing ? l10n.saveChanges : l10n.saveReceivable,
+                ),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                 ),

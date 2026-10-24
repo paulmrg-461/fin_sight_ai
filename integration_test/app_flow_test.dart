@@ -237,7 +237,23 @@ void main() {
     expect(find.text(money(600)), findsWidgets);
     await tester.pumpAndSettle();
 
-    await tester.pageBack();
+    await tester.tap(find.text('Ana'));
+    await pumpUntil(tester, find.text('Receivable details'));
+    await tester.tap(find.byKey(const ValueKey('receivable-edit')));
+    await pumpUntil(tester, find.text('Edit receivable'));
+    await tester.enterText(
+      find.byKey(const ValueKey('receivable-debtor-field')),
+      'Ana María',
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('receivable-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('receivable-save')));
+    await pumpUntil(tester, find.text('Ana María'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton).last);
+    await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     await tester.drag(find.byType(ListView).first, const Offset(0, 600));
     await tester.pumpAndSettle();
@@ -255,7 +271,7 @@ void main() {
     await harness.restart();
     await harness.pumpApp(tester);
     harness.router.goNamed(AppRoutes.receivablesName);
-    await pumpUntil(tester, find.text('Ana'));
+    await pumpUntil(tester, find.text('Ana María'));
     expect(find.text(money(600)), findsWidgets);
 
     final result = await harness.receivableRepository.getReceivables();

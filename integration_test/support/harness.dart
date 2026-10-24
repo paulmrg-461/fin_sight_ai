@@ -66,6 +66,7 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/add_receivable
 import 'package:fin_sight_ai/features/receivables/domain/usecases/delete_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/get_receivables_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/usecases/make_receivable_payment_usecase.dart';
+import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receivable_usecase.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_event.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/hive_receipt_local_data_source.dart';
@@ -276,6 +277,7 @@ class IntegrationHarness {
     receivableBloc = ReceivableBloc(
       getReceivables,
       addReceivable,
+      UpdateReceivableUseCase(receivableRepository),
       makeReceivablePayment,
       deleteReceivable,
     );

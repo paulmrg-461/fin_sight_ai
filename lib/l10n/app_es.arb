@@ -372,5 +372,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "editReceivable": "Editar cuenta por cobrar",
+  "amountLockedAfterPayments": "El monto no se puede cambiar después de recibir abonos.",
+  "saveChanges": "Guardar cambios"
 }
