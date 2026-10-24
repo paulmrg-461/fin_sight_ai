@@ -47,6 +47,17 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Locale state changes complete asynchronously; in widget tests wait on `localeBloc.stream` with `tester.runAsync` instead of relying only on `pumpAndSettle`.
 - Known gap: domain `Failure` messages and AI-generated insights are still English-only.
 
+## Branding
+
+- Source artwork: `assets/branding/logo_mark.svg` (rounded mark),
+  `logo_icon_square.svg` (opaque app icon), `logo_foreground.svg` (Android
+  adaptive foreground).
+- In-app mark: `AppLogo` (`lib/app/branding/app_logo.dart`) in the dashboard
+  app bar, drawer header, and login screen.
+- Platform icons/splash generated in Android (legacy + adaptive + launch),
+  iOS, macOS, Windows, and web. Linux platform files are ignored by the
+  environment's global excludes.
+
 ## Local environment (never commit)
 
 - `.env` is gitignored, local-only, and never bundled as an asset; run the app with `./tool/run_dev.sh` (which uses `--dart-define-from-file=.env`). Never put a `flutter run` command inside `.env`. `example.env` has empty placeholders used by CI.
