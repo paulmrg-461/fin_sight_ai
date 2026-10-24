@@ -846,4 +846,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get currentPeriod => 'Actual';
+
+  @override
+  String get cardLabel => 'Tarjeta';
 }

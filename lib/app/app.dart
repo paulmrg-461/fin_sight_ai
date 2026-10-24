@@ -14,11 +14,15 @@ import '../features/budgets/presentation/bloc/budget_bloc.dart';
 import '../features/categories/presentation/bloc/category_bloc.dart';
 import '../features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import '../features/wallets/presentation/bloc/wallet_bloc.dart';
+import '../features/wallets/presentation/bloc/wallet_event.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../features/dashboard/presentation/bloc/dashboard_event.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
 import '../features/sync/presentation/bloc/sync_bloc.dart';
+import '../features/sync/presentation/bloc/sync_state.dart';
 import '../features/transactions/presentation/bloc/transaction_bloc.dart';
+import '../features/transactions/presentation/bloc/transaction_state.dart';
 import 'session_keeper.dart';
 
 /// Root widget: theme binding, routing, and feature-level BLoC providers.
@@ -76,29 +80,48 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<CategoryBloc>.value(value: categoryBloc),
         BlocProvider<ScheduledPaymentBloc>.value(value: scheduledPaymentBloc),
       ],
-      child: SessionKeeper(
-        authBloc: authBloc,
-        child: BlocBuilder<LocaleBloc, LocaleState>(
-          builder: (context, localeState) {
-            return ListenableBuilder(
-              listenable: themeController,
-              builder: (context, _) {
-                return MaterialApp.router(
-                  onGenerateTitle: (context) => context.l10n.appName,
-                  debugShowCheckedModeBanner: false,
-                  theme: AppTheme.light,
-                  darkTheme: AppTheme.dark,
-                  themeMode: themeController.themeMode,
-                  locale: localeState is LocaleLoaded
-                      ? localeState.locale
-                      : null,
-                  localizationsDelegates: appLocalizationsDelegates,
-                  supportedLocales: AppLocalizations.supportedLocales,
-                  routerConfig: router,
-                );
-              },
-            );
-          },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<TransactionBloc, TransactionState>(
+            listenWhen: (previous, current) =>
+                current is TransactionLoaded || current is TransactionEmpty,
+            listener: (context, _) {
+              walletBloc.add(const LoadWallets());
+              dashboardBloc.add(const RefreshData());
+            },
+          ),
+          BlocListener<SyncBloc, SyncState>(
+            listenWhen: (previous, current) => current is SyncSuccess,
+            listener: (context, _) {
+              walletBloc.add(const LoadWallets());
+              dashboardBloc.add(const RefreshData());
+            },
+          ),
+        ],
+        child: SessionKeeper(
+          authBloc: authBloc,
+          child: BlocBuilder<LocaleBloc, LocaleState>(
+            builder: (context, localeState) {
+              return ListenableBuilder(
+                listenable: themeController,
+                builder: (context, _) {
+                  return MaterialApp.router(
+                    onGenerateTitle: (context) => context.l10n.appName,
+                    debugShowCheckedModeBanner: false,
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode: themeController.themeMode,
+                    locale: localeState is LocaleLoaded
+                        ? localeState.locale
+                        : null,
+                    localizationsDelegates: appLocalizationsDelegates,
+                    supportedLocales: AppLocalizations.supportedLocales,
+                    routerConfig: router,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );

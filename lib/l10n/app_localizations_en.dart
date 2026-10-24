@@ -845,4 +845,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentPeriod => 'Current';
+
+  @override
+  String get cardLabel => 'Card';
 }

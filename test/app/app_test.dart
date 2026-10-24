@@ -370,6 +370,12 @@ void main() {
 
     expect(find.text('FinSight AI'), findsOneWidget);
     expect(find.text('No transactions yet'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('quick-action-transactions')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(
       find.byKey(const ValueKey('quick-action-transactions')),
       findsOneWidget,
@@ -407,7 +413,11 @@ void main() {
     await pumpReady(tester);
 
     final debtsAction = find.byKey(const ValueKey('quick-action-debts'));
-    await tester.ensureVisible(debtsAction);
+    await tester.scrollUntilVisible(
+      debtsAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(debtsAction);
     await tester.pump();
@@ -421,7 +431,11 @@ void main() {
     await pumpReady(tester);
 
     final ocrAction = find.byKey(const ValueKey('quick-action-ocr'));
-    await tester.ensureVisible(ocrAction);
+    await tester.scrollUntilVisible(
+      ocrAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(ocrAction);
     await tester.pump();
@@ -434,7 +448,11 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     final aiAction = find.byKey(const ValueKey('quick-action-ai-coach'));
-    await tester.ensureVisible(aiAction);
+    await tester.scrollUntilVisible(
+      aiAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(aiAction);
     await tester.pump();

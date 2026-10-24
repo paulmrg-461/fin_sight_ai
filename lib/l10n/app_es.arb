@@ -305,5 +305,6 @@
   "settingsFooter": "FinSight AI · Tus finanzas, a la vista.",
   "scheduledTab": "Pagos",
   "previousPeriod": "Anterior",
-  "currentPeriod": "Actual"
+  "currentPeriod": "Actual",
+  "cardLabel": "Tarjeta"
 }

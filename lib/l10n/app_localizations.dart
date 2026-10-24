@@ -1663,6 +1663,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current'**
   String get currentPeriod;
+
+  /// No description provided for @cardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get cardLabel;
 }
 
 class _AppLocalizationsDelegate

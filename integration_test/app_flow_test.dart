@@ -114,8 +114,11 @@ void main() {
   ) async {
     await harness.pumpApp(tester);
     final ocrAction = find.byKey(const ValueKey('quick-action-ocr'));
-    await pumpUntil(tester, ocrAction);
-    await tester.ensureVisible(ocrAction);
+    await tester.scrollUntilVisible(
+      ocrAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(ocrAction);
     await pumpUntil(tester, find.text('Camera'));
@@ -156,8 +159,11 @@ void main() {
   testWidgets('adds a debt and shows it in the list', (tester) async {
     await harness.pumpApp(tester);
     final debtsAction = find.byKey(const ValueKey('quick-action-debts'));
-    await pumpUntil(tester, debtsAction);
-    await tester.ensureVisible(debtsAction);
+    await tester.scrollUntilVisible(
+      debtsAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     await tester.tap(debtsAction);
     await pumpUntil(tester, find.byType(FloatingActionButton));
@@ -186,9 +192,14 @@ void main() {
     tester,
   ) async {
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('AI coach'));
-
-    await tester.tap(find.text('AI coach'));
+    final aiAction = find.byKey(const ValueKey('quick-action-ai-coach'));
+    await tester.scrollUntilVisible(
+      aiAction,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(aiAction);
     await pumpUntil(tester, find.text('Get insights'));
 
     await tester.tap(find.text('Get insights'));

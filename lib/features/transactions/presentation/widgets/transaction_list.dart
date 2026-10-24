@@ -58,7 +58,7 @@ class _TransactionListState extends State<TransactionList> {
         if (categories.length > 1)
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: Row(
               children: [
                 FilterChip(
@@ -115,6 +115,7 @@ class _TransactionTile extends StatelessWidget {
     final isIncome = transaction.isIncome;
 
     return Card(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: CircleAvatar(

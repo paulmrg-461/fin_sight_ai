@@ -21,6 +21,9 @@ import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../../../auth/presentation/widgets/account_button.dart';
 import '../../../sync/presentation/widgets/sync_status_chip.dart';
+import '../../../wallets/domain/entities/wallet_entity.dart';
+import '../../../wallets/presentation/bloc/wallet_bloc.dart';
+import '../../../wallets/presentation/bloc/wallet_state.dart';
 
 /// Analytics dashboard with navigation shortcuts.
 class DashboardPage extends StatelessWidget {
@@ -105,6 +108,8 @@ class DashboardPage extends StatelessWidget {
                     onTap: () => _pickRange(context),
                   ),
                   const SizedBox(height: 14),
+                  const _AccountsOverview(),
+                  const SizedBox(height: 14),
                   AppEmptyState(
                     icon: Icons.insights_rounded,
                     title: context.l10n.noTransactionsYet,
@@ -151,6 +156,8 @@ class DashboardPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       _BalanceHero(summary: summary),
+                      const SizedBox(height: 12),
+                      const _AccountsOverview(),
                       const SizedBox(height: 16),
                       CategoryPieChart(breakdown: breakdown),
                       MonthlyComparisonChart(comparison: comparison),
@@ -170,6 +177,167 @@ class DashboardPage extends StatelessWidget {
               ),
           };
         },
+      ),
+    );
+  }
+}
+
+class _AccountsOverview extends StatelessWidget {
+  const _AccountsOverview();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<WalletBloc, WalletState>(
+      builder: (context, state) {
+        final balances = state is WalletLoaded
+            ? state.balances
+            : const <WalletBalance>[];
+        final bank = balances
+            .where((balance) => balance.type == WalletType.bank)
+            .fold<double>(0, (sum, balance) => sum + balance.balance);
+        final cash = balances
+            .where((balance) => balance.type == WalletType.cash)
+            .fold<double>(0, (sum, balance) => sum + balance.balance);
+        final loading = state is WalletInitial || state is WalletLoading;
+        final theme = Theme.of(context);
+
+        return Card(
+          child: InkWell(
+            onTap: () {
+              final shell = ShellScope.maybeOf(context);
+              if (shell == null || !shell.goToPrimary(AppRoutes.moneyName)) {
+                context.goNamed(AppRoutes.moneyName);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet_outlined,
+                        size: 18,
+                        color: theme.colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          context.l10n.accounts,
+                          style: theme.textTheme.titleSmall,
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _AccountBalance(
+                          icon: Icons.payments_rounded,
+                          label: context.l10n.cash,
+                          amount: cash,
+                          color: theme.colorScheme.tertiary,
+                          loading: loading,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _AccountBalance(
+                          icon: Icons.credit_card_rounded,
+                          label: context.l10n.cardLabel,
+                          amount: bank,
+                          color: theme.colorScheme.primary,
+                          loading: loading,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AccountBalance extends StatelessWidget {
+  const _AccountBalance({
+    required this.icon,
+    required this.label,
+    required this.amount,
+    required this.color,
+    required this.loading,
+  });
+
+  final IconData icon;
+  final String label;
+  final double amount;
+  final Color color;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.16),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 17, color: color),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                if (loading)
+                  Text(
+                    '—',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  )
+                else
+                  DefaultTextStyle(
+                    style:
+                        theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ) ??
+                        const TextStyle(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    child: MoneyText(amount),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

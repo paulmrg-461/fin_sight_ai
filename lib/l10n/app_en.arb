@@ -354,5 +354,6 @@
   "settingsFooter": "FinSight AI · Your finances, in sight.",
   "scheduledTab": "Scheduled",
   "previousPeriod": "Previous",
-  "currentPeriod": "Current"
+  "currentPeriod": "Current",
+  "cardLabel": "Card"
 }
