@@ -366,6 +366,21 @@ void main() {
   int selectedIndex(WidgetTester tester) =>
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex;
 
+  testWidgets('renders the dashboard on a compact phone without overflow', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await pumpReady(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('FinSight AI'), findsOneWidget);
+  });
+
   testWidgets('switches among the five primary destinations', (tester) async {
     await pumpReady(tester);
 
@@ -392,6 +407,27 @@ void main() {
     await tapDestination(tester, 'Dashboard');
     expect(find.byType(DashboardPage), findsOneWidget);
     expect(selectedIndex(tester), 0);
+  });
+
+  testWidgets('renders every primary destination on a compact phone', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await pumpReady(tester);
+    for (final label in const [
+      'Transactions',
+      'Budgets',
+      'Scheduled',
+      'Money',
+      'Dashboard',
+    ]) {
+      await tapDestination(tester, label);
+      expect(tester.takeException(), isNull, reason: label);
+    }
   });
 
   testWidgets('selects the destination for a deep link', (tester) async {
