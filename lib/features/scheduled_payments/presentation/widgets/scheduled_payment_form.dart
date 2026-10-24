@@ -3,9 +3,11 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../categories/domain/entities/category_entity.dart';
 import '../../../categories/presentation/bloc/category_bloc.dart';
 import '../../../categories/presentation/bloc/category_state.dart';
 import '../../../categories/presentation/widgets/category_dropdown.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
@@ -29,6 +31,7 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
   final _amountController = TextEditingController();
   final _notesController = TextEditingController();
 
+  TransactionType _type = TransactionType.expense;
   PaymentFrequency _frequency = PaymentFrequency.monthly;
   DateTime _nextDueDate = DateTime.now();
   late final DateTime _today = DateTime.now();
@@ -38,14 +41,9 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
   @override
   void initState() {
     super.initState();
-    final categoryState = context.read<CategoryBloc>().state;
-    if (categoryState is CategoryLoaded) {
-      final active = categoryState.categories
-          .where((category) => !category.isArchived)
-          .toList();
-      if (active.isNotEmpty) {
-        _category = active.first.name;
-      }
+    final active = _activeCategories();
+    if (active.isNotEmpty) {
+      _category = active.first.name;
     }
 
     final walletState = context.read<WalletBloc>().state;
@@ -66,6 +64,39 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
     _amountController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  List<CategoryEntity> _activeCategories() {
+    final categoryState = context.read<CategoryBloc>().state;
+    if (categoryState is! CategoryLoaded) {
+      return const [];
+    }
+    return categoryState.categories
+        .where((category) => !category.isArchived)
+        .toList();
+  }
+
+  void _selectType(TransactionType type) {
+    setState(() {
+      _type = type;
+      if (type != TransactionType.income) {
+        return;
+      }
+
+      final active = _activeCategories();
+      String? salary;
+      for (final category in active) {
+        if (category.name == 'Salary' || category.name == 'Salario') {
+          salary = category.name;
+          break;
+        }
+      }
+      if (salary != null) {
+        _category = salary;
+      } else if (!active.any((category) => category.name == _category)) {
+        _category = active.isEmpty ? null : active.first.name;
+      }
+    });
   }
 
   Future<void> _pickDate() async {
@@ -91,6 +122,7 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
         AddScheduledPaymentParams(
           name: _nameController.text,
           amount: double.parse(_amountController.text.trim()),
+          type: _type,
           category: _category ?? '',
           frequency: _frequency,
           nextDueDate: _nextDueDate,
@@ -136,6 +168,25 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
                     : null,
               ),
               const SizedBox(height: 12),
+              Text(context.l10n.incomeType, style: theme.textTheme.labelLarge),
+              const SizedBox(height: 8),
+              SegmentedButton<TransactionType>(
+                segments: [
+                  ButtonSegment(
+                    value: TransactionType.expense,
+                    label: Text(context.l10n.expense),
+                    icon: const Icon(Icons.arrow_upward),
+                  ),
+                  ButtonSegment(
+                    value: TransactionType.income,
+                    label: Text(context.l10n.income),
+                    icon: const Icon(Icons.arrow_downward),
+                  ),
+                ],
+                selected: {_type},
+                onSelectionChanged: (selection) => _selectType(selection.first),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(
@@ -155,6 +206,8 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
               ),
               const SizedBox(height: 12),
               CategoryDropdown(
+                // Recreate the field when the type switch changes the default.
+                key: ValueKey(_category),
                 value: _category,
                 onChanged: (value) => setState(() => _category = value),
               ),

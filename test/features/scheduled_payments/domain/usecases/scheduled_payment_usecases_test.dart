@@ -1,6 +1,7 @@
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -144,6 +145,29 @@ void main() {
       expect(saved.walletId, 'wallet-bank');
       expect(saved.notes, 'Monthly');
       expect(saved.createdAt, DateTime(2026, 10, 20));
+      expect(saved.type, TransactionType.expense);
+    });
+
+    test('passes the income type to the schedule', () async {
+      when(() => repository.addPayment(any())).thenAnswer((invocation) async {
+        return Right(
+          invocation.positionalArguments.first as ScheduledPaymentEntity,
+        );
+      });
+
+      final result = await useCase()(
+        AddScheduledPaymentParams(
+          name: 'Salary',
+          amount: 3000,
+          type: TransactionType.income,
+          category: 'Salary',
+          nextDueDate: now,
+        ),
+      );
+
+      final saved = result.fold((_) => null, (value) => value)!;
+      expect(saved.type, TransactionType.income);
+      expect(saved.isIncome, isTrue);
     });
 
     test('clears an empty wallet id', () async {

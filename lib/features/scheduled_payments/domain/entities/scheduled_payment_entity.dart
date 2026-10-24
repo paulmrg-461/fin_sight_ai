@@ -4,7 +4,7 @@ import '../../../transactions/domain/entities/transaction_entity.dart';
 /// How often a scheduled payment repeats.
 enum PaymentFrequency { monthly, yearly }
 
-/// A recurring expense created once and materialized as transactions.
+/// A recurring expense or income created once and materialized as transactions.
 class ScheduledPaymentEntity extends Entity {
   const ScheduledPaymentEntity({
     required this.id,
@@ -15,6 +15,7 @@ class ScheduledPaymentEntity extends Entity {
     required this.nextDueDate,
     required this.dayOfMonth,
     required this.createdAt,
+    this.type = TransactionType.expense,
     this.walletId,
     this.notes = '',
     this.isActive = true,
@@ -27,6 +28,10 @@ class ScheduledPaymentEntity extends Entity {
 
   final String name;
   final double amount;
+
+  /// Direction of the generated transaction.
+  final TransactionType type;
+
   final String category;
   final PaymentFrequency frequency;
 
@@ -43,6 +48,8 @@ class ScheduledPaymentEntity extends Entity {
   final DateTime? updatedAt;
   final DateTime? lastPaidAt;
 
+  bool get isIncome => type == TransactionType.income;
+
   bool isDue(DateTime now) {
     if (!isActive) {
       return false;
@@ -54,6 +61,7 @@ class ScheduledPaymentEntity extends Entity {
     String? id,
     String? name,
     double? amount,
+    TransactionType? type,
     String? category,
     PaymentFrequency? frequency,
     DateTime? nextDueDate,
@@ -69,6 +77,7 @@ class ScheduledPaymentEntity extends Entity {
       id: id ?? this.id,
       name: name ?? this.name,
       amount: amount ?? this.amount,
+      type: type ?? this.type,
       category: category ?? this.category,
       frequency: frequency ?? this.frequency,
       nextDueDate: nextDueDate ?? this.nextDueDate,
@@ -89,6 +98,7 @@ class ScheduledPaymentEntity extends Entity {
           other.id == id &&
           other.name == name &&
           other.amount == amount &&
+          other.type == type &&
           other.category == category &&
           other.frequency == frequency &&
           other.nextDueDate == nextDueDate &&
@@ -105,6 +115,7 @@ class ScheduledPaymentEntity extends Entity {
     id,
     name,
     amount,
+    type,
     category,
     frequency,
     nextDueDate,

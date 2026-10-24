@@ -70,18 +70,35 @@ class ScheduledPaymentCard extends StatelessWidget {
                     children: [
                       Text(payment.name, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 2),
-                      Text(
-                        '${payment.category} • '
-                        '${payment.frequency == PaymentFrequency.monthly ? l10n.monthly : l10n.yearly}',
-                        style: theme.textTheme.bodySmall,
+                      Row(
+                        children: [
+                          if (payment.isIncome) ...[
+                            _StatusChip(
+                              label: l10n.income,
+                              color: theme.colorScheme.primaryContainer,
+                              textColor: theme.colorScheme.onPrimaryContainer,
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Flexible(
+                            child: Text(
+                              '${payment.category} • '
+                              '${payment.frequency == PaymentFrequency.monthly ? l10n.monthly : l10n.yearly}',
+                              style: theme.textTheme.bodySmall,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 MoneyText(
                   payment.amount,
+                  signed: payment.isIncome,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
+                    color: payment.isIncome ? theme.colorScheme.primary : null,
                   ),
                 ),
               ],

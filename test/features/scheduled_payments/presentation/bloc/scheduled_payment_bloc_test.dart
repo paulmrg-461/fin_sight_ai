@@ -42,6 +42,17 @@ void main() {
     dayOfMonth: 23,
     createdAt: DateTime(2026, 10, 1),
   );
+  final incomePayment = ScheduledPaymentEntity(
+    id: 'pay-2',
+    name: 'Salary',
+    amount: 3000,
+    type: TransactionType.income,
+    category: 'Salary',
+    frequency: PaymentFrequency.monthly,
+    nextDueDate: DateTime(2026, 10, 23),
+    dayOfMonth: 23,
+    createdAt: DateTime(2026, 10, 1),
+  );
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
@@ -178,6 +189,37 @@ void main() {
     ),
     expect: () => [
       ScheduledPaymentLoaded([payment], autoCreated: 1),
+    ],
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'adds an income schedule and keeps it in the loaded state',
+    setUp: () {
+      when(() => addPayment(any()))
+          .thenAnswer((_) async => Right(incomePayment));
+      stubProcess(created: 1);
+      stubGet([incomePayment]);
+    },
+    build: buildBloc,
+    act: (bloc) => bloc.add(
+      AddScheduledPayment(
+        AddScheduledPaymentParams(
+          name: 'Salary',
+          amount: 3000,
+          type: TransactionType.income,
+          category: 'Salary',
+          nextDueDate: DateTime(2026, 10, 23),
+        ),
+      ),
+    ),
+    verify: (_) {
+      final params =
+          verify(() => addPayment(captureAny())).captured.single
+              as AddScheduledPaymentParams;
+      expect(params.type, TransactionType.income);
+    },
+    expect: () => [
+      ScheduledPaymentLoaded([incomePayment], autoCreated: 1),
     ],
   );
 

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/domain/failure.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../entities/scheduled_payment_entity.dart';
 import '../repositories/scheduled_payment_repository.dart';
 import '../services/schedule_calculator.dart';
@@ -28,6 +29,7 @@ class AddScheduledPaymentParams {
     required this.amount,
     required this.category,
     required this.nextDueDate,
+    this.type = TransactionType.expense,
     this.frequency = PaymentFrequency.monthly,
     this.walletId,
     this.notes = '',
@@ -35,6 +37,7 @@ class AddScheduledPaymentParams {
 
   final String name;
   final double amount;
+  final TransactionType type;
   final String category;
   final DateTime nextDueDate;
   final PaymentFrequency frequency;
@@ -102,6 +105,7 @@ class AddScheduledPaymentUseCase
       id: uuid.v4(),
       name: name,
       amount: double.parse(params.amount.toStringAsFixed(2)),
+      type: params.type,
       category: category,
       frequency: params.frequency,
       nextDueDate: dueDate,

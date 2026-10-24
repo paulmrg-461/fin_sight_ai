@@ -1454,6 +1454,30 @@ abstract class AppLocalizations {
   /// **'Recurring expenses like rent, credits, subscriptions, or your phone plan.'**
   String get scheduledPaymentsDescription;
 
+  /// No description provided for @incomeType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get incomeType;
+
+  /// No description provided for @incomeSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Income schedule'**
+  String get incomeSchedule;
+
+  /// No description provided for @expectedMonthlyIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected monthly income'**
+  String get expectedMonthlyIncome;
+
+  /// No description provided for @nextIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Next income: {date}'**
+  String nextIncome(String date);
+
   /// No description provided for @addScheduledPayment.
   ///
   /// In en, this message translates to:
@@ -1559,7 +1583,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoCreatedPayments.
   ///
   /// In en, this message translates to:
-  /// **'{count} scheduled expenses were added.'**
+  /// **'{count, plural, =1{1 scheduled entry was added.} other{{count} scheduled entries were added.}}'**
   String autoCreatedPayments(int count);
 
   /// No description provided for @deleteScheduledPayment.

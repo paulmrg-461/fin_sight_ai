@@ -729,6 +729,20 @@ class AppLocalizationsEs extends AppLocalizations {
       'Gastos recurrentes como arriendo, créditos, suscripciones o plan celular.';
 
   @override
+  String get incomeType => 'Tipo';
+
+  @override
+  String get incomeSchedule => 'Ingreso programado';
+
+  @override
+  String get expectedMonthlyIncome => 'Ingreso mensual esperado';
+
+  @override
+  String nextIncome(String date) {
+    return 'Próximo ingreso: $date';
+  }
+
+  @override
   String get addScheduledPayment => 'Añadir pago';
 
   @override
@@ -782,7 +796,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String autoCreatedPayments(int count) {
-    return 'Se añadieron $count gastos programados.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se añadieron $count movimientos programados.',
+      one: 'Se añadió 1 movimiento programado.',
+    );
+    return '$_temp0';
   }
 
   @override

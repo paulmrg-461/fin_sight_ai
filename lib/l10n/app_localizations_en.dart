@@ -728,6 +728,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Recurring expenses like rent, credits, subscriptions, or your phone plan.';
 
   @override
+  String get incomeType => 'Type';
+
+  @override
+  String get incomeSchedule => 'Income schedule';
+
+  @override
+  String get expectedMonthlyIncome => 'Expected monthly income';
+
+  @override
+  String nextIncome(String date) {
+    return 'Next income: $date';
+  }
+
+  @override
   String get addScheduledPayment => 'Add payment';
 
   @override
@@ -781,7 +795,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String autoCreatedPayments(int count) {
-    return '$count scheduled expenses were added.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count scheduled entries were added.',
+      one: '1 scheduled entry was added.',
+    );
+    return '$_temp0';
   }
 
   @override

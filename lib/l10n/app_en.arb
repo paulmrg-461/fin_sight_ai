@@ -299,6 +299,17 @@
   "manageCategories": "Manage categories",
   "scheduledPayments": "Scheduled payments",
   "scheduledPaymentsDescription": "Recurring expenses like rent, credits, subscriptions, or your phone plan.",
+  "incomeType": "Type",
+  "incomeSchedule": "Income schedule",
+  "expectedMonthlyIncome": "Expected monthly income",
+  "nextIncome": "Next income: {date}",
+  "@nextIncome": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "addScheduledPayment": "Add payment",
   "addFirstScheduledPayment": "Add a scheduled payment",
   "newScheduledPayment": "New scheduled payment",
@@ -316,7 +327,7 @@
   "overdue": "Overdue",
   "noScheduledPayments": "No scheduled payments",
   "noScheduledPaymentsBody": "Add rent, credits, subscriptions, or your phone plan and the expense will be recorded automatically when due.",
-  "autoCreatedPayments": "{count} scheduled expenses were added.",
+  "autoCreatedPayments": "{count, plural, =1{1 scheduled entry was added.} other{{count} scheduled entries were added.}}",
   "@autoCreatedPayments": {
     "placeholders": {
       "count": {

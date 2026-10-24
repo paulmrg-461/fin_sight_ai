@@ -1,3 +1,4 @@
+import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
 
 /// Data-transfer representation of [ScheduledPaymentEntity].
@@ -11,6 +12,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     required super.nextDueDate,
     required super.dayOfMonth,
     required super.createdAt,
+    super.type,
     super.walletId,
     super.notes,
     super.isActive,
@@ -23,6 +25,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
       id: payment.id,
       name: payment.name,
       amount: payment.amount,
+      type: payment.type,
       category: payment.category,
       frequency: payment.frequency,
       nextDueDate: payment.nextDueDate,
@@ -72,11 +75,16 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     if (created == null) {
       throw const FormatException('Payment creation date is missing.');
     }
+    // Schedules persisted before `type` existed migrate implicitly to expense.
+    final parsedType = json['type'] is String
+        ? TransactionType.values.asNameMap()[json['type']]
+        : null;
 
     return ScheduledPaymentModel(
       id: id,
       name: name,
       amount: amount.toDouble(),
+      type: parsedType ?? TransactionType.expense,
       category: category,
       frequency: parsedFrequency,
       nextDueDate: due,
@@ -98,6 +106,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     'id': id,
     'name': name,
     'amount': amount,
+    'type': type.name,
     'category': category,
     'frequency': frequency.name,
     'nextDueDate': nextDueDate.toIso8601String(),
@@ -115,6 +124,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     String? id,
     String? name,
     double? amount,
+    TransactionType? type,
     String? category,
     PaymentFrequency? frequency,
     DateTime? nextDueDate,
@@ -130,6 +140,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
       id: id ?? this.id,
       name: name ?? this.name,
       amount: amount ?? this.amount,
+      type: type ?? this.type,
       category: category ?? this.category,
       frequency: frequency ?? this.frequency,
       nextDueDate: nextDueDate ?? this.nextDueDate,
@@ -147,6 +158,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     id: id,
     name: name,
     amount: amount,
+    type: type,
     category: category,
     frequency: frequency,
     nextDueDate: nextDueDate,

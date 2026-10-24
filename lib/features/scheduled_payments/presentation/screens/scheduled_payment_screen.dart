@@ -3,9 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/main_shell.dart';
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
+import '../../domain/services/expected_income_calculator.dart';
 import '../bloc/scheduled_payment_bloc.dart';
 import '../bloc/scheduled_payment_event.dart';
 import '../bloc/scheduled_payment_state.dart';
@@ -75,6 +78,9 @@ class ScheduledPaymentScreen extends StatelessWidget {
       ),
       body: BlocBuilder<ScheduledPaymentBloc, ScheduledPaymentState>(
         builder: (context, state) {
+          final incomeSummary = state is ScheduledPaymentLoaded
+              ? ExpectedIncomeCalculator.calculate(state.payments)
+              : null;
           return switch (state) {
             ScheduledPaymentInitial() || ScheduledPaymentLoading() =>
               const Center(child: CircularProgressIndicator()),
@@ -103,6 +109,10 @@ class ScheduledPaymentScreen extends StatelessWidget {
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   const SizedBox(height: 12),
+                  if (incomeSummary != null && incomeSummary.isNotEmpty) ...[
+                    _ExpectedIncomeCard(summary: incomeSummary),
+                    const SizedBox(height: 12),
+                  ],
                   if (autoCreated > 0) ...[
                     _AutoCreatedBanner(count: autoCreated),
                     const SizedBox(height: 12),
@@ -130,6 +140,81 @@ class ScheduledPaymentScreen extends StatelessWidget {
               ),
           };
         },
+      ),
+    );
+  }
+}
+
+class _ExpectedIncomeCard extends StatelessWidget {
+  const _ExpectedIncomeCard({required this.summary});
+
+  final Summary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final nextIncomeDate = summary.nextIncomeDate;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.trending_up, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.incomeSchedule,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        l10n.expectedMonthlyIncome,
+                        style: theme.textTheme.titleSmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            MoneyText(
+              summary.monthlyAmount,
+              style: theme.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            if (nextIncomeDate != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Icons.event_outlined,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    l10n.nextIncome(formatDisplayDate(nextIncomeDate)),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

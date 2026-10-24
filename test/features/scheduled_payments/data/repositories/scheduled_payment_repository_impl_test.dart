@@ -127,12 +127,15 @@ void main() {
     bool active = true,
     double amount = 800,
     int dayOfMonth = 31,
+    TransactionType type = TransactionType.expense,
+    String category = 'Rent',
   }) {
     return ScheduledPaymentEntity(
       id: id,
       name: 'Rent',
       amount: amount,
-      category: 'Rent',
+      type: type,
+      category: category,
       frequency: PaymentFrequency.monthly,
       nextDueDate: nextDueDate ?? DateTime(2026, 1, 31),
       dayOfMonth: dayOfMonth,
@@ -210,6 +213,62 @@ void main() {
     );
     expect(stored.single.nextDueDate, DateTime(2026, 3, 31));
     expect(stored.single.lastPaidAt, isNotNull);
+  });
+
+  test('records due income schedules as income transactions', () async {
+    final repo = repository();
+    await repo.addPayment(
+      payment(type: TransactionType.income, category: 'Salary', amount: 3000),
+    );
+
+    final result = await repo.processDue(DateTime(2026, 2, 1));
+
+    expect(result.fold((_) => null, (run) => run.createdCount), 1);
+    final transaction = transactions.saved.values.single;
+    expect(transaction.type, TransactionType.income);
+    expect(transaction.isIncome, isTrue);
+    expect(transaction.amount, 3000);
+    expect(transaction.category, 'Salary');
+    expect(transaction.date, DateTime(2026, 1, 31));
+  });
+
+  test('pays income schedules now with the income type', () async {
+    final repo = repository();
+    await repo.addPayment(
+      payment(
+        type: TransactionType.income,
+        category: 'Salary',
+        nextDueDate: DateTime(2026, 3, 1),
+        dayOfMonth: 1,
+      ),
+    );
+
+    final result = await repo.payNow('pay-1', DateTime(2026, 3, 15));
+
+    expect(result.fold((_) => null, (run) => run.createdCount), 1);
+    final transaction = transactions.saved.values.single;
+    expect(transaction.type, TransactionType.income);
+    expect(transaction.date, DateTime(2026, 3, 15));
+  });
+
+  test('keeps deterministic ids for income schedules', () async {
+    final repo = repository();
+    final income = payment(
+      type: TransactionType.income,
+      category: 'Salary',
+      nextDueDate: DateTime(2026, 1, 31),
+    );
+    await repo.addPayment(income);
+    final first = await repo.processDue(DateTime(2026, 1, 31));
+    final firstId = first.fold((_) => null, (run) => run.created.single.id);
+
+    await dataSource.savePayment(ScheduledPaymentModel.fromEntity(income));
+    final second = await repo.processDue(DateTime(2026, 1, 31));
+    final secondId = second.fold((_) => null, (run) => run.created.single.id);
+
+    expect(secondId, firstId);
+    expect(transactions.saved, hasLength(1));
+    expect(transactions.saved.values.single.type, TransactionType.income);
   });
 
   test('is idempotent when reprocessing the same period', () async {

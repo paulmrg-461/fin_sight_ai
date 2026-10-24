@@ -1,4 +1,5 @@
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -9,11 +10,13 @@ void main() {
     bool active = true,
     DateTime? nextDueDate,
     double amount = 800,
+    TransactionType type = TransactionType.expense,
   }) {
     return ScheduledPaymentEntity(
       id: 'pay-1',
       name: 'Rent',
       amount: amount,
+      type: type,
       category: 'Rent',
       frequency: PaymentFrequency.monthly,
       nextDueDate: nextDueDate ?? due,
@@ -35,10 +38,20 @@ void main() {
     expect(payment(active: false).isDue(DateTime(2026, 11, 1)), isFalse);
   });
 
+  test('defaults to expense with isIncome false', () {
+    expect(payment().type, TransactionType.expense);
+    expect(payment().isIncome, isFalse);
+  });
+
+  test('reports income schedules', () {
+    expect(payment(type: TransactionType.income).isIncome, isTrue);
+  });
+
   test('compares by value', () {
     expect(payment(), payment());
     expect(payment(amount: 900), isNot(payment()));
     expect(payment(active: false), isNot(payment()));
+    expect(payment(type: TransactionType.income), isNot(payment()));
   });
 
   test('hashes equal instances consistently', () {
@@ -47,12 +60,15 @@ void main() {
 
   test('copies with overrides', () {
     final updated = payment().copyWith(
+      type: TransactionType.income,
       nextDueDate: DateTime(2026, 11, 23),
       isActive: false,
       lastPaidAt: DateTime(2026, 10, 24),
     );
 
     expect(updated.id, 'pay-1');
+    expect(updated.type, TransactionType.income);
+    expect(updated.isIncome, isTrue);
     expect(updated.nextDueDate, DateTime(2026, 11, 23));
     expect(updated.isActive, isFalse);
     expect(updated.lastPaidAt, DateTime(2026, 10, 24));

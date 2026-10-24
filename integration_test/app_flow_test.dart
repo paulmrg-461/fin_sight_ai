@@ -6,6 +6,7 @@ import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
@@ -579,7 +580,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     await tester.tap(savePayment);
-    await pumpUntil(tester, find.text('1 scheduled expenses were added.'));
+    await pumpUntil(tester, find.text('1 scheduled entry was added.'));
     await pumpUntilGone(tester, find.text('New scheduled payment'));
     expect(find.text('Rent payment'), findsOneWidget);
 
@@ -607,6 +608,51 @@ void main() {
     await pumpUntil(tester, find.text('Delete scheduled payment?'));
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await pumpUntil(tester, find.text('No scheduled payments'));
+  });
+
+  testWidgets('schedules a recurring salary and records it as income', (
+    tester,
+  ) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.scheduledPaymentsName);
+    await pumpUntil(tester, find.text('Scheduled payments'));
+    await pumpUntil(tester, find.text('No scheduled payments'));
+
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Add payment'));
+    await pumpUntil(tester, find.text('New scheduled payment'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Monthly salary');
+    await tester.enterText(fields.at(1), '3000');
+    await tester.tap(find.text('Income'));
+    await tester.pump();
+    expect(find.text('Salary'), findsWidgets);
+
+    final savePayment = find.widgetWithText(FilledButton, 'Add payment');
+    await tester.drag(
+      find.byType(SingleChildScrollView).last,
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(savePayment);
+    await pumpUntil(tester, find.text('1 scheduled entry was added.'));
+    await pumpUntilGone(tester, find.text('New scheduled payment'));
+
+    expect(find.text('Monthly salary'), findsOneWidget);
+    expect(find.text('Expected monthly income'), findsOneWidget);
+    expect(find.text(money(3000)), findsOneWidget);
+    expect(find.textContaining('Next income:'), findsOneWidget);
+
+    final schedules = await harness.scheduledPaymentRepository.getPayments();
+    final saved = schedules.getOrElse((_) => const <ScheduledPaymentEntity>[]);
+    expect(saved.single.type, TransactionType.income);
+    expect(saved.single.category, 'Salary');
+
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Add'));
+    harness.transactionBloc.add(const LoadTransactions());
+    await pumpUntil(tester, find.text('Monthly salary'));
+    expect(find.text(signedMoney(3000)), findsWidgets);
   });
 
   testWidgets('persists state across an app restart', (tester) async {

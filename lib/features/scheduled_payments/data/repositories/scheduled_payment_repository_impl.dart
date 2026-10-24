@@ -14,7 +14,7 @@ import '../../domain/services/schedule_calculator.dart';
 import '../datasources/scheduled_payment_local_data_source.dart';
 import '../models/scheduled_payment_model.dart';
 
-/// Local-first schedules that materialize ordinary expense transactions.
+/// Local-first schedules that materialize ordinary transactions.
 @LazySingleton(as: ScheduledPaymentRepository)
 class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   ScheduledPaymentRepositoryImpl(
@@ -282,7 +282,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         'scheduled:${payment.id}:${due.toIso8601String()}',
       ),
       amount: payment.amount,
-      type: TransactionType.expense,
+      type: payment.type,
       category: payment.category,
       description: payment.name,
       date: due,
