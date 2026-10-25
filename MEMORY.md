@@ -1,6 +1,6 @@
 # Project Memory — FinSight AI
 
-_Last updated: 2026-10-23. Read this before starting a new session._
+_Last updated: 2026-10-24. Read this before starting a new session._
 
 ## Delivered and pushed
 
@@ -9,7 +9,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 | Core infrastructure (DI, routing, theme, env, domain base) | Done |
 | Transactions slice | Done |
 | Debts slice | Done |
-| Receivables / money lent (local-only) | Done |
+| Receivables / money lent (edit + sync) | Done |
 | OCR slice (ML Kit + parser + preview + auto expense) | Done |
 | AI Coach slice (Groq + prompts + insights) | Done |
 | Dashboard analytics (fl_chart + aggregation) | Done |
@@ -22,9 +22,18 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
-- Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 866 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 21 Linux integration tests.
+- Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
+- Gates at this checkpoint: `flutter analyze` clean, 886 unit/widget tests, coverage gate green, 23 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Editing, confirmation, and undo (plan 008)
+
+- Transactions and budgets update in place with the same id, an `updatedAt` stamp, and one queued upsert; `UpdateTransactionUseCase` / `UpdateBudgetUseCase` validate input at the domain boundary.
+- `TransactionForm(initial:)` prefills every field and dispatches `UpdateTransaction`; transaction rows expose an edit button next to delete.
+- Budget cards open a prefilled dialog (`New budget` vs `Edit budget`) backed by `UpdateBudget`.
+- Deletes require an `AlertDialog`; deleting a transaction shows a SnackBar with `Undo`, which re-adds the same entity id (clearing the tombstone) through `AddTransaction(id:)`.
+- `CategoryDropdown` keeps a stale category (renamed or archived) selectable, so existing transactions can still be saved.
+- Coverage: repository/usecase/BLoC/widget tests plus integration flows for edit, delete confirmation, undo, and budget edit/delete.
 
 ## Receivables (Me deben)
 

@@ -424,5 +424,14 @@
   },
   "editReceivable": "Edit receivable",
   "amountLockedAfterPayments": "The amount cannot change after receiving payments.",
-  "saveChanges": "Save changes"
+  "saveChanges": "Save changes",
+  "editTransaction": "Edit transaction",
+  "transactionDeleted": "Transaction deleted.",
+  "undo": "Undo",
+  "deleteTransactionQuestion": "Delete transaction?",
+  "deleteTransactionBody": "This removes the transaction from your records.",
+  "editBudget": "Edit budget",
+  "budgetDeleted": "Budget deleted.",
+  "deleteBudgetQuestion": "Delete budget?",
+  "deleteBudgetBody": "This removes the monthly limit for this category."
 }

@@ -86,6 +86,76 @@ void main() {
     });
   });
 
+  group('UpdateBudgetUseCase', () {
+    test('updates the category, limit, and month in place', () async {
+      when(() => repository.updateBudget(any())).thenAnswer(
+        (invocation) async =>
+            Right(invocation.positionalArguments.first as BudgetEntity),
+      );
+
+      final result = await UpdateBudgetUseCase(repository)(
+        UpdateBudgetParams(
+          id: ' budget-1 ',
+          category: '  Housing  ',
+          monthlyLimit: 100.125,
+          month: month,
+        ),
+      );
+
+      final updated = result.getOrElse((_) => fail('Expected update'));
+      expect(updated.id, 'budget-1');
+      expect(updated.category, 'Housing');
+      expect(updated.monthlyLimit, 100.13);
+      expect(updated.month, normalized);
+      verify(() => repository.updateBudget(any())).called(1);
+    });
+
+    test('rejects a missing id', () async {
+      final result = await UpdateBudgetUseCase(repository)(
+        UpdateBudgetParams(
+          id: ' ',
+          category: 'Food',
+          monthlyLimit: 100,
+          month: month,
+        ),
+      );
+
+      expect(result.fold((failure) => failure.code, (_) => null), 'missing_id');
+    });
+
+    test('rejects an empty category', () async {
+      final result = await UpdateBudgetUseCase(repository)(
+        UpdateBudgetParams(
+          id: 'budget-1',
+          category: ' ',
+          monthlyLimit: 100,
+          month: month,
+        ),
+      );
+
+      expect(
+        result.fold((failure) => failure.code, (_) => null),
+        'missing_category',
+      );
+    });
+
+    test('rejects a non-positive limit', () async {
+      final result = await UpdateBudgetUseCase(repository)(
+        UpdateBudgetParams(
+          id: 'budget-1',
+          category: 'Food',
+          monthlyLimit: 0,
+          month: month,
+        ),
+      );
+
+      expect(
+        result.fold((failure) => failure.code, (_) => null),
+        'invalid_limit',
+      );
+    });
+  });
+
   group('other budget use cases', () {
     test('DeleteBudgetUseCase rejects a blank id', () async {
       final result = await DeleteBudgetUseCase(repository)('  ');

@@ -66,6 +66,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_state.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/screens/transaction_screen.dart';
@@ -85,6 +86,8 @@ class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
 class MockAddTransaction extends Mock implements AddTransactionUseCase {}
 
 class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
+
+class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -173,6 +176,8 @@ class MockAddBudget extends Mock implements AddBudgetUseCase {}
 
 class MockDeleteBudget extends Mock implements DeleteBudgetUseCase {}
 
+class MockUpdateBudget extends Mock implements UpdateBudgetUseCase {}
+
 class MockGetBudgetProgress extends Mock implements GetBudgetProgressUseCase {}
 
 class MockGetCategories extends Mock implements GetCategoriesUseCase {}
@@ -243,6 +248,7 @@ void main() {
       addTransaction,
       MockDeleteTransaction(),
       MockGetByDateRange(),
+      MockUpdateTransaction(),
     );
     debtBloc = DebtBloc(
       MockGetDebts(),
@@ -290,6 +296,7 @@ void main() {
     );
     budgetBloc = BudgetBloc(
       MockAddBudget(),
+      MockUpdateBudget(),
       MockDeleteBudget(),
       MockGetBudgetProgress(),
       MockGetCategories(),

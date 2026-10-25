@@ -1915,6 +1915,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save changes'**
   String get saveChanges;
+
+  /// No description provided for @editTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit transaction'**
+  String get editTransaction;
+
+  /// No description provided for @transactionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction deleted.'**
+  String get transactionDeleted;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @deleteTransactionQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete transaction?'**
+  String get deleteTransactionQuestion;
+
+  /// No description provided for @deleteTransactionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the transaction from your records.'**
+  String get deleteTransactionBody;
+
+  /// No description provided for @editBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit budget'**
+  String get editBudget;
+
+  /// No description provided for @budgetDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget deleted.'**
+  String get budgetDeleted;
+
+  /// No description provided for @deleteBudgetQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete budget?'**
+  String get deleteBudgetQuestion;
+
+  /// No description provided for @deleteBudgetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the monthly limit for this category.'**
+  String get deleteBudgetBody;
 }
 
 class _AppLocalizationsDelegate

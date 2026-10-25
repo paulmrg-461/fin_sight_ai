@@ -5,6 +5,9 @@ import '../entities/budget_entity.dart';
 abstract interface class BudgetRepository {
   ResultFuture<BudgetEntity> addBudget(BudgetEntity budget);
 
+  /// Updates an existing budget while preserving its id.
+  ResultFuture<BudgetEntity> updateBudget(BudgetEntity budget);
+
   ResultFuture<void> deleteBudget(String id);
 
   /// Returns budgets for [month] with spending aggregated from transactions.

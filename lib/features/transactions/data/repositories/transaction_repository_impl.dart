@@ -57,6 +57,34 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
+  ResultFuture<TransactionEntity> updateTransaction(
+    TransactionEntity transaction,
+  ) async {
+    try {
+      final existing = await _localDataSource.getTransactions();
+      final found = existing.any((model) => model.id == transaction.id);
+      if (!found) {
+        return const Left(
+          ValidationFailure(
+            'Transaction not found.',
+            code: 'transaction_not_found',
+          ),
+        );
+      }
+      return await addTransaction(transaction);
+    } on CacheException catch (exception) {
+      return Left(_toCacheFailure(exception));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to update the transaction locally.',
+          code: 'cache_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
   ResultFuture<List<TransactionEntity>> getTransactions() async {
     try {
       final models = await _localDataSource.getTransactions();

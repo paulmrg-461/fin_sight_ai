@@ -84,6 +84,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/hive_sync_local_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
@@ -272,6 +273,7 @@ class IntegrationHarness {
       addTransaction,
       deleteTransaction,
       getTransactionsByDateRange,
+      UpdateTransactionUseCase(transactionRepository),
     );
     debtBloc = DebtBloc(
       getDebts,
@@ -342,6 +344,7 @@ class IntegrationHarness {
     );
     budgetBloc = BudgetBloc(
       AddBudgetUseCase(budgetRepository),
+      UpdateBudgetUseCase(budgetRepository),
       DeleteBudgetUseCase(budgetRepository),
       GetBudgetProgressUseCase(budgetRepository),
       GetCategoriesUseCase(budgetRepository),

@@ -6,6 +6,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_state.dart';
@@ -19,6 +20,8 @@ class MockAddTransaction extends Mock implements AddTransactionUseCase {}
 
 class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
 
+class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
+
 class MockGetTransactionsByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
 
@@ -27,6 +30,7 @@ void main() {
   late MockAddTransaction addTransaction;
   late MockDeleteTransaction deleteTransaction;
   late MockGetTransactionsByDateRange getByDateRange;
+  late MockUpdateTransaction updateTransaction;
 
   final transaction = TransactionEntity(
     id: 'tx-1',
@@ -49,6 +53,16 @@ void main() {
       ),
     );
     registerFallbackValue(
+      UpdateTransactionParams(
+        id: 'fallback',
+        amount: 1,
+        type: TransactionType.expense,
+        category: 'fallback',
+        description: '',
+        date: DateTime.utc(2026),
+      ),
+    );
+    registerFallbackValue(
       DateRangeParams(
         start: DateTime.utc(2026),
         end: DateTime.utc(2026, 12, 31),
@@ -61,6 +75,7 @@ void main() {
     addTransaction = MockAddTransaction();
     deleteTransaction = MockDeleteTransaction();
     getByDateRange = MockGetTransactionsByDateRange();
+    updateTransaction = MockUpdateTransaction();
   });
 
   TransactionBloc buildBloc() => TransactionBloc(
@@ -68,6 +83,7 @@ void main() {
     addTransaction,
     deleteTransaction,
     getByDateRange,
+    updateTransaction,
   );
 
   group('TransactionBloc', () {
@@ -163,6 +179,64 @@ void main() {
       expect: () => [
         const TransactionLoading(),
         const TransactionFailure('Amount must be greater than zero.'),
+      ],
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'updates a transaction and reloads the list',
+      setUp: () {
+        when(() => updateTransaction(any()))
+            .thenAnswer((_) async => Right(transaction));
+        when(() => getTransactions(any()))
+            .thenAnswer((_) async => Right([transaction]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        UpdateTransaction(
+          id: 'tx-1',
+          amount: 10,
+          type: TransactionType.expense,
+          category: 'Coffee',
+          description: 'Morning',
+          date: DateTime.utc(2026, 10, 20),
+        ),
+      ),
+      expect: () => [
+        const TransactionLoading(),
+        TransactionLoaded(transactions: [transaction]),
+      ],
+      verify: (_) {
+        verify(() => updateTransaction(any())).called(1);
+        verifyNever(() => addTransaction(any()));
+      },
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'emits failure when an update is rejected',
+      setUp: () {
+        when(() => updateTransaction(any())).thenAnswer(
+          (_) async => const Left(
+            ValidationFailure(
+              'Transaction not found.',
+              code: 'transaction_not_found',
+            ),
+          ),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        UpdateTransaction(
+          id: 'missing',
+          amount: 10,
+          type: TransactionType.expense,
+          category: 'Coffee',
+          description: 'Morning',
+          date: DateTime.utc(2026, 10, 20),
+        ),
+      ),
+      expect: () => [
+        const TransactionLoading(),
+        const TransactionFailure('Transaction not found.'),
       ],
     );
 

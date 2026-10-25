@@ -189,6 +189,8 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transacti
     as _i271;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart'
     as _i1051;
+import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart'
+    as _i913;
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart'
     as _i820;
 import 'package:fin_sight_ai/features/wallets/data/datasources/wallet_local_data_source.dart'
@@ -389,6 +391,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i588.SyncQueue>(
       () => syncModule.provideSyncQueue(gh<_i921.SyncLocalDataSource>()),
     );
+    gh.lazySingleton<_i41.UpdateBudgetUseCase>(
+      () => _i41.UpdateBudgetUseCase(gh<_i575.BudgetRepository>()),
+    );
     gh.lazySingleton<_i41.DeleteBudgetUseCase>(
       () => _i41.DeleteBudgetUseCase(gh<_i575.BudgetRepository>()),
     );
@@ -465,6 +470,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1051.GetTransactionsUseCase>(
       () => _i1051.GetTransactionsUseCase(gh<_i544.TransactionRepository>()),
     );
+    gh.lazySingleton<_i913.UpdateTransactionUseCase>(
+      () => _i913.UpdateTransactionUseCase(gh<_i544.TransactionRepository>()),
+    );
     gh.lazySingleton<_i905.GetDashboardSummaryUseCase>(
       () => _i905.GetDashboardSummaryUseCase(gh<_i864.DashboardRepository>()),
     );
@@ -508,6 +516,15 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.factory<_i746.BudgetBloc>(
+      () => _i746.BudgetBloc(
+        gh<_i41.AddBudgetUseCase>(),
+        gh<_i41.UpdateBudgetUseCase>(),
+        gh<_i41.DeleteBudgetUseCase>(),
+        gh<_i41.GetBudgetProgressUseCase>(),
+        gh<_i41.GetCategoriesUseCase>(),
+      ),
+    );
     gh.lazySingleton<_i195.RenameCategoryUseCase>(
       () => _i195.RenameCategoryUseCase(
         gh<_i888.CategoryRepository>(),
@@ -541,12 +558,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i993.AuthRepository>(),
       ),
     );
-    gh.factory<_i746.BudgetBloc>(
-      () => _i746.BudgetBloc(
-        gh<_i41.AddBudgetUseCase>(),
-        gh<_i41.DeleteBudgetUseCase>(),
-        gh<_i41.GetBudgetProgressUseCase>(),
-        gh<_i41.GetCategoriesUseCase>(),
+    gh.factory<_i820.TransactionBloc>(
+      () => _i820.TransactionBloc(
+        gh<_i1051.GetTransactionsUseCase>(),
+        gh<_i361.AddTransactionUseCase>(),
+        gh<_i69.DeleteTransactionUseCase>(),
+        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i913.UpdateTransactionUseCase>(),
       ),
     );
     gh.factory<_i850.DashboardBloc>(
@@ -561,14 +579,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i144.AddDebtUseCase(
         gh<_i268.DebtRepository>(),
         uuid: gh<_i706.Uuid>(),
-      ),
-    );
-    gh.factory<_i820.TransactionBloc>(
-      () => _i820.TransactionBloc(
-        gh<_i1051.GetTransactionsUseCase>(),
-        gh<_i361.AddTransactionUseCase>(),
-        gh<_i69.DeleteTransactionUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
       ),
     );
     gh.lazySingleton<_i160.PayScheduledPaymentUseCase>(

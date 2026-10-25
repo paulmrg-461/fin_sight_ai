@@ -29,9 +29,13 @@ class CategoryDropdown extends StatelessWidget {
             categories.where((category) => !category.isArchived).toList(),
           _ => const <CategoryEntity>[],
         };
-        final selected = categories.any((category) => category.name == value)
-            ? value
-            : null;
+        final available = categories.map((category) => category.name).toSet();
+        final current = value?.trim();
+        final selected = current == null || current.isEmpty ? null : current;
+        // Keep a value the catalog no longer contains (renamed or archived
+        // category) selectable so an existing record can still be saved.
+        final hasLegacyValue =
+            selected != null && !available.contains(selected);
 
         return DropdownButtonFormField<String>(
           initialValue: selected,
@@ -50,6 +54,8 @@ class CategoryDropdown extends StatelessWidget {
                 value: category.name,
                 child: Text(category.name),
               ),
+            if (hasLegacyValue)
+              DropdownMenuItem(value: selected, child: Text(selected)),
           ],
           onChanged: onChanged,
           validator:

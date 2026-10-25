@@ -12,10 +12,12 @@ class TransactionList extends StatefulWidget {
     super.key,
     required this.transactions,
     required this.onDelete,
+    required this.onEdit,
   });
 
   final List<TransactionEntity> transactions;
-  final ValueChanged<String> onDelete;
+  final ValueChanged<TransactionEntity> onDelete;
+  final ValueChanged<TransactionEntity> onEdit;
 
   @override
   State<TransactionList> createState() => _TransactionListState();
@@ -93,7 +95,8 @@ class _TransactionListState extends State<TransactionList> {
                     final transaction = visible[index];
                     return _TransactionTile(
                       transaction: transaction,
-                      onDelete: () => widget.onDelete(transaction.id),
+                      onDelete: () => widget.onDelete(transaction),
+                      onEdit: () => widget.onEdit(transaction),
                     );
                   },
                 ),
@@ -104,10 +107,15 @@ class _TransactionListState extends State<TransactionList> {
 }
 
 class _TransactionTile extends StatelessWidget {
-  const _TransactionTile({required this.transaction, required this.onDelete});
+  const _TransactionTile({
+    required this.transaction,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   final TransactionEntity transaction;
   final VoidCallback onDelete;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +158,11 @@ class _TransactionTile extends StatelessWidget {
                 color: isIncome ? AppColors.success : AppColors.danger,
                 fontWeight: FontWeight.w600,
               ),
+            ),
+            IconButton(
+              onPressed: onEdit,
+              tooltip: context.l10n.editTransaction,
+              icon: const Icon(Icons.edit_outlined),
             ),
             IconButton(
               onPressed: onDelete,

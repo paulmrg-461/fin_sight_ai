@@ -9,6 +9,11 @@ abstract interface class TransactionRepository {
   /// Returns every transaction, newest first.
   ResultFuture<List<TransactionEntity>> getTransactions();
 
+  /// Updates an existing transaction, preserving its id.
+  ResultFuture<TransactionEntity> updateTransaction(
+    TransactionEntity transaction,
+  );
+
   /// Deletes the transaction with [id]. Succeeds when it does not exist.
   ResultFuture<void> deleteTransaction(String id);
 

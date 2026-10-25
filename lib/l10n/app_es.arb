@@ -375,5 +375,14 @@
   },
   "editReceivable": "Editar cuenta por cobrar",
   "amountLockedAfterPayments": "El monto no se puede cambiar después de recibir abonos.",
-  "saveChanges": "Guardar cambios"
+  "saveChanges": "Guardar cambios",
+  "editTransaction": "Editar transacción",
+  "transactionDeleted": "Transacción eliminada.",
+  "undo": "Deshacer",
+  "deleteTransactionQuestion": "¿Eliminar transacción?",
+  "deleteTransactionBody": "Esto elimina la transacción de tus registros.",
+  "editBudget": "Editar presupuesto",
+  "budgetDeleted": "Presupuesto eliminado.",
+  "deleteBudgetQuestion": "¿Eliminar presupuesto?",
+  "deleteBudgetBody": "Esto elimina el límite mensual de esta categoría."
 }

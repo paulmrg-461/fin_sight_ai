@@ -11,16 +11,19 @@ import 'budget_state.dart';
 class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   BudgetBloc(
     this._addBudget,
+    this._updateBudget,
     this._deleteBudget,
     this._getProgress,
     this._getCategories,
   ) : super(const BudgetInitial()) {
     on<LoadBudgets>(_onLoad);
     on<AddBudget>(_onAdd);
+    on<UpdateBudget>(_onUpdate);
     on<DeleteBudget>(_onDelete);
   }
 
   final AddBudgetUseCase _addBudget;
+  final UpdateBudgetUseCase _updateBudget;
   final DeleteBudgetUseCase _deleteBudget;
   final GetBudgetProgressUseCase _getProgress;
   final GetCategoriesUseCase _getCategories;
@@ -40,6 +43,24 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         category: event.category,
         monthlyLimit: event.monthlyLimit,
         month: _month,
+      ),
+    );
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      emit(BudgetFailure(failure.message));
+      return;
+    }
+    await _reload(emit);
+  }
+
+  Future<void> _onUpdate(UpdateBudget event, Emitter<BudgetState> emit) async {
+    emit(const BudgetLoading());
+    final result = await _updateBudget(
+      UpdateBudgetParams(
+        id: event.id,
+        category: event.category,
+        monthlyLimit: event.monthlyLimit,
+        month: event.month,
       ),
     );
     final failure = result.getLeft().toNullable();

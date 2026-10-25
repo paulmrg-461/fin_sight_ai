@@ -338,6 +338,138 @@ void main() {
     expect(find.text('Food'), findsOneWidget);
   });
 
+  testWidgets('edits a transaction in place, then deletes and undoes it', (
+    tester,
+  ) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 20,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Lunch',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Lunch'));
+
+    await tester.tap(find.byTooltip('Edit transaction'));
+    await pumpUntil(tester, find.text('Edit transaction'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), '45');
+    await tester.enterText(fields.at(1), 'Lunch updated');
+    final saveChanges = find.text('Save changes');
+    await tester.ensureVisible(saveChanges);
+    await tester.pumpAndSettle();
+    await tester.tap(saveChanges);
+    await pumpUntilGone(tester, find.text('Save changes'));
+
+    await pumpUntil(tester, find.text('Lunch updated'));
+    expect(find.text('Lunch'), findsNothing);
+
+    final stored = await harness.transactionRepository.getTransactions();
+    final updated = stored.getOrElse(
+      (failure) =>
+          throw TestFailure('Expected stored transaction: ${failure.message}'),
+    );
+    expect(updated, hasLength(1));
+    expect(updated.single.description, 'Lunch updated');
+    expect(updated.single.amount, 45);
+    expect(updated.single.category, 'Food');
+
+    await tester.tap(find.byTooltip('Delete transaction'));
+    await pumpUntil(tester, find.text('Delete transaction?'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Delete'),
+      ),
+    );
+    await pumpUntilGone(tester, find.text('Lunch updated'));
+
+    final afterDelete = await harness.transactionRepository.getTransactions();
+    expect(
+      afterDelete.getOrElse(
+        (failure) => throw TestFailure('Expected empty list'),
+      ),
+      isEmpty,
+    );
+
+    await pumpUntil(tester, find.text('Undo'));
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Undo'));
+    await pumpUntil(tester, find.text('Lunch updated'));
+
+    final restored = await harness.transactionRepository.getTransactions();
+    expect(
+      restored.getOrElse(
+        (failure) => throw TestFailure('Expected restored transaction'),
+      ),
+      hasLength(1),
+    );
+  });
+
+  testWidgets('edits and deletes a budget with confirmation', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 40,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Groceries',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.budgetsName);
+    await pumpUntil(tester, find.text('Add budget'));
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntil(tester, find.text('New budget'));
+    var fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Food');
+    await tester.enterText(fields.at(1), '100');
+    await tester.tap(find.text('Save budget'));
+    await pumpUntilGone(tester, find.text('New budget'));
+    await pumpUntil(tester, find.text(money(100)));
+
+    await tester.tap(find.text('Food'));
+    await pumpUntil(tester, find.text('Edit budget'));
+    fields = find.byType(TextFormField);
+    expect(
+      tester.widget<TextFormField>(fields.at(1)).controller?.text,
+      isNotEmpty,
+    );
+    await tester.enterText(fields.at(1), '150');
+    await tester.tap(find.text('Save changes'));
+    await pumpUntilGone(tester, find.text('Edit budget'));
+    await pumpUntil(tester, find.text(money(150)));
+
+    await tester.tap(find.byTooltip('Delete budget'));
+    await pumpUntil(tester, find.text('Delete budget?'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Cancel'),
+      ),
+    );
+    await pumpUntilGone(tester, find.text('Delete budget?'));
+    expect(find.text(money(150)), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Delete budget'));
+    await pumpUntil(tester, find.text('Delete budget?'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('Delete'),
+      ),
+    );
+    await pumpUntil(tester, find.text('No budgets yet'));
+  });
+
   testWidgets('signs in and out from the dashboard', (tester) async {
     await harness.pumpApp(tester);
     await pumpUntil(tester, find.byIcon(Icons.person_outline));

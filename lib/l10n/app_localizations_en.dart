@@ -1003,4 +1003,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveChanges => 'Save changes';
+
+  @override
+  String get editTransaction => 'Edit transaction';
+
+  @override
+  String get transactionDeleted => 'Transaction deleted.';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get deleteTransactionQuestion => 'Delete transaction?';
+
+  @override
+  String get deleteTransactionBody =>
+      'This removes the transaction from your records.';
+
+  @override
+  String get editBudget => 'Edit budget';
+
+  @override
+  String get budgetDeleted => 'Budget deleted.';
+
+  @override
+  String get deleteBudgetQuestion => 'Delete budget?';
+
+  @override
+  String get deleteBudgetBody =>
+      'This removes the monthly limit for this category.';
 }

@@ -6,6 +6,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/widgets/app_states.dart';
+import '../../domain/entities/transaction_entity.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
 import '../bloc/transaction_state.dart';
@@ -16,14 +17,68 @@ import '../widgets/transaction_list.dart';
 class TransactionScreen extends StatelessWidget {
   const TransactionScreen({super.key});
 
-  Future<void> _openForm(BuildContext context) {
+  Future<void> _openForm(BuildContext context, {TransactionEntity? initial}) {
     final bloc = context.read<TransactionBloc>();
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) =>
-          BlocProvider.value(value: bloc, child: const TransactionForm()),
+      builder: (_) => BlocProvider.value(
+        value: bloc,
+        child: TransactionForm(initial: initial),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(
+    BuildContext context,
+    TransactionEntity transaction,
+  ) async {
+    final l10n = context.l10n;
+    final bloc = context.read<TransactionBloc>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteTransactionQuestion),
+        content: Text(l10n.deleteTransactionBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    bloc.add(DeleteTransaction(transaction.id));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.transactionDeleted),
+        action: SnackBarAction(
+          label: l10n.undo,
+          onPressed: () {
+            bloc.add(
+              AddTransaction(
+                id: transaction.id,
+                amount: transaction.amount,
+                type: transaction.type,
+                category: transaction.category,
+                description: transaction.description,
+                date: transaction.date,
+                walletId: transaction.walletId,
+                receiptImagePath: transaction.receiptImagePath,
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -104,9 +159,10 @@ class TransactionScreen extends StatelessWidget {
                     Expanded(
                       child: TransactionList(
                         transactions: transactions,
-                        onDelete: (id) => context.read<TransactionBloc>().add(
-                          DeleteTransaction(id),
-                        ),
+                        onDelete: (transaction) =>
+                            _confirmDelete(context, transaction),
+                        onEdit: (transaction) =>
+                            _openForm(context, initial: transaction),
                       ),
                     ),
                   ],

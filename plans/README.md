@@ -15,7 +15,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | DONE (864 unit tests, 20 integration) |
 | 006 | Give categories a stable id and cascade renames | P2 | M | 003 | DONE (rename cascade by name; categoryId deferred) |
 | 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | TODO |
-| 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | TODO |
+| 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | DONE (886 unit, 23 integration) |
 | 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | TODO |
 | 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | TODO |
 | 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | DONE (worktree `navigation-shell`, commit `62b1ede`) |
@@ -23,6 +23,8 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
 ## Review notes
+
+- 008 delivered in-place transaction/budget editing (same id, one sync upsert), delete confirmation, and transaction undo. It also lets a picker keep a category that was renamed or archived so existing records stay editable.
 
 - 006 delivered the rename cascade across transactions, budgets, and schedules using the stored name (21 integration tests). Canonical `categoryId` remains deferred until definitions are synced.
 

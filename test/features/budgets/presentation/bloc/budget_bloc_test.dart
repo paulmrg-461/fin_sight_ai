@@ -14,12 +14,15 @@ class MockAddBudget extends Mock implements AddBudgetUseCase {}
 
 class MockDeleteBudget extends Mock implements DeleteBudgetUseCase {}
 
+class MockUpdateBudget extends Mock implements UpdateBudgetUseCase {}
+
 class MockGetProgress extends Mock implements GetBudgetProgressUseCase {}
 
 class MockGetCategories extends Mock implements GetCategoriesUseCase {}
 
 void main() {
   late MockAddBudget addBudget;
+  late MockUpdateBudget updateBudget;
   late MockDeleteBudget deleteBudget;
   late MockGetProgress getProgress;
   late MockGetCategories getCategories;
@@ -42,10 +45,19 @@ void main() {
         month: DateTime(2026, 10),
       ),
     );
+    registerFallbackValue(
+      UpdateBudgetParams(
+        id: 'fallback',
+        category: 'fallback',
+        monthlyLimit: 1,
+        month: DateTime(2026, 10),
+      ),
+    );
   });
 
   setUp(() {
     addBudget = MockAddBudget();
+    updateBudget = MockUpdateBudget();
     deleteBudget = MockDeleteBudget();
     getProgress = MockGetProgress();
     getCategories = MockGetCategories();
@@ -55,8 +67,13 @@ void main() {
         .thenAnswer((_) async => const Right(['Food']));
   });
 
-  BudgetBloc buildBloc() =>
-      BudgetBloc(addBudget, deleteBudget, getProgress, getCategories);
+  BudgetBloc buildBloc() => BudgetBloc(
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    getProgress,
+    getCategories,
+  );
 
   group('BudgetBloc', () {
     test('initial state is BudgetInitial', () {
@@ -129,6 +146,33 @@ void main() {
       act: (bloc) =>
           bloc.add(const AddBudget(category: 'Food', monthlyLimit: 0)),
       expect: () => [const BudgetLoading(), const BudgetFailure('Bad limit.')],
+    );
+
+    blocTest<BudgetBloc, BudgetState>(
+      'updates a budget and reloads',
+      setUp: () {
+        when(() => updateBudget(any())).thenAnswer((_) async => Right(budget));
+        when(() => getProgress(any()))
+            .thenAnswer((_) async => Right([progress]));
+        when(() => getCategories(any()))
+            .thenAnswer((_) async => const Right(['Food']));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        UpdateBudget(
+          id: 'budget-1',
+          category: 'Food',
+          monthlyLimit: 200,
+          month: DateTime(2026, 10),
+        ),
+      ),
+      expect: () => [
+        const BudgetLoading(),
+        BudgetLoaded(progress: [progress], categories: const ['Food']),
+      ],
+      verify: (_) {
+        verify(() => updateBudget(any())).called(1);
+      },
     );
 
     blocTest<BudgetBloc, BudgetState>(

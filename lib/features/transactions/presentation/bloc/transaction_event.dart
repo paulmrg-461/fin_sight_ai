@@ -25,6 +25,7 @@ final class AddTransaction extends TransactionEvent {
     required this.date,
     this.receiptImagePath,
     this.walletId,
+    this.id,
   });
 
   final double amount;
@@ -35,8 +36,47 @@ final class AddTransaction extends TransactionEvent {
   final String? receiptImagePath;
   final String? walletId;
 
+  /// Optional explicit id, used to restore an undone deletion.
+  final String? id;
+
   @override
   List<Object?> get props => [
+    amount,
+    type,
+    category,
+    description,
+    date,
+    receiptImagePath,
+    walletId,
+    id,
+  ];
+}
+
+/// Updates an existing transaction and reloads the current view.
+final class UpdateTransaction extends TransactionEvent {
+  const UpdateTransaction({
+    required this.id,
+    required this.amount,
+    required this.type,
+    required this.category,
+    required this.description,
+    required this.date,
+    this.receiptImagePath,
+    this.walletId,
+  });
+
+  final String id;
+  final double amount;
+  final TransactionType type;
+  final String category;
+  final String description;
+  final DateTime date;
+  final String? receiptImagePath;
+  final String? walletId;
+
+  @override
+  List<Object?> get props => [
+    id,
     amount,
     type,
     category,

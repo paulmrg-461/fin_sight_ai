@@ -56,6 +56,11 @@ class FakeTransactionRepository implements TransactionRepository {
       Right(saved.values.toList());
 
   @override
+  ResultFuture<TransactionEntity> updateTransaction(
+    TransactionEntity transaction,
+  ) async => Right(transaction);
+
+  @override
   ResultFuture<int> renameCategory({
     required String from,
     required String to,

@@ -39,6 +39,69 @@ class BudgetScreen extends StatelessWidget {
     );
   }
 
+  List<String> _suggestions(BuildContext context, List<String> categories) {
+    final catalog = switch (context.read<CategoryBloc>().state) {
+      CategoryLoaded(:final categories) =>
+        categories
+            .where((category) => !category.isArchived)
+            .map((category) => category.name),
+      _ => const <String>[],
+    };
+    return {...categories, ...catalog}.toList()..sort();
+  }
+
+  Future<void> _editBudget(
+    BuildContext context,
+    BudgetProgress item,
+    List<String> categories,
+  ) async {
+    final suggestions = _suggestions(context, categories);
+    final result = await showDialog<(String, double)>(
+      context: context,
+      builder: (_) => _AddBudgetDialog(
+        categories: suggestions,
+        initialCategory: item.budget.category,
+        initialLimit: item.budget.monthlyLimit,
+      ),
+    );
+    if (result == null || !context.mounted) {
+      return;
+    }
+    context.read<BudgetBloc>().add(
+      UpdateBudget(
+        id: item.budget.id,
+        category: result.$1,
+        monthlyLimit: result.$2,
+        month: item.budget.month,
+      ),
+    );
+  }
+
+  Future<void> _deleteBudget(BuildContext context, BudgetProgress item) async {
+    final l10n = context.l10n;
+    final bloc = context.read<BudgetBloc>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteBudgetQuestion),
+        content: Text(l10n.deleteBudgetBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.delete),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      bloc.add(DeleteBudget(item.budget.id));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,9 +144,8 @@ class BudgetScreen extends StatelessWidget {
                   for (final item in progress)
                     _BudgetCard(
                       progress: item,
-                      onDelete: () => context.read<BudgetBloc>().add(
-                        DeleteBudget(item.budget.id),
-                      ),
+                      onTap: () => _editBudget(context, item, categories),
+                      onDelete: () => _deleteBudget(context, item),
                     ),
                   const SizedBox(height: 4),
                   OutlinedButton.icon(
@@ -188,9 +250,14 @@ class _BudgetHero extends StatelessWidget {
 }
 
 class _BudgetCard extends StatelessWidget {
-  const _BudgetCard({required this.progress, required this.onDelete});
+  const _BudgetCard({
+    required this.progress,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   final BudgetProgress progress;
+  final VoidCallback onTap;
   final VoidCallback onDelete;
 
   @override
@@ -201,83 +268,86 @@ class _BudgetCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    budget.category,
-                    style: theme.textTheme.titleMedium,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      budget.category,
+                      style: theme.textTheme.titleMedium,
+                    ),
                   ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      MoneyText(
+                        progress.spent,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: overBudget
+                              ? AppColors.danger
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(' / ', style: theme.textTheme.labelLarge),
+                      MoneyText(
+                        budget.monthlyLimit,
+                        style: theme.textTheme.labelLarge,
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: onDelete,
+                    tooltip: context.l10n.deleteBudget,
+                    icon: const Icon(Icons.delete_outline),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: LinearProgressIndicator(
+                  value: progress.percentage,
+                  minHeight: 8,
+                  color: overBudget ? AppColors.danger : AppColors.emerald,
+                  semanticsLabel: context.l10n.budgetUsage(budget.category),
+                  semanticsValue: '${(progress.percentage * 100).round()}%',
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MoneyText(
-                      progress.spent,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: overBudget
-                            ? AppColors.danger
-                            : theme.colorScheme.onSurface,
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    overBudget ? context.l10n.overBudgetBy : '',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: overBudget ? AppColors.danger : null,
+                    ),
+                  ),
+                  MoneyText(
+                    overBudget ? -progress.remaining : progress.remaining,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: overBudget
+                          ? AppColors.danger
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  if (!overBudget)
+                    Text(
+                      ' remaining',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    Text(' / ', style: theme.textTheme.labelLarge),
-                    MoneyText(
-                      budget.monthlyLimit,
-                      style: theme.textTheme.labelLarge,
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: onDelete,
-                  tooltip: context.l10n.deleteBudget,
-                  icon: const Icon(Icons.delete_outline),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: progress.percentage,
-                minHeight: 8,
-                color: overBudget ? AppColors.danger : AppColors.emerald,
-                semanticsLabel: context.l10n.budgetUsage(budget.category),
-                semanticsValue: '${(progress.percentage * 100).round()}%',
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  overBudget ? context.l10n.overBudgetBy : '',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: overBudget ? AppColors.danger : null,
-                  ),
-                ),
-                MoneyText(
-                  overBudget ? -progress.remaining : progress.remaining,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: overBudget
-                        ? AppColors.danger
-                        : theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                if (!overBudget)
-                  Text(
-                    ' remaining',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -285,9 +355,15 @@ class _BudgetCard extends StatelessWidget {
 }
 
 class _AddBudgetDialog extends StatefulWidget {
-  const _AddBudgetDialog({required this.categories});
+  const _AddBudgetDialog({
+    required this.categories,
+    this.initialCategory,
+    this.initialLimit,
+  });
 
   final List<String> categories;
+  final String? initialCategory;
+  final double? initialLimit;
 
   @override
   State<_AddBudgetDialog> createState() => _AddBudgetDialogState();
@@ -297,6 +373,17 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
   final _formKey = GlobalKey<FormState>();
   final _categoryController = TextEditingController();
   final _limitController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialCategory != null) {
+      _categoryController.text = widget.initialCategory!;
+    }
+    if (widget.initialLimit != null) {
+      _limitController.text = widget.initialLimit!.toStringAsFixed(2);
+    }
+  }
 
   @override
   void dispose() {
@@ -318,7 +405,11 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(context.l10n.newBudget),
+      title: Text(
+        widget.initialCategory == null
+            ? context.l10n.newBudget
+            : context.l10n.editBudget,
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -374,7 +465,14 @@ class _AddBudgetDialogState extends State<_AddBudgetDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(context.l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(context.l10n.saveBudget)),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(
+            widget.initialCategory == null
+                ? context.l10n.saveBudget
+                : context.l10n.saveChanges,
+          ),
+        ),
       ],
     );
   }

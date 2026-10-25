@@ -228,6 +228,28 @@ void main() {
     verifyNever(() => local.saveBudget(any()));
   });
 
+  group('BudgetRepositoryImpl.updateBudget', () {
+    test('persists the updated budget with the same id', () async {
+      when(() => local.saveBudget(any())).thenAnswer((_) async {});
+
+      final result = await repository.updateBudget(
+        BudgetEntity(
+          id: 'budget-1',
+          category: 'Housing',
+          monthlyLimit: 250,
+          month: DateTime(2026, 10),
+        ),
+      );
+
+      expect(result.fold((_) => null, (value) => value.id), 'budget-1');
+      final saved =
+          verify(() => local.saveBudget(captureAny())).captured.single
+              as BudgetModel;
+      expect(saved.category, 'Housing');
+      expect(saved.monthlyLimit, 250);
+    });
+  });
+
   group('sync queue integration', () {
     final now = DateTime.utc(2026, 10, 23, 12);
     late MockSyncQueue queue;

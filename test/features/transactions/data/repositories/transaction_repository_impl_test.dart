@@ -27,23 +27,27 @@ TransactionModel buildModel({
   String id = 'tx-1',
   double amount = 10,
   DateTime? date,
+  String category = 'Coffee',
 }) {
   return TransactionModel(
     id: id,
     amount: amount,
     type: TransactionType.expense,
-    category: 'Coffee',
+    category: category,
     description: 'Morning',
     date: date ?? DateTime.utc(2026, 10, 20, 12),
   );
 }
 
-TransactionEntity buildEntity({String id = 'tx-1'}) {
+TransactionEntity buildEntity({
+  String id = 'tx-1',
+  String category = 'Coffee',
+}) {
   return TransactionEntity(
     id: id,
     amount: 10,
     type: TransactionType.expense,
-    category: 'Coffee',
+    category: category,
     description: 'Morning',
     date: DateTime.utc(2026, 10, 20, 12),
   );
@@ -105,6 +109,52 @@ void main() {
       final result = await repository.addTransaction(buildEntity());
 
       expect(result.getLeft().toNullable()?.code, 'cache_write_failed');
+    });
+  });
+
+  group('TransactionRepositoryImpl.updateTransaction', () {
+    test('updates an existing transaction in place', () async {
+      when(() => localDataSource.getTransactions())
+          .thenAnswer((_) async => [buildModel()]);
+      when(() => localDataSource.saveTransaction(any()))
+          .thenAnswer((_) async {});
+
+      final result = await repository.updateTransaction(
+        TransactionEntity(
+          id: 'tx-1',
+          amount: 99,
+          type: TransactionType.income,
+          category: 'Salary',
+          description: 'Raise',
+          date: DateTime.utc(2026, 10, 20, 12),
+          walletId: 'wallet-bank',
+        ),
+      );
+
+      final updated = result.getOrElse((_) => fail('Expected update'));
+      expect(updated.id, 'tx-1');
+      expect(updated.amount, 99);
+      expect(updated.category, 'Salary');
+      expect(updated.walletId, 'wallet-bank');
+      final saved =
+          verify(() => localDataSource.saveTransaction(captureAny()))
+                  .captured
+                  .single
+              as TransactionModel;
+      expect(saved.id, 'tx-1');
+      expect(saved.amount, 99);
+    });
+
+    test('reports a missing transaction', () async {
+      when(() => localDataSource.getTransactions()).thenAnswer((_) async => []);
+
+      final result = await repository.updateTransaction(buildEntity());
+
+      expect(
+        result.fold((failure) => failure.code, (_) => null),
+        'transaction_not_found',
+      );
+      verifyNever(() => localDataSource.saveTransaction(any()));
     });
   });
 
@@ -179,6 +229,41 @@ void main() {
       final result = await repository.deleteTransaction('tx-1');
 
       expect(result.getLeft().toNullable()?.code, 'cache_delete_failed');
+    });
+  });
+
+  group('TransactionRepositoryImpl.renameCategory', () {
+    test('renames only matching, non-deleted transactions', () async {
+      when(() => localDataSource.getAllTransactions()).thenAnswer(
+        (_) async => [
+          buildModel(),
+          buildModel(id: 'tx-2'),
+          buildModel(id: 'tx-3', category: 'Salary'),
+        ],
+      );
+      when(() => localDataSource.saveTransaction(any()))
+          .thenAnswer((_) async {});
+
+      final result = await repository.renameCategory(
+        from: 'Coffee',
+        to: 'Dining',
+      );
+
+      expect(result.fold((_) => -1, (count) => count), 2);
+      final saved = verify(() => localDataSource.saveTransaction(captureAny()))
+          .captured
+          .cast<TransactionModel>();
+      expect(saved.map((model) => model.category), everyElement('Dining'));
+    });
+
+    test('is a no-op when the names are equal', () async {
+      final result = await repository.renameCategory(
+        from: 'Coffee',
+        to: 'Coffee',
+      );
+
+      expect(result.fold((_) => -1, (count) => count), 0);
+      verifyNever(() => localDataSource.getAllTransactions());
     });
   });
 

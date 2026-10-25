@@ -16,7 +16,12 @@ import '../bloc/transaction_event.dart';
 
 /// Bottom-sheet form for creating an income or expense.
 class TransactionForm extends StatefulWidget {
-  const TransactionForm({super.key});
+  const TransactionForm({super.key, this.initial});
+
+  /// When provided, the form edits this transaction instead of creating one.
+  final TransactionEntity? initial;
+
+  bool get isEditing => initial != null;
 
   @override
   State<TransactionForm> createState() => _TransactionFormState();
@@ -36,6 +41,18 @@ class _TransactionFormState extends State<TransactionForm> {
   @override
   void initState() {
     super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _amountController.text = initial.amount.toStringAsFixed(2);
+      _descriptionController.text = initial.description;
+      _receiptController.text = initial.receiptImagePath ?? '';
+      _type = initial.type;
+      _date = initial.date;
+      _walletId = initial.walletId;
+      _category = initial.category;
+      return;
+    }
+
     final categoryState = context.read<CategoryBloc>().state;
     if (categoryState is CategoryLoaded) {
       final active = categoryState.categories
@@ -73,19 +90,37 @@ class _TransactionFormState extends State<TransactionForm> {
 
     final bloc = context.read<TransactionBloc>();
     final navigator = Navigator.of(context);
-    bloc.add(
-      AddTransaction(
-        amount: double.parse(_amountController.text.trim()),
-        type: _type,
-        category: _category ?? '',
-        description: _descriptionController.text,
-        date: _date,
-        walletId: _walletId,
-        receiptImagePath: _receiptController.text.trim().isEmpty
-            ? null
-            : _receiptController.text.trim(),
-      ),
-    );
+    final amount = double.parse(_amountController.text.trim());
+    final receiptImagePath = _receiptController.text.trim().isEmpty
+        ? null
+        : _receiptController.text.trim();
+
+    if (widget.isEditing) {
+      bloc.add(
+        UpdateTransaction(
+          id: widget.initial!.id,
+          amount: amount,
+          type: _type,
+          category: _category ?? '',
+          description: _descriptionController.text,
+          date: _date,
+          walletId: _walletId,
+          receiptImagePath: receiptImagePath,
+        ),
+      );
+    } else {
+      bloc.add(
+        AddTransaction(
+          amount: amount,
+          type: _type,
+          category: _category ?? '',
+          description: _descriptionController.text,
+          date: _date,
+          walletId: _walletId,
+          receiptImagePath: receiptImagePath,
+        ),
+      );
+    }
     navigator.pop();
   }
 
@@ -120,7 +155,9 @@ class _TransactionFormState extends State<TransactionForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                context.l10n.newTransaction,
+                widget.isEditing
+                    ? context.l10n.editTransaction
+                    : context.l10n.newTransaction,
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -222,7 +259,11 @@ class _TransactionFormState extends State<TransactionForm> {
               FilledButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.check),
-                label: Text(context.l10n.saveTransaction),
+                label: Text(
+                  widget.isEditing
+                      ? context.l10n.saveChanges
+                      : context.l10n.saveTransaction,
+                ),
               ),
             ],
           ),

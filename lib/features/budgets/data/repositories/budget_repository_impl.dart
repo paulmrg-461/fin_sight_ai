@@ -57,6 +57,10 @@ class BudgetRepositoryImpl implements BudgetRepository {
   }
 
   @override
+  ResultFuture<BudgetEntity> updateBudget(BudgetEntity budget) =>
+      addBudget(budget);
+
+  @override
   ResultFuture<void> deleteBudget(String id) async {
     try {
       final budgets = await _localDataSource.getAllBudgets();

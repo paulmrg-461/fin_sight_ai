@@ -13,6 +13,7 @@
 - **Depends on**: 003
 - **Category**: direction
 - **Planned at**: commit `4e42297`, 2026-10-23
+- **Status**: DONE (886 unit/widget tests, 23 integration tests)
 
 ## Why this matters
 
