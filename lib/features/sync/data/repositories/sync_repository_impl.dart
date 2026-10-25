@@ -107,6 +107,8 @@ class SyncRepositoryImpl implements SyncRepository {
 
       var pushed = 0;
       var conflicts = 0;
+      var failed = 0;
+      var discarded = 0;
 
       for (final operation in pending) {
         try {
@@ -119,20 +121,29 @@ class SyncRepositoryImpl implements SyncRepository {
           }
         } on ServerException {
           await _requeue(operation);
-          rethrow;
+          failed++;
+        } on FormatException {
+          // Irrecoverable payload: remove it so it cannot poison every pass.
+          await _localDataSource.remove(operation.id);
+          discarded++;
         }
       }
 
-      final pulled = await _pull();
+      final pull = await _pull();
       await _purgeTombstones();
-      await _localDataSource.setLastSyncedAt(clock.now());
+      final watermark = pull.watermark;
+      if (watermark != null) {
+        await _localDataSource.setLastSyncedAt(watermark);
+      }
 
       return Right(
         SyncReport(
           pushed: pushed,
-          pulled: pulled,
+          pulled: pull.merged,
           conflictsResolved: conflicts,
           pendingOperations: await _localDataSource.pendingCount(),
+          failed: failed,
+          discarded: discarded,
           isConfigured: true,
           isAuthenticated: true,
           completedAt: clock.now(),
@@ -274,31 +285,86 @@ class SyncRepositoryImpl implements SyncRepository {
     return false;
   }
 
-  Future<int> _pull() async {
+  Future<_PullResult> _pull() async {
     final lastSyncedAt = await _localDataSource.lastSyncedAt();
     var pulled = 0;
+    DateTime? watermark;
 
-    final transactions = await _remoteDataSource.fetchTransactions(
-      updatedAfter: lastSyncedAt,
+    final transactions = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchTransactions(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
     );
     pulled += await _mergeTransactions(transactions);
+    watermark = _maxUpdatedAt(transactions, watermark);
 
-    final debts = await _remoteDataSource.fetchDebts(
-      updatedAfter: lastSyncedAt,
+    final debts = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchDebts(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
     );
     pulled += await _mergeDebts(debts);
+    watermark = _maxUpdatedAt(debts, watermark);
 
-    final budgets = await _remoteDataSource.fetchBudgets(
-      updatedAfter: lastSyncedAt,
+    final budgets = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchBudgets(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
     );
     pulled += await _mergeBudgets(budgets);
+    watermark = _maxUpdatedAt(budgets, watermark);
 
-    final receivables = await _remoteDataSource.fetchReceivables(
-      updatedAfter: lastSyncedAt,
+    final receivables = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchReceivables(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
     );
     pulled += await _mergeReceivables(receivables);
+    watermark = _maxUpdatedAt(receivables, watermark);
 
-    return pulled;
+    return _PullResult(merged: pulled, watermark: watermark);
+  }
+
+  static const int _pageSize = 500;
+  static const int _maxPagesPerEntity = 100;
+
+  Future<List<Map<String, dynamic>>> _fetchAll(
+    Future<List<Map<String, dynamic>>> Function(int limit, int offset) fetch,
+  ) async {
+    final rows = <Map<String, dynamic>>[];
+    var offset = 0;
+    for (var page = 0; page < _maxPagesPerEntity; page++) {
+      final pageRows = await fetch(_pageSize, offset);
+      rows.addAll(pageRows);
+      if (pageRows.length < _pageSize) {
+        break;
+      }
+      offset += _pageSize;
+    }
+    return rows;
+  }
+
+  DateTime? _maxUpdatedAt(List<Map<String, dynamic>> rows, DateTime? current) {
+    var max = current;
+    for (final row in rows) {
+      final raw = row['updatedAt'];
+      if (raw is! String) {
+        continue;
+      }
+      final parsed = DateTime.tryParse(raw);
+      if (parsed != null && (max == null || parsed.isAfter(max))) {
+        max = parsed;
+      }
+    }
+    return max;
   }
 
   Future<int> _mergeTransactions(List<Map<String, dynamic>> rows) async {
@@ -435,4 +501,11 @@ class SyncRepositoryImpl implements SyncRepository {
 
   CacheFailure _cacheFailure(CacheException exception) =>
       CacheFailure(exception.message, code: exception.code);
+}
+
+class _PullResult {
+  const _PullResult({required this.merged, this.watermark});
+
+  final int merged;
+  final DateTime? watermark;
 }

@@ -53,8 +53,13 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> fetchTransactions({
     DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
   }) async {
-    final rows = await _fetch('transactions', _updatedQuery(updatedAfter));
+    final rows = await _fetch(
+      'transactions',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
     return rows.map(_transactionFromRow).toList(growable: false);
   }
 
@@ -80,8 +85,13 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> fetchDebts({
     DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
   }) async {
-    final rows = await _fetch('debts', _updatedQuery(updatedAfter));
+    final rows = await _fetch(
+      'debts',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
     return rows.map(_debtFromRow).toList(growable: false);
   }
 
@@ -107,8 +117,13 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> fetchBudgets({
     DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
   }) async {
-    final rows = await _fetch('budgets', _updatedQuery(updatedAfter));
+    final rows = await _fetch(
+      'budgets',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
     return rows.map(_budgetFromRow).toList(growable: false);
   }
 
@@ -134,8 +149,13 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   @override
   Future<List<Map<String, dynamic>>> fetchReceivables({
     DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
   }) async {
-    final rows = await _fetch('receivables', _updatedQuery(updatedAfter));
+    final rows = await _fetch(
+      'receivables',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
     return rows.map(_receivableFromRow).toList(growable: false);
   }
 
@@ -149,9 +169,15 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
     await _delete('receivables', id);
   }
 
-  Map<String, String> _updatedQuery(DateTime? updatedAfter) {
+  Map<String, String> _updatedQuery(
+    DateTime? updatedAfter, {
+    required int limit,
+    required int offset,
+  }) {
     return <String, String>{
       'select': '*',
+      'limit': '$limit',
+      'offset': '$offset',
       if (updatedAfter != null)
         'updated_at': 'gt.${updatedAfter.toUtc().toIso8601String()}',
       if (updatedAfter != null) 'order': 'updated_at.asc',

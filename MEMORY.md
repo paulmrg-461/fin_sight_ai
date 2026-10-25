@@ -23,7 +23,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 859 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 20 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 864 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 20 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Receivables (Me deben)
@@ -35,6 +35,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Localization: EN/ES keys added and localizations regenerated. `LocalDataScope` clears the `receivables` box with the other user-owned boxes on sign-out.
 - Tests: entity/model/data source/repository/use-case/BLoC/widget coverage plus the integration flow (add 1000 → pay 400 → dashboard 600 → restart persistence).
 - In-place editing: debtor, dates, notes and (before any payment) the amount; the amount locks once payments exist.
+- Sync resilience: failed operations are requeued without blocking later ops or pulls, invalid payloads are discarded, pulls page at 500 rows up to 100 pages, and the watermark advances only to the newest received `updatedAt`.
 - Sync: `receivables` table (`0005_receivables.sql`), queue upserts/tombstones, PostgREST mapping, pull/merge, and tombstone purge. Apply the migration to the live project before relying on remote sync.
 
 ## Categories and scheduled payments

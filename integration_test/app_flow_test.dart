@@ -11,6 +11,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/schedul
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_event.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_event.dart';
+import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/wallets/presentation/screens/wallet_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -108,6 +110,12 @@ void main() {
 
     expect(find.text('Income'), findsWidgets);
     expect(find.text('No transactions yet'), findsNothing);
+
+    harness.syncBloc.add(const LoadSyncStatus());
+    await waitForCondition(tester, () {
+      final state = harness.syncBloc.state;
+      return state is SyncIdle && state.status.pendingCount == 1;
+    });
   });
 
   testWidgets('scans a receipt and creates an expense transaction', (

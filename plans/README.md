@@ -12,7 +12,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 002 | Scope local data to one account and clear it safely | P1 | M | — | DONE (worktree `plan-002-account-scope`, commit `0ed9d23`) |
 | 003 | Fix calendar-day storage for transactions and budgets | P1 | S/M | — | DONE (worktree `plan-003-calendar`, commit `77614a3`) |
 | 004 | Refresh wallet balances, fix OCR posting, and finish i18n | P1 | S | 003 (date normalization) | DONE (worktree `plan-004-wallet-ocr`, commit `873c05b`) |
-| 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | TODO |
+| 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | DONE (864 unit tests, 20 integration) |
 | 006 | Give categories a stable id and cascade renames | P2 | M | 003 | TODO |
 | 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | TODO |
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | TODO |
@@ -23,6 +23,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
 ## Review notes
+
+- 005 implemented on `develop`: per-operation failure isolation (`failed`/`discarded` in `SyncReport`), paginated pulls (500 rows, 100-page cap), watermark from received `updatedAt`, and harness queue wiring.
+
 
 - 001 approved in worktree `/home/devpaul/.local/share/opencode/worktree/abfd97/plan-001-secrets`
   (commit `afc4026`). Not merged/pushed; the user decides.

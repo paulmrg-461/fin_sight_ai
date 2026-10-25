@@ -5,6 +5,8 @@ class SyncReport {
     required this.pulled,
     required this.conflictsResolved,
     required this.pendingOperations,
+    this.failed = 0,
+    this.discarded = 0,
     required this.isConfigured,
     required this.isAuthenticated,
     required this.completedAt,
@@ -14,6 +16,12 @@ class SyncReport {
   final int pulled;
   final int conflictsResolved;
   final int pendingOperations;
+
+  /// Operations that failed transiently and were requeued with backoff.
+  final int failed;
+
+  /// Invalid queued payloads that were removed and cannot be retried.
+  final int discarded;
 
   /// `false` when Supabase credentials are missing (offline-only mode).
   final bool isConfigured;
@@ -30,6 +38,8 @@ class SyncReport {
           other.pulled == pulled &&
           other.conflictsResolved == conflictsResolved &&
           other.pendingOperations == pendingOperations &&
+          other.failed == failed &&
+          other.discarded == discarded &&
           other.isConfigured == isConfigured &&
           other.isAuthenticated == isAuthenticated &&
           other.completedAt == completedAt;
@@ -40,6 +50,8 @@ class SyncReport {
     pulled,
     conflictsResolved,
     pendingOperations,
+    failed,
+    discarded,
     isConfigured,
     isAuthenticated,
     completedAt,
@@ -49,6 +61,7 @@ class SyncReport {
   String toString() =>
       'SyncReport(pushed: $pushed, pulled: $pulled, '
       'conflicts: $conflictsResolved, pending: $pendingOperations, '
+      'failed: $failed, discarded: $discarded, '
       'configured: $isConfigured, authenticated: $isAuthenticated)';
 }
 

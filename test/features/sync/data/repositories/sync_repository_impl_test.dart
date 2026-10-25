@@ -332,7 +332,7 @@ void main() {
                   .single
               as TransactionModel;
       expect(saved.isSynced, isTrue);
-      verify(() => local.setLastSyncedAt(now)).called(1);
+      verifyNever(() => local.setLastSyncedAt(any()));
       verify(
         () => transactionLocal.purgeTombstones(
           now.subtract(const Duration(days: 30)),
@@ -452,13 +452,16 @@ void main() {
         queuedAt: now,
       );
       when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => local.pendingCount()).thenAnswer((_) async => 1);
       when(() => remote.fetchTransaction('tx-1')).thenAnswer((_) async => null);
       when(() => remote.upsertTransaction(any()))
           .thenThrow(const ServerException('Down.', code: 'supabase_http_500'));
 
       final result = await buildRepository(env: configuredEnv()).syncNow();
 
-      expect(result.getLeft().toNullable()?.code, 'supabase_http_500');
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.failed, 1);
+      expect(report.pendingOperations, 1);
       verifyNever(() => local.remove(any()));
       final requeued =
           verify(() => local.enqueue(captureAny())).captured.single
@@ -586,7 +589,149 @@ void main() {
 
       final result = await buildRepository(env: configuredEnv()).syncNow();
 
-      expect(result.getLeft().toNullable()?.code, 'sync_invalid_payload');
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.discarded, 1);
+      verify(() => local.remove('transaction:tx-1')).called(1);
+    });
+
+    test('continues after a discarded payload and pulls', () async {
+      final bad = SyncOperation.upsert(
+        entityType: SyncEntityType.transaction,
+        entityId: 'bad',
+        payload: const {'id': 'bad'},
+        queuedAt: now,
+      );
+      final goodBudget = BudgetModel(
+        id: 'budget-1',
+        category: 'Food',
+        monthlyLimit: 100,
+        month: DateTime.utc(2026, 10),
+        updatedAt: DateTime.utc(2026, 10, 22, 12),
+      );
+      final good = SyncOperation.upsert(
+        entityType: SyncEntityType.budget,
+        entityId: goodBudget.id,
+        payload: goodBudget.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [bad, good]);
+      when(() => remote.fetchTransaction('bad')).thenAnswer((_) async => null);
+      when(() => remote.fetchBudget('budget-1')).thenAnswer((_) async => null);
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.discarded, 1);
+      expect(report.pushed, 1);
+      verify(() => remote.upsertBudget(any())).called(1);
+      verify(() => local.remove('transaction:bad')).called(1);
+    });
+
+    test('keeps a failed operation and still pushes later ones', () async {
+      final badModel = buildTransaction(id: 'bad');
+      final bad = SyncOperation.upsert(
+        entityType: SyncEntityType.transaction,
+        entityId: badModel.id,
+        payload: badModel.toJson(),
+        queuedAt: now,
+      );
+      final goodBudget = BudgetModel(
+        id: 'budget-1',
+        category: 'Food',
+        monthlyLimit: 100,
+        month: DateTime.utc(2026, 10),
+        updatedAt: DateTime.utc(2026, 10, 22, 12),
+      );
+      final good = SyncOperation.upsert(
+        entityType: SyncEntityType.budget,
+        entityId: goodBudget.id,
+        payload: goodBudget.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [bad, good]);
+      when(() => remote.fetchTransaction('bad')).thenAnswer((_) async => null);
+      when(() => remote.fetchBudget('budget-1')).thenAnswer((_) async => null);
+      when(() => remote.upsertTransaction(any()))
+          .thenThrow(const ServerException('Down.', code: 'supabase_http_500'));
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      final report = result.getOrElse((_) => fail('Expected report'));
+      expect(report.failed, 1);
+      expect(report.pushed, 1);
+      verify(() => remote.upsertBudget(any())).called(1);
+      verifyNever(() => local.remove('transaction:bad'));
+      verify(() => local.remove('budget:budget-1')).called(1);
+    });
+
+    test(
+      'sets the watermark from received rows, not the local clock',
+      () async {
+        final remoteTransaction = buildTransaction(
+          updatedAt: DateTime.utc(2026, 10, 20, 10),
+          isSynced: true,
+        );
+        when(
+          () => remote.fetchTransactions(
+            updatedAfter: any(named: 'updatedAfter'),
+            limit: any(named: 'limit'),
+            offset: any(named: 'offset'),
+          ),
+        ).thenAnswer((_) async => [remoteTransaction.toJson()]);
+
+        await buildRepository(env: configuredEnv()).syncNow();
+
+        verify(() => local.setLastSyncedAt(DateTime.utc(2026, 10, 20, 10)))
+            .called(1);
+        verifyNever(() => local.setLastSyncedAt(now));
+      },
+    );
+
+    test('pages through remote rows until a short page', () async {
+      final firstPage = List.generate(
+        500,
+        (index) => buildTransaction(
+          id: 'tx-$index',
+          updatedAt: DateTime.utc(2026, 10, 20, 10),
+          isSynced: true,
+        ).toJson(),
+      );
+      final secondPage = List.generate(
+        3,
+        (index) => buildTransaction(
+          id: 'tx-${500 + index}',
+          updatedAt: DateTime.utc(2026, 10, 20, 11),
+          isSynced: true,
+        ).toJson(),
+      );
+      when(
+        () => remote.fetchTransactions(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((invocation) async {
+        final offset = invocation.namedArguments[#offset] as int;
+        return offset == 0 ? firstPage : secondPage;
+      });
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      expect(result.getOrElse((_) => fail('Expected report')).pulled, 503);
+      verify(
+        () => remote.fetchTransactions(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: 500,
+          offset: 0,
+        ),
+      ).called(1);
+      verify(
+        () => remote.fetchTransactions(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: 500,
+          offset: 500,
+        ),
+      ).called(1);
     });
   });
 }

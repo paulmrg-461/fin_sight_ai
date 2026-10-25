@@ -191,6 +191,26 @@ void main() {
         'gt.2026-10-01T00:00:00.000Z',
       );
       expect(captured.url.queryParameters['order'], 'updated_at.asc');
+      expect(captured.url.queryParameters['limit'], '500');
+      expect(captured.url.queryParameters['offset'], '0');
+    });
+
+    test('passes pagination parameters to PostgREST', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response(jsonEncode([]), 200);
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await datasource.fetchReceivables(limit: 250, offset: 500);
+
+      expect(captured.url.queryParameters['limit'], '250');
+      expect(captured.url.queryParameters['offset'], '500');
     });
 
     test('upserts a transaction using snake_case columns', () async {

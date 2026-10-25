@@ -206,13 +206,19 @@ class IntegrationHarness {
       scheduledPayments: _scheduledPaymentsBox,
     );
     localDataScope = HiveLocalDataScope(boxes);
+    final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
 
     transactionRepository = TransactionRepositoryImpl(
       HiveTransactionLocalDataSource(_transactionsBox),
+      syncQueue: syncLocal,
     );
-    debtRepository = DebtRepositoryImpl(HiveDebtLocalDataSource(_debtsBox));
+    debtRepository = DebtRepositoryImpl(
+      HiveDebtLocalDataSource(_debtsBox),
+      syncQueue: syncLocal,
+    );
     receivableRepository = ReceivableRepositoryImpl(
       HiveReceivableLocalDataSource(_receivablesBox),
+      syncQueue: syncLocal,
     );
     receiptRepository = ReceiptRepositoryImpl(
       HiveReceiptLocalDataSource(_receiptsBox),
@@ -307,7 +313,6 @@ class IntegrationHarness {
       authStorage,
       localDataScope,
     );
-    final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
     final budgetLocal = HiveBudgetLocalDataSource(_budgetsBox);
     final syncRepository = SyncRepositoryImpl(
       syncLocal,
