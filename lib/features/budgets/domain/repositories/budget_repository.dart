@@ -12,4 +12,7 @@ abstract interface class BudgetRepository {
 
   /// Returns known categories from transactions and budgets.
   ResultFuture<List<String>> getCategories();
+
+  /// Renames the category snapshot on every budget using [from].
+  ResultFuture<int> renameCategory({required String from, required String to});
 }

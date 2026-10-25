@@ -137,6 +137,48 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
   }
 
+  @override
+  ResultFuture<int> renameCategory({
+    required String from,
+    required String to,
+  }) async {
+    if (from == to) {
+      return const Right(0);
+    }
+    try {
+      final models = await _localDataSource.getAllTransactions();
+      var updated = 0;
+      for (final model in models) {
+        if (model.isDeleted || model.category != from) {
+          continue;
+        }
+        final next = TransactionModel.fromEntity(
+          model.copyWith(category: to, updatedAt: clock.now(), isSynced: false),
+        );
+        await _localDataSource.saveTransaction(next);
+        await _enqueue(
+          SyncOperation.upsert(
+            entityType: SyncEntityType.transaction,
+            entityId: next.id,
+            payload: next.toJson(),
+            queuedAt: clock.now(),
+          ),
+        );
+        updated++;
+      }
+      return Right(updated);
+    } on CacheException catch (exception) {
+      return Left(_toCacheFailure(exception));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to rename the transaction category.',
+          code: 'category_cascade_failed',
+        ),
+      );
+    }
+  }
+
   List<TransactionEntity> _toEntities(List<TransactionModel> models) =>
       List<TransactionEntity>.unmodifiable(
         models.map((model) => model.toEntity()),

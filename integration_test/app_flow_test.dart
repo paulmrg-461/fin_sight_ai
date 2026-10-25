@@ -616,6 +616,45 @@ void main() {
     expect(find.text('Language'), findsOneWidget);
   });
 
+  testWidgets('renames a category across existing transactions', (
+    tester,
+  ) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 25,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Cascade lunch',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.categoriesName);
+    await pumpUntil(tester, find.text('Dining'));
+    await tester.pumpAndSettle();
+
+    final diningTile = find.widgetWithText(ListTile, 'Dining');
+    await tester.ensureVisible(diningTile);
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: diningTile,
+        matching: find.byType(PopupMenuButton<String>),
+      ),
+    );
+    await pumpUntil(tester, find.text('Rename category'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Rename category'));
+    await pumpUntil(tester, find.text('Category name'));
+    await tester.enterText(find.byType(TextFormField).last, 'Eating out');
+    await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+    await pumpUntil(tester, find.text('Eating out'));
+
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Cascade lunch'));
+    expect(find.text('Eating out'), findsOneWidget);
+  });
+
   testWidgets('manages custom categories', (tester) async {
     await harness.pumpApp(tester);
     harness.router.goNamed(AppRoutes.categoriesName);

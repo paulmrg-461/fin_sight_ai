@@ -23,7 +23,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `main`, in sync with `origin/main`; every completed feature is pushed.
-- Gates at this checkpoint: `flutter analyze` clean, 864 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 20 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 866 unit/widget tests, coverage gate green (receivables 92.3% data / 98.1% domain; sync 90.4% data), 21 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Receivables (Me deben)
@@ -46,7 +46,7 @@ _Last updated: 2026-10-23. Read this before starting a new session._
 - Due processing runs at startup (before dashboard blocs) and on screen load; generated expenses use deterministic UUID v5 per schedule+due date, then sync normally.
 - Banner counts are carried into `LoadScheduledPayments(previousAutoCreated: ...)` so startup-created expenses are announced.
 - “Pay now” is idempotent per day; paused schedules never auto-charge; deleting keeps recorded expenses.
-- Known gaps: category rename does not cascade to historical transactions, budgets, or existing schedules; category and schedule definitions are local-only for now.
+- Category renames now cascade by name to transactions, budgets, and schedules; canonical category ids remain a future step for syncing definitions.
 - Bug fixed in this slice: `AddTransactionUseCase` now forwards `walletId`, so new expenses affect wallet balances.
 
 ## i18n slice (English / Spanish)

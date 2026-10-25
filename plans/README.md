@@ -13,7 +13,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 003 | Fix calendar-day storage for transactions and budgets | P1 | S/M | — | DONE (worktree `plan-003-calendar`, commit `77614a3`) |
 | 004 | Refresh wallet balances, fix OCR posting, and finish i18n | P1 | S | 003 (date normalization) | DONE (worktree `plan-004-wallet-ocr`, commit `873c05b`) |
 | 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | DONE (864 unit tests, 20 integration) |
-| 006 | Give categories a stable id and cascade renames | P2 | M | 003 | TODO |
+| 006 | Give categories a stable id and cascade renames | P2 | M | 003 | DONE (rename cascade by name; categoryId deferred) |
 | 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | TODO |
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | TODO |
 | 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | TODO |
@@ -23,6 +23,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
 ## Review notes
+
+- 006 delivered the rename cascade across transactions, budgets, and schedules using the stored name (21 integration tests). Canonical `categoryId` remains deferred until definitions are synced.
+
 
 - 005 implemented on `develop`: per-operation failure isolation (`failed`/`discarded` in `SyncReport`), paginated pulls (500 rows, 100-page cap), watermark from received `updatedAt`, and harness queue wiring.
 

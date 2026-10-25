@@ -17,4 +17,9 @@ abstract interface class TransactionRepository {
     required DateTime start,
     required DateTime end,
   });
+
+  /// Renames the category snapshot on every record using [from].
+  ///
+  /// Returns the number of updated transactions.
+  ResultFuture<int> renameCategory({required String from, required String to});
 }

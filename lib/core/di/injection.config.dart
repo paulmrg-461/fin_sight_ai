@@ -508,6 +508,14 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i195.RenameCategoryUseCase>(
+      () => _i195.RenameCategoryUseCase(
+        gh<_i888.CategoryRepository>(),
+        gh<_i544.TransactionRepository>(),
+        gh<_i575.BudgetRepository>(),
+        gh<_i312.ScheduledPaymentRepository>(),
+      ),
+    );
     gh.factory<_i542.CurrencyBloc>(
       () => _i542.CurrencyBloc(
         gh<_i192.GetCurrencyUseCase>(),
@@ -609,9 +617,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i195.AddCategoryUseCase>(
       () => _i195.AddCategoryUseCase(gh<_i888.CategoryRepository>()),
-    );
-    gh.lazySingleton<_i195.RenameCategoryUseCase>(
-      () => _i195.RenameCategoryUseCase(gh<_i888.CategoryRepository>()),
     );
     gh.lazySingleton<_i195.SetCategoryArchivedUseCase>(
       () => _i195.SetCategoryArchivedUseCase(gh<_i888.CategoryRepository>()),

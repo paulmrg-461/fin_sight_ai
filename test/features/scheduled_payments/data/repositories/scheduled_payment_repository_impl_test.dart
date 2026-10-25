@@ -56,6 +56,12 @@ class FakeTransactionRepository implements TransactionRepository {
       Right(saved.values.toList());
 
   @override
+  ResultFuture<int> renameCategory({
+    required String from,
+    required String to,
+  }) async => const Right(0);
+
+  @override
   ResultFuture<List<TransactionEntity>> getTransactionsByDateRange({
     required DateTime start,
     required DateTime end,

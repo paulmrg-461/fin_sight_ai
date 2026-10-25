@@ -260,6 +260,40 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     }
   }
 
+  @override
+  ResultFuture<int> renameCategory({
+    required String from,
+    required String to,
+  }) async {
+    if (from == to) {
+      return const Right(0);
+    }
+    try {
+      final models = await _localDataSource.getPayments();
+      var updated = 0;
+      for (final model in models) {
+        if (model.category != from) {
+          continue;
+        }
+        final next = ScheduledPaymentModel.fromEntity(
+          model.copyWith(category: to, updatedAt: clock.now()),
+        );
+        await _localDataSource.savePayment(next);
+        updated++;
+      }
+      return Right(updated);
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to rename the scheduled payment category.',
+          code: 'category_cascade_failed',
+        ),
+      );
+    }
+  }
+
   Future<ScheduledPaymentModel?> _findById(String id) async {
     final models = await _localDataSource.getPayments();
     for (final model in models) {

@@ -284,6 +284,33 @@ void main() {
       expect(operation.payload['deletedAt'], isNotNull);
     });
 
+    test('renames matching budget categories and enqueues upserts', () async {
+      when(() => local.getAllBudgetsIncludingDeleted()).thenAnswer(
+        (_) async => [
+          buildBudgetModel(category: 'Food'),
+          buildBudgetModel(id: 'budget-2', category: 'Rent'),
+        ],
+      );
+      when(() => local.saveBudget(any())).thenAnswer((_) async {});
+      final repository = BudgetRepositoryImpl(
+        local,
+        transactions,
+        syncQueue: queue,
+        clock: FixedClock(now),
+      );
+
+      final result = await repository.renameCategory(
+        from: 'Food',
+        to: 'Groceries',
+      );
+
+      expect(result.fold((_) => -1, (count) => count), 1);
+      final operation =
+          verify(() => queue.enqueue(captureAny())).captured.single
+              as SyncOperation;
+      expect(operation.payload['category'], 'Groceries');
+    });
+
     test('a queue failure does not fail the local write', () async {
       when(() => local.saveBudget(any())).thenAnswer((_) async {});
       when(() => queue.enqueue(any())).thenThrow(Exception('queue down'));

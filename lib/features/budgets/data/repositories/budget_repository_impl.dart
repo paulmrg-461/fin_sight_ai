@@ -152,6 +152,48 @@ class BudgetRepositoryImpl implements BudgetRepository {
   }
 
   @override
+  ResultFuture<int> renameCategory({
+    required String from,
+    required String to,
+  }) async {
+    if (from == to) {
+      return const Right(0);
+    }
+    try {
+      final models = await _localDataSource.getAllBudgetsIncludingDeleted();
+      var updated = 0;
+      for (final model in models) {
+        if (model.isDeleted || model.category != from) {
+          continue;
+        }
+        final next = BudgetModel.fromEntity(
+          model.copyWith(category: to, updatedAt: clock.now(), isSynced: false),
+        );
+        await _localDataSource.saveBudget(next);
+        await _enqueue(
+          SyncOperation.upsert(
+            entityType: SyncEntityType.budget,
+            entityId: next.id,
+            payload: next.toJson(),
+            queuedAt: clock.now(),
+          ),
+        );
+        updated++;
+      }
+      return Right(updated);
+    } on CacheException catch (exception) {
+      return Left(_cacheFailure(exception));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to rename the budget category.',
+          code: 'category_cascade_failed',
+        ),
+      );
+    }
+  }
+
+  @override
   ResultFuture<List<String>> getCategories() async {
     try {
       final budgets = await _localDataSource.getAllBudgets();

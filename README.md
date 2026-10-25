@@ -14,7 +14,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, payment history, and in-place editing; local-only.
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
-- **Categories** — shared category catalog with localized defaults, manual create/rename, and archive/restore.
+- **Categories** — shared category catalog with localized defaults, manual create/rename (cascading to transactions, budgets, and schedules), and archive/restore.
 - **Scheduled payments & salary** — monthly or yearly recurring expenses (rent, credits, subscriptions, phone plan) or income (salary) that is recorded automatically when due, with in-app notice, pause/resume, pay-now, delete, and an expected-monthly-income summary.
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
 - **Languages** — English and Spanish UI with a persisted System/English/Español selector and ARB-based localization.
@@ -110,8 +110,8 @@ flutter test -d linux integration_test/app_flow_test.dart
 
 Current status:
 
-- **864 unit/widget tests** passing.
-- **20 integration tests** passing on Linux desktop.
+- **866 unit/widget tests** passing.
+- **21 integration tests** passing on Linux desktop.
 - Coverage gate passes: auth 94.9/92.7%, budgets 93.2/96.0%, categories 97.9/100%, scheduled payments 94.1/100%, receivables 98.1/92.3%, sync 100/90.4%, wallets 91.5/94.5%, transactions 100/100%, debts 98.1/100%, OCR 98.8/99.1%, AI Coach 100/100%, dashboard 93.1/97.6%, core 93.1%.
 - Integration benchmarks: app launch + dashboard ≈ 179 ms, transactions render ≈ 251 ms.
 - CI: GitHub Actions runs format, analyze, coverage gate, and Linux integration tests under Xvfb.

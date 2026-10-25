@@ -22,4 +22,7 @@ abstract interface class ScheduledPaymentRepository {
 
   /// Records one transaction now and advances the schedule past [now].
   ResultFuture<ScheduledPaymentRun> payNow(String id, DateTime now);
+
+  /// Renames the category snapshot on every schedule using [from].
+  ResultFuture<int> renameCategory({required String from, required String to});
 }

@@ -369,7 +369,12 @@ class IntegrationHarness {
     categoryBloc = CategoryBloc(
       GetCategoryCatalogUseCase(categoryRepository),
       AddCategoryUseCase(categoryRepository),
-      RenameCategoryUseCase(categoryRepository),
+      RenameCategoryUseCase(
+        categoryRepository,
+        transactionRepository,
+        budgetRepository,
+        scheduledPaymentRepository,
+      ),
       SetCategoryArchivedUseCase(categoryRepository),
     );
     scheduledPaymentBloc = ScheduledPaymentBloc(
