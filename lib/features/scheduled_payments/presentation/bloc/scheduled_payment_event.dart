@@ -28,6 +28,15 @@ final class AddScheduledPayment extends ScheduledPaymentEvent {
   List<Object?> get props => [params];
 }
 
+final class UpdateScheduledPayment extends ScheduledPaymentEvent {
+  const UpdateScheduledPayment(this.params);
+
+  final UpdateScheduledPaymentParams params;
+
+  @override
+  List<Object?> get props => [params];
+}
+
 final class SetScheduledPaymentActive extends ScheduledPaymentEvent {
   const SetScheduledPaymentActive({required this.id, required this.isActive});
 

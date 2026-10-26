@@ -20,6 +20,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | DONE (2 reads per refresh; 885 unit, 23 integration) |
 | 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | DONE (worktree `navigation-shell`, commit `62b1ede`) |
 | 012 | Defer non-critical startup loads (PERF-02) | P2 | M | 010 | DONE (911 unit, 23 integration; seeded launch 227–233 ms) |
+| 013 | Edit scheduled payments in place | P2 | M | 008, 012 | DONE (938 unit, 24 integration) |
+
+- 013 added in-place schedule editing (same id, preserved audit dates, one sync upsert) with an Edit action on each card.
 
 - 009 Phase A shipped the 30/90-day committed-cashflow projection and card. Phase B (local notifications) is blocked until Android/iOS projects are tracked and the plugin is verified on the beta SDK.
 

@@ -220,6 +220,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
         createdAt: now,
       );
       await _localDataSource.saveCategory(model);
+      // Defaults stay device-local: catalog names are localized, so syncing
+      // them would make two devices overwrite each other's language. The first
+      // real edit (add/rename/archive) joins the sync queue.
       seeded.add(model);
     }
     return seeded;

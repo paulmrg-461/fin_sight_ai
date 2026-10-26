@@ -558,6 +558,12 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
+    gh.lazySingleton<_i160.UpdateScheduledPaymentUseCase>(
+      () => _i160.UpdateScheduledPaymentUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i160.PayScheduledPaymentUseCase>(
       () => _i160.PayScheduledPaymentUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
@@ -706,6 +712,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i200.ScheduledPaymentBloc(
         gh<_i160.GetScheduledPaymentsUseCase>(),
         gh<_i160.AddScheduledPaymentUseCase>(),
+        gh<_i160.UpdateScheduledPaymentUseCase>(),
         gh<_i160.SetScheduledPaymentActiveUseCase>(),
         gh<_i160.DeleteScheduledPaymentUseCase>(),
         gh<_i160.PayScheduledPaymentUseCase>(),

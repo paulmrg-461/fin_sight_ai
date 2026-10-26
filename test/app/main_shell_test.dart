@@ -133,6 +133,9 @@ class MockGetScheduledPayments extends Mock
 class MockAddScheduledPayment extends Mock
     implements AddScheduledPaymentUseCase {}
 
+class MockUpdateScheduledPayment extends Mock
+    implements UpdateScheduledPaymentUseCase {}
+
 class MockSetScheduledPaymentActive extends Mock
     implements SetScheduledPaymentActiveUseCase {}
 
@@ -344,6 +347,7 @@ void main() {
     scheduledPaymentBloc = ScheduledPaymentBloc(
       MockGetScheduledPayments(),
       MockAddScheduledPayment(),
+      MockUpdateScheduledPayment(),
       MockSetScheduledPaymentActive(),
       MockDeleteScheduledPayment(),
       MockPayScheduledPayment(),

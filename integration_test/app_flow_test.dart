@@ -115,7 +115,9 @@ void main() {
     harness.syncBloc.add(const LoadSyncStatus());
     await waitForCondition(tester, () {
       final state = harness.syncBloc.state;
-      return state is SyncIdle && state.status.pendingCount == 1;
+      // Seeded categories and default wallets are queued too, so assert that
+      // the transaction write reached the queue rather than an exact total.
+      return state is SyncIdle && state.status.pendingCount >= 1;
     });
   });
 
@@ -912,6 +914,57 @@ void main() {
     await pumpUntil(tester, find.text('Delete scheduled payment?'));
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await pumpUntil(tester, find.text('No scheduled payments'));
+  });
+
+  testWidgets('edits a scheduled payment in place', (tester) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.scheduledPaymentsName);
+    await pumpUntil(tester, find.text('Scheduled payments'));
+    await pumpUntil(tester, find.text('No scheduled payments'));
+
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Add payment'));
+    await pumpUntil(tester, find.text('New scheduled payment'));
+    var fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Rent payment');
+    await tester.enterText(fields.at(1), '800');
+    final savePayment = find.widgetWithText(FilledButton, 'Add payment');
+    await tester.drag(
+      find.byType(SingleChildScrollView).last,
+      const Offset(0, -400),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(savePayment);
+    await pumpUntilGone(tester, find.text('New scheduled payment'));
+    await pumpUntil(tester, find.text('Rent payment'));
+    await pumpUntil(tester, find.text(money(800)));
+
+    final before = await harness.scheduledPaymentRepository.getPayments();
+    final original = before
+        .getOrElse((_) => throw TestFailure('Expected scheduled payment'))
+        .single;
+
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await pumpUntil(tester, find.text('Edit scheduled payment'));
+    await tester.tap(find.text('Edit scheduled payment'));
+    await pumpUntil(tester, find.text('Save changes'));
+
+    fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(1), '950');
+    final saveChanges = find.text('Save changes');
+    await tester.ensureVisible(saveChanges);
+    await tester.pumpAndSettle();
+    await tester.tap(saveChanges);
+    await pumpUntilGone(tester, find.text('Save changes'));
+    await pumpUntil(tester, find.text(money(950)));
+
+    final after = await harness.scheduledPaymentRepository.getPayments();
+    final updated = after
+        .getOrElse((_) => throw TestFailure('Expected updated payment'))
+        .single;
+    expect(updated.id, original.id);
+    expect(updated.amount, 950);
+    expect(updated.createdAt, original.createdAt);
+    expect(find.text('Committed cashflow'), findsOneWidget);
   });
 
   testWidgets('schedules a recurring salary and records it as income', (

@@ -1054,4 +1054,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get debtMinimumSource => 'Debt minimum';
+
+  @override
+  String get editScheduledPayment => 'Edit scheduled payment';
 }

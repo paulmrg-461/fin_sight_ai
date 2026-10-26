@@ -17,6 +17,8 @@ class MockGetPayments extends Mock implements GetScheduledPaymentsUseCase {}
 
 class MockAddPayment extends Mock implements AddScheduledPaymentUseCase {}
 
+class MockUpdatePayment extends Mock implements UpdateScheduledPaymentUseCase {}
+
 class MockSetActive extends Mock implements SetScheduledPaymentActiveUseCase {}
 
 class MockDeletePayment extends Mock implements DeleteScheduledPaymentUseCase {}
@@ -31,6 +33,7 @@ class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
 void main() {
   late MockGetPayments getPayments;
   late MockAddPayment addPayment;
+  late MockUpdatePayment updatePayment;
   late MockSetActive setActive;
   late MockDeletePayment deletePayment;
   late MockPayNow payNow;
@@ -70,6 +73,15 @@ void main() {
       ),
     );
     registerFallbackValue(
+      UpdateScheduledPaymentParams(
+        id: 'id',
+        name: 'Rent',
+        amount: 1,
+        category: 'Rent',
+        nextDueDate: DateTime(2026),
+      ),
+    );
+    registerFallbackValue(
       const SetScheduledPaymentActiveParams(id: 'id', isActive: true),
     );
     registerFallbackValue(
@@ -80,6 +92,7 @@ void main() {
   setUp(() {
     getPayments = MockGetPayments();
     addPayment = MockAddPayment();
+    updatePayment = MockUpdatePayment();
     setActive = MockSetActive();
     deletePayment = MockDeletePayment();
     payNow = MockPayNow();
@@ -95,6 +108,7 @@ void main() {
   ScheduledPaymentBloc buildBloc() => ScheduledPaymentBloc(
     getPayments,
     addPayment,
+    updatePayment,
     setActive,
     deletePayment,
     payNow,
@@ -307,6 +321,64 @@ void main() {
         bloc.add(const SetScheduledPaymentActive(id: 'pay-1', isActive: false)),
     expect: () => [
       ScheduledPaymentLoaded([payment.copyWith(isActive: false)]),
+    ],
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'updates a payment and reloads the list',
+    setUp: () {
+      stubGet([payment]);
+      when(() => updatePayment(any())).thenAnswer((_) async => Right(payment));
+    },
+    build: buildBloc,
+    act: (bloc) => bloc.add(
+      UpdateScheduledPayment(
+        UpdateScheduledPaymentParams(
+          id: payment.id,
+          name: payment.name,
+          amount: payment.amount,
+          category: payment.category,
+          nextDueDate: payment.nextDueDate,
+          frequency: payment.frequency,
+          walletId: payment.walletId,
+          notes: payment.notes,
+        ),
+      ),
+    ),
+    expect: () => [
+      ScheduledPaymentLoaded([payment]),
+    ],
+    verify: (_) {
+      verify(() => updatePayment(any())).called(1);
+      verifyNever(() => addPayment(any()));
+      verifyNever(() => processDue(any()));
+    },
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'keeps the list and shows update errors',
+    setUp: () {
+      stubGet([payment]);
+      when(() => updatePayment(any())).thenAnswer(
+        (_) async => const Left(
+          ValidationFailure('Payment not found.', code: 'missing'),
+        ),
+      );
+    },
+    build: buildBloc,
+    act: (bloc) => bloc.add(
+      UpdateScheduledPayment(
+        UpdateScheduledPaymentParams(
+          id: 'missing',
+          name: 'Rent',
+          amount: 1,
+          category: 'Rent',
+          nextDueDate: DateTime(2026, 10, 23),
+        ),
+      ),
+    ),
+    expect: () => [
+      ScheduledPaymentLoaded([payment], error: 'Payment not found.'),
     ],
   );
 

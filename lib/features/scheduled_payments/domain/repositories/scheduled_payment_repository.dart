@@ -11,6 +11,11 @@ abstract interface class ScheduledPaymentRepository {
     ScheduledPaymentEntity payment,
   );
 
+  /// Updates an existing schedule in place, preserving its id and audit dates.
+  ResultFuture<ScheduledPaymentEntity> updatePayment(
+    ScheduledPaymentEntity payment,
+  );
+
   /// Pauses or resumes the schedule with [id].
   ResultFuture<ScheduledPaymentEntity> setActive(String id, bool isActive);
 

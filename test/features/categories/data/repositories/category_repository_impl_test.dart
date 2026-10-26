@@ -73,6 +73,9 @@ void main() {
     final queue = MockSyncQueue();
     when(() => queue.enqueue(any())).thenAnswer((_) async {});
     final repo = repository(syncQueue: queue);
+    // Seeding queues the default catalog; start counting after it.
+    await repo.getCategories();
+    clearInteractions(queue);
 
     final added = await repo.addCategory('Coffee');
     final id = added.fold((_) => '', (value) => value.id);

@@ -2011,6 +2011,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Debt minimum'**
   String get debtMinimumSource;
+
+  /// No description provided for @editScheduledPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit scheduled payment'**
+  String get editScheduledPayment;
 }
 
 class _AppLocalizationsDelegate

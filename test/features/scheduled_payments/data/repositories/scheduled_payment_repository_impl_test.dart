@@ -202,6 +202,48 @@ void main() {
     expect(payments.map((item) => item.id), ['soon', 'late']);
   });
 
+  test('updates a schedule in place and enqueues an upsert', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    final repo = repository(queue: queue);
+    await repo.addPayment(payment());
+    clearInteractions(queue);
+
+    final result = await repo.updatePayment(
+      payment(
+        amount: 950,
+        nextDueDate: DateTime(2026, 2, 28),
+        dayOfMonth: 28,
+        category: 'Housing',
+      ).copyWith(name: 'Rent updated', notes: 'Changed'),
+    );
+
+    final updated = result.getOrElse((_) => fail('Expected update'));
+    expect(updated.id, 'pay-1');
+    expect(updated.name, 'Rent updated');
+    expect(updated.amount, 950);
+    expect(updated.category, 'Housing');
+    expect(updated.notes, 'Changed');
+    expect(updated.createdAt, DateTime.utc(2026, 1, 1));
+
+    final stored = await dataSource.getPayments();
+    expect(stored.single.amount, 950);
+    final operation =
+        verify(() => queue.enqueue(captureAny())).captured.single
+            as SyncOperation;
+    expect(operation.entityType, SyncEntityType.scheduledPayment);
+    expect(operation.payload['amount'], 950);
+  });
+
+  test('reports a missing schedule on update', () async {
+    final result = await repository().updatePayment(payment(id: 'missing'));
+
+    expect(
+      result.fold((failure) => failure.code, (_) => null),
+      'scheduled_payment_not_found',
+    );
+  });
+
   test('pauses and resumes payments', () async {
     final repo = repository();
     await repo.addPayment(payment());

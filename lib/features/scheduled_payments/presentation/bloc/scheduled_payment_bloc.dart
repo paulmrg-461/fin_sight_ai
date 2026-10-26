@@ -17,6 +17,7 @@ class ScheduledPaymentBloc
   ScheduledPaymentBloc(
     this._getPayments,
     this._addPayment,
+    this._updatePayment,
     this._setActive,
     this._deletePayment,
     this._payNow,
@@ -25,6 +26,7 @@ class ScheduledPaymentBloc
   ) : super(const ScheduledPaymentInitial()) {
     on<LoadScheduledPayments>(_onLoad);
     on<AddScheduledPayment>(_onAdd);
+    on<UpdateScheduledPayment>(_onUpdate);
     on<SetScheduledPaymentActive>(_onSetActive);
     on<DeleteScheduledPayment>(_onDelete);
     on<PayScheduledPayment>(_onPayNow);
@@ -33,6 +35,7 @@ class ScheduledPaymentBloc
 
   final GetScheduledPaymentsUseCase _getPayments;
   final AddScheduledPaymentUseCase _addPayment;
+  final UpdateScheduledPaymentUseCase _updatePayment;
   final SetScheduledPaymentActiveUseCase _setActive;
   final DeleteScheduledPaymentUseCase _deletePayment;
   final PayScheduledPaymentUseCase _payNow;
@@ -58,6 +61,19 @@ class ScheduledPaymentBloc
       return;
     }
     await _processAndReload(emit);
+  }
+
+  Future<void> _onUpdate(
+    UpdateScheduledPayment event,
+    Emitter<ScheduledPaymentState> emit,
+  ) async {
+    final result = await _updatePayment(event.params);
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      await _reload(emit, error: failure.message);
+      return;
+    }
+    await _reload(emit);
   }
 
   Future<void> _onSetActive(

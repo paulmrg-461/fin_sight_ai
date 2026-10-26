@@ -12,12 +12,14 @@ class ScheduledPaymentCard extends StatelessWidget {
     required this.payment,
     required this.onPayNow,
     required this.onToggleActive,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final ScheduledPaymentEntity payment;
   final VoidCallback onPayNow;
   final VoidCallback onToggleActive;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -141,6 +143,8 @@ class ScheduledPaymentCard extends StatelessWidget {
                   tooltip: l10n.scheduledPayments,
                   onSelected: (action) {
                     switch (action) {
+                      case 'edit':
+                        onEdit();
                       case 'toggle':
                         onToggleActive();
                       case 'delete':
@@ -148,6 +152,10 @@ class ScheduledPaymentCard extends StatelessWidget {
                     }
                   },
                   itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(l10n.editScheduledPayment),
+                    ),
                     PopupMenuItem(
                       value: 'toggle',
                       child: Text(

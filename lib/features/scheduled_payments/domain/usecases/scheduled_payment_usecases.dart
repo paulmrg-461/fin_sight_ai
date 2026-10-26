@@ -129,6 +129,108 @@ class SetScheduledPaymentActiveParams {
   final bool isActive;
 }
 
+/// Input for editing an existing schedule.
+class UpdateScheduledPaymentParams {
+  const UpdateScheduledPaymentParams({
+    required this.id,
+    required this.name,
+    required this.amount,
+    required this.category,
+    required this.nextDueDate,
+    this.type = TransactionType.expense,
+    this.frequency = PaymentFrequency.monthly,
+    this.walletId,
+    this.notes = '',
+    this.isActive = true,
+  });
+
+  final String id;
+  final String name;
+  final double amount;
+  final TransactionType type;
+  final String category;
+  final DateTime nextDueDate;
+  final PaymentFrequency frequency;
+  final String? walletId;
+  final String notes;
+  final bool isActive;
+}
+
+@lazySingleton
+class UpdateScheduledPaymentUseCase
+    implements UseCase<ScheduledPaymentEntity, UpdateScheduledPaymentParams> {
+  UpdateScheduledPaymentUseCase(this._repository, {this.clock = const Clock()});
+
+  final ScheduledPaymentRepository _repository;
+  final Clock clock;
+
+  @override
+  Future<Result<ScheduledPaymentEntity>> call(
+    UpdateScheduledPaymentParams params,
+  ) async {
+    final id = params.id.trim();
+    if (id.isEmpty) {
+      return const Left(
+        ValidationFailure('Payment id is required.', code: 'missing_id'),
+      );
+    }
+
+    final name = params.name.trim();
+    if (name.isEmpty) {
+      return const Left(
+        ValidationFailure(
+          'Payment name is required.',
+          code: 'missing_payment_name',
+        ),
+      );
+    }
+    if (!params.amount.isFinite || params.amount <= 0) {
+      return const Left(
+        ValidationFailure(
+          'Amount must be greater than zero.',
+          code: 'invalid_amount',
+        ),
+      );
+    }
+    final category = params.category.trim();
+    if (category.isEmpty) {
+      return const Left(
+        ValidationFailure('Category is required.', code: 'missing_category'),
+      );
+    }
+    final notes = params.notes.trim();
+    if (notes.length > 500) {
+      return const Left(
+        ValidationFailure(
+          'Notes must be 500 characters or fewer.',
+          code: 'notes_too_long',
+        ),
+      );
+    }
+
+    final dueDate = ScheduleCalculator.dateOnly(params.nextDueDate);
+    final walletId = params.walletId?.trim();
+
+    return _repository.updatePayment(
+      ScheduledPaymentEntity(
+        id: id,
+        name: name,
+        amount: double.parse(params.amount.toStringAsFixed(2)),
+        type: params.type,
+        category: category,
+        frequency: params.frequency,
+        nextDueDate: dueDate,
+        dayOfMonth: dueDate.day,
+        walletId: walletId == null || walletId.isEmpty ? null : walletId,
+        notes: notes,
+        isActive: params.isActive,
+        createdAt: clock.now(),
+        updatedAt: clock.now(),
+      ),
+    );
+  }
+}
+
 @lazySingleton
 class SetScheduledPaymentActiveUseCase
     implements

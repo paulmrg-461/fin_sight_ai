@@ -229,10 +229,12 @@ class IntegrationHarness {
     categoryRepository = CategoryRepositoryImpl(
       HiveCategoryLocalDataSource(_categoriesBox),
       languageCode: 'en',
+      syncQueue: syncLocal,
     );
     scheduledPaymentRepository = ScheduledPaymentRepositoryImpl(
       HiveScheduledPaymentLocalDataSource(_scheduledPaymentsBox),
       transactionRepository,
+      syncQueue: syncLocal,
     );
 
     addTransaction = AddTransactionUseCase(transactionRepository);
@@ -350,6 +352,7 @@ class IntegrationHarness {
     final walletRepository = WalletRepositoryImpl(
       HiveWalletLocalDataSource(_walletsBox, _walletTransfersBox),
       transactionRepository,
+      syncQueue: syncLocal,
     );
     walletBloc = WalletBloc(
       GetWalletBalancesUseCase(walletRepository),
@@ -380,6 +383,7 @@ class IntegrationHarness {
     scheduledPaymentBloc = ScheduledPaymentBloc(
       GetScheduledPaymentsUseCase(scheduledPaymentRepository),
       AddScheduledPaymentUseCase(scheduledPaymentRepository),
+      UpdateScheduledPaymentUseCase(scheduledPaymentRepository),
       SetScheduledPaymentActiveUseCase(scheduledPaymentRepository),
       DeleteScheduledPaymentUseCase(scheduledPaymentRepository),
       PayScheduledPaymentUseCase(scheduledPaymentRepository),

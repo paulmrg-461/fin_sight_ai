@@ -23,8 +23,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 930 unit/widget tests, coverage gate green, 23 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 938 unit/widget tests, coverage gate green, 24 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Schedule editing (plan 013)
+
+- `ScheduledPaymentRepository.updatePayment` merges editable fields into the stored row, preserving `id`, `createdAt`, and `lastPaidAt`; it stamps `updatedAt`, clears `isSynced`, and enqueues exactly one upsert.
+- `UpdateScheduledPaymentUseCase` mirrors add validation and normalizes the due date; `UpdateScheduledPayment` reloads without reprocessing due periods.
+- `ScheduledPaymentForm(initial:)` prefills the form and switches the title/button to “Edit scheduled payment” / “Save changes”; the card popup menu exposes Edit alongside pause/resume and delete.
+- Tests: repository audit-date and queue assertions, use-case validation, BLoC success/failure, and an integration edit flow that keeps the same id.
 
 ## Committed cashflow (plan 009 Phase A)
 

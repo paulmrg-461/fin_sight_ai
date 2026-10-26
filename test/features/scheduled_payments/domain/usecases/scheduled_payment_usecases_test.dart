@@ -1,3 +1,4 @@
+import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
@@ -188,6 +189,101 @@ void main() {
       );
 
       expect(result.fold((_) => null, (value) => value.walletId), isNull);
+    });
+  });
+
+  group('UpdateScheduledPaymentUseCase', () {
+    UpdateScheduledPaymentParams params({
+      String id = 'pay-1',
+      String name = '  Rent  ',
+      double amount = 900.126,
+      String category = '  Rent  ',
+      DateTime? nextDueDate,
+      String? walletId = ' wallet-bank ',
+      String notes = ' Updated ',
+      bool isActive = false,
+    }) {
+      return UpdateScheduledPaymentParams(
+        id: id,
+        name: name,
+        amount: amount,
+        category: category,
+        nextDueDate: nextDueDate ?? DateTime(2026, 11, 30, 18),
+        walletId: walletId,
+        notes: notes,
+        isActive: isActive,
+      );
+    }
+
+    test('normalizes input and updates in place', () async {
+      when(() => repository.updatePayment(any())).thenAnswer(
+        (invocation) async => Right(
+          invocation.positionalArguments.first as ScheduledPaymentEntity,
+        ),
+      );
+
+      final result = await UpdateScheduledPaymentUseCase(
+        repository,
+        clock: _FixedClock(now),
+      )(params());
+
+      final updated = result.getOrElse((_) => fail('Expected update'));
+      expect(updated.id, 'pay-1');
+      expect(updated.name, 'Rent');
+      expect(updated.amount, 900.13);
+      expect(updated.category, 'Rent');
+      expect(updated.nextDueDate, DateTime(2026, 11, 30));
+      expect(updated.dayOfMonth, 30);
+      expect(updated.walletId, 'wallet-bank');
+      expect(updated.notes, 'Updated');
+      expect(updated.isActive, isFalse);
+      verify(() => repository.updatePayment(any())).called(1);
+    });
+
+    test('rejects a missing id', () async {
+      final result = await UpdateScheduledPaymentUseCase(repository)(
+        params(id: ' '),
+      );
+
+      expect(result.fold((failure) => failure.code, (_) => null), 'missing_id');
+    });
+
+    test('rejects invalid fields and overlong notes', () async {
+      final cases = <UpdateScheduledPaymentParams, String>{
+        params(name: ' '): 'missing_payment_name',
+        params(amount: 0): 'invalid_amount',
+        params(category: ' '): 'missing_category',
+        params(notes: 'x' * 501): 'notes_too_long',
+      };
+
+      for (final entry in cases.entries) {
+        final result = await UpdateScheduledPaymentUseCase(repository)(
+          entry.key,
+        );
+        expect(
+          result.fold((failure) => failure.code, (_) => null),
+          entry.value,
+        );
+      }
+      verifyNever(() => repository.updatePayment(any()));
+    });
+
+    test('propagates repository failures', () async {
+      when(() => repository.updatePayment(any())).thenAnswer(
+        (_) async => const Left(
+          CacheFailure(
+            'Scheduled payment not found.',
+            code: 'scheduled_payment_not_found',
+          ),
+        ),
+      );
+
+      final result = await UpdateScheduledPaymentUseCase(repository)(params());
+
+      expect(
+        result.fold((failure) => failure.code, (_) => null),
+        'scheduled_payment_not_found',
+      );
     });
   });
 

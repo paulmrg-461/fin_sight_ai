@@ -81,6 +81,52 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   }
 
   @override
+  ResultFuture<ScheduledPaymentEntity> updatePayment(
+    ScheduledPaymentEntity payment,
+  ) async {
+    try {
+      final existing = await _findById(payment.id);
+      if (existing == null) {
+        return const Left(
+          ValidationFailure(
+            'Scheduled payment not found.',
+            code: 'scheduled_payment_not_found',
+          ),
+        );
+      }
+
+      final updated = ScheduledPaymentModel.fromEntity(
+        existing.copyWith(
+          name: payment.name,
+          amount: payment.amount,
+          type: payment.type,
+          category: payment.category,
+          frequency: payment.frequency,
+          nextDueDate: payment.nextDueDate,
+          dayOfMonth: payment.dayOfMonth,
+          walletId: payment.walletId,
+          notes: payment.notes,
+          isActive: payment.isActive,
+          updatedAt: clock.now(),
+          isSynced: false,
+        ),
+      );
+      await _localDataSource.savePayment(updated);
+      await _enqueue(updated);
+      return Right(updated.toEntity());
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to update the scheduled payment.',
+          code: 'scheduled_payment_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
   ResultFuture<ScheduledPaymentEntity> setActive(
     String id,
     bool isActive,

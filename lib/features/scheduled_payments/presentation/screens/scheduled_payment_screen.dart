@@ -22,12 +22,19 @@ import '../widgets/scheduled_payment_form.dart';
 class ScheduledPaymentScreen extends StatelessWidget {
   const ScheduledPaymentScreen({super.key});
 
-  Future<void> _openForm(BuildContext context) {
+  Future<void> _openForm(
+    BuildContext context, {
+    ScheduledPaymentEntity? initial,
+  }) {
+    final bloc = context.read<ScheduledPaymentBloc>();
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => const ScheduledPaymentForm(),
+      builder: (_) => BlocProvider.value(
+        value: bloc,
+        child: ScheduledPaymentForm(initial: initial),
+      ),
     );
   }
 
@@ -170,6 +177,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
                         onPayNow: () => context
                             .read<ScheduledPaymentBloc>()
                             .add(PayScheduledPayment(payment.id)),
+                        onEdit: () => _openForm(context, initial: payment),
                         onToggleActive: () =>
                             context.read<ScheduledPaymentBloc>().add(
                               SetScheduledPaymentActive(

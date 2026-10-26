@@ -391,5 +391,6 @@
   "committedTotal": "Total comprometido",
   "noCommittedPayments": "Sin compromisos aún",
   "noCommittedPaymentsBody": "No hay pagos programados ni mínimos de deuda en este periodo.",
-  "debtMinimumSource": "Mínimo de deuda"
+  "debtMinimumSource": "Mínimo de deuda",
+  "editScheduledPayment": "Editar pago programado"
 }

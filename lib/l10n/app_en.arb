@@ -440,5 +440,6 @@
   "committedTotal": "Committed total",
   "noCommittedPayments": "No commitments yet",
   "noCommittedPaymentsBody": "No active schedules or debt minimums fall in this window.",
-  "debtMinimumSource": "Debt minimum"
+  "debtMinimumSource": "Debt minimum",
+  "editScheduledPayment": "Edit scheduled payment"
 }

@@ -47,6 +47,8 @@ class MockGetPayments extends Mock implements GetScheduledPaymentsUseCase {}
 
 class MockAddPayment extends Mock implements AddScheduledPaymentUseCase {}
 
+class MockUpdatePayment extends Mock implements UpdateScheduledPaymentUseCase {}
+
 class MockSetActive extends Mock implements SetScheduledPaymentActiveUseCase {}
 
 class MockDeletePayment extends Mock implements DeleteScheduledPaymentUseCase {}
@@ -86,6 +88,15 @@ void main() {
     registerFallbackValue(AppCurrency.cop);
     registerFallbackValue(
       AddScheduledPaymentParams(
+        name: 'Salary',
+        amount: 1,
+        category: 'Salary',
+        nextDueDate: DateTime(2026),
+      ),
+    );
+    registerFallbackValue(
+      UpdateScheduledPaymentParams(
+        id: 'id',
         name: 'Salary',
         amount: 1,
         category: 'Salary',
@@ -141,6 +152,7 @@ void main() {
           payment: income,
           onPayNow: () {},
           onToggleActive: () {},
+          onEdit: () {},
           onDelete: () {},
         ),
       ),
@@ -176,6 +188,7 @@ void main() {
           payment: expense,
           onPayNow: () {},
           onToggleActive: () {},
+          onEdit: () {},
           onDelete: () {},
         ),
       ),
@@ -228,6 +241,7 @@ void main() {
     final scheduledBloc = ScheduledPaymentBloc(
       getPayments,
       addPayment,
+      MockUpdatePayment(),
       MockSetActive(),
       MockDeletePayment(),
       MockPayNow(),

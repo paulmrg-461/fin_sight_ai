@@ -19,7 +19,12 @@ import '../bloc/scheduled_payment_event.dart';
 
 /// Bottom-sheet form for a new scheduled payment.
 class ScheduledPaymentForm extends StatefulWidget {
-  const ScheduledPaymentForm({super.key});
+  const ScheduledPaymentForm({super.key, this.initial});
+
+  /// When provided, edits this schedule instead of creating one.
+  final ScheduledPaymentEntity? initial;
+
+  bool get isEditing => initial != null;
 
   @override
   State<ScheduledPaymentForm> createState() => _ScheduledPaymentFormState();
@@ -41,6 +46,19 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
   @override
   void initState() {
     super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _nameController.text = initial.name;
+      _amountController.text = initial.amount.toStringAsFixed(2);
+      _notesController.text = initial.notes;
+      _type = initial.type;
+      _frequency = initial.frequency;
+      _nextDueDate = initial.nextDueDate;
+      _category = initial.category;
+      _walletId = initial.walletId;
+      return;
+    }
+
     final active = _activeCategories();
     if (active.isNotEmpty) {
       _category = active.first.name;
@@ -117,20 +135,42 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
     }
     final bloc = context.read<ScheduledPaymentBloc>();
     final navigator = Navigator.of(context);
-    bloc.add(
-      AddScheduledPayment(
-        AddScheduledPaymentParams(
-          name: _nameController.text,
-          amount: double.parse(_amountController.text.trim()),
-          type: _type,
-          category: _category ?? '',
-          frequency: _frequency,
-          nextDueDate: _nextDueDate,
-          walletId: _walletId,
-          notes: _notesController.text,
+    final amount = double.parse(_amountController.text.trim());
+    final initial = widget.initial;
+
+    if (initial != null) {
+      bloc.add(
+        UpdateScheduledPayment(
+          UpdateScheduledPaymentParams(
+            id: initial.id,
+            name: _nameController.text,
+            amount: amount,
+            type: _type,
+            category: _category ?? '',
+            frequency: _frequency,
+            nextDueDate: _nextDueDate,
+            walletId: _walletId,
+            notes: _notesController.text,
+            isActive: initial.isActive,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      bloc.add(
+        AddScheduledPayment(
+          AddScheduledPaymentParams(
+            name: _nameController.text,
+            amount: amount,
+            type: _type,
+            category: _category ?? '',
+            frequency: _frequency,
+            nextDueDate: _nextDueDate,
+            walletId: _walletId,
+            notes: _notesController.text,
+          ),
+        ),
+      );
+    }
     navigator.pop();
   }
 
@@ -153,7 +193,9 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                context.l10n.newScheduledPayment,
+                widget.isEditing
+                    ? context.l10n.editScheduledPayment
+                    : context.l10n.newScheduledPayment,
                 style: theme.textTheme.titleLarge,
               ),
               const SizedBox(height: 16),
@@ -283,7 +325,11 @@ class _ScheduledPaymentFormState extends State<ScheduledPaymentForm> {
               FilledButton.icon(
                 onPressed: _submit,
                 icon: const Icon(Icons.event_repeat),
-                label: Text(context.l10n.addScheduledPayment),
+                label: Text(
+                  widget.isEditing
+                      ? context.l10n.saveChanges
+                      : context.l10n.addScheduledPayment,
+                ),
               ),
             ],
           ),
