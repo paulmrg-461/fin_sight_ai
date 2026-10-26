@@ -48,6 +48,15 @@ jobs:
           path: coverage/lcov.info
           if-no-files-found: ignore
 
+  schema:
+    name: Supabase migrations and RLS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply migrations and run RLS against Postgres 16
+        run: ./supabase/validate_local.sh
+
   integration:
     name: Integration tests (Linux)
     runs-on: ubuntu-latest

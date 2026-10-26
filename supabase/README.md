@@ -51,6 +51,19 @@ as transient instead of signing the user out. Only a permanent rejection
 (400/401/invalid response) clears the stored session, and only an explicit
 sign-out erases local data.
 
+## Validate the schema locally
+
+`supabase/validate_local.sh` applies every migration to a throwaway Postgres
+container (with an `auth.uid()` shim and `authenticated`/`anon` roles) and runs
+the full RLS suite. CI runs it on every push and pull request.
+
+```bash
+./supabase/validate_local.sh
+```
+
+Expected output: `All migrations applied and RLS verification passed.` It needs
+Docker and no production credentials.
+
 ## Verify RLS against a real project
 
 The repository includes a transactional RLS test that creates two synthetic
