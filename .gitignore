@@ -49,3 +49,11 @@ app.*.map.json
 
 # Local secrets (committed example lives in example.env)
 .env
+
+# Platform scaffolds are part of the project
+!android/
+!ios/
+!linux/
+!macos/
+!windows/
+!web/
