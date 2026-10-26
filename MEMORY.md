@@ -41,7 +41,7 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Repositories enqueue upserts on every write: category add/rename/archive, schedule add/pause/resume/pay/rename plus tombstones on delete, wallet reconciliation/default creation, and transfer creation. Queue failures never fail the local write.
 - Hive data sources split visible reads from `getAll*` (including tombstones) and purge tombstones older than 30 days.
 - Remote mapping uses `categories`, `scheduled_payments` (incl. `type`, `next_due_date`, `is_active`, `last_paid_at`), `wallets`, and `wallet_transfers`; LWW and tombstones match the existing pipeline.
-- Migration: `supabase/migrations/0006_definitions_sync.sql` (0005 was already receivables), added to `apply_all.sh`/`.sql`, with RLS coverage for the four tables. `supabase/validate_local.sh` applies all six migrations plus the RLS suite to a throwaway Postgres 16 container (Docker) and runs in CI; the live Supabase project still needs the connection string to apply them remotely.
+- Migration: `supabase/migrations/0006_definitions_sync.sql` (0005 was already receivables), added to `apply_all.sh`/`.sql`, with RLS coverage for the four tables. `supabase/validate_local.sh` applies all six migrations plus the RLS suite to a throwaway Postgres 16 container (Docker) and runs in CI. The user applied `0006` (and the earlier migrations) to the live project on 2026-10-26; capture the RLS script output on the next connection.
 - `category_id` is reserved on `transactions`/`budgets` but remains unpopulated; category names stay canonical. Category defaults are device-local until first edit, so a second device may keep its own default names until a category is mutated or pulled.
 - Tests: model/data-source/repository enqueue tests, PostgREST mapping for all four entities, sync push/pull/LWW/tombstone/order tests.
 
@@ -204,7 +204,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Known gaps / next
 
 1. Localize domain `Failure` messages and AI-generated insight content.
-2. Apply `0006_definitions_sync.sql` to the live project and run the RLS script.
+2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.
 6. Money as integer minor units instead of `double`.
