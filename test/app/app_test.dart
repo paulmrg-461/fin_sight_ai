@@ -26,6 +26,7 @@ import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecas
     as categories;
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_state.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_state.dart';
@@ -133,6 +134,8 @@ class MockPayScheduledPayment extends Mock
 
 class MockProcessDuePayments extends Mock
     implements ProcessDueScheduledPaymentsUseCase {}
+
+class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
 
 class MockScanReceipt extends Mock implements ScanReceiptUseCase {}
 
@@ -326,6 +329,7 @@ void main() {
       MockDeleteScheduledPayment(),
       MockPayScheduledPayment(),
       MockProcessDuePayments(),
+      MockGetCommitted(),
     );
   });
 

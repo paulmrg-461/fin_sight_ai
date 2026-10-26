@@ -23,8 +23,16 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 911 unit/widget tests, coverage gate green, 23 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 930 unit/widget tests, coverage gate green, 23 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Committed cashflow (plan 009 Phase A)
+
+- `GetCommittedCashflowUseCase` projects the next 30/90 days from active expense schedules and active debt minimums; income and paused schedules are excluded, overdue sources advance into the window, and results are date-sorted.
+- The projection is read-only; due processing remains the only writer. Debt minimums recur monthly on the debt due day.
+- `ScheduledPaymentBloc` computes both windows on every reload (projection failures hide the card) and exposes them on `ScheduledPaymentLoaded`/`ScheduledPaymentEmpty`.
+- `CommittedCashflowCard` on `/scheduled` shows the total, the next three payments, and a 30/90-day toggle; it hides when both windows are unavailable.
+- Phase B (local due-date notifications) is BLOCKED: `android/` and `ios/` are excluded from version control in this environment and the plugin/platform setup cannot be committed or verified here.
 
 ## Definitions sync (plan 007)
 

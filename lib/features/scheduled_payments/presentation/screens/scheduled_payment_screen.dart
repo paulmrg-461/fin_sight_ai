@@ -14,6 +14,7 @@ import '../../domain/services/expected_income_calculator.dart';
 import '../bloc/scheduled_payment_bloc.dart';
 import '../bloc/scheduled_payment_event.dart';
 import '../bloc/scheduled_payment_state.dart';
+import '../widgets/committed_cashflow_card.dart';
 import '../widgets/scheduled_payment_card.dart';
 import '../widgets/scheduled_payment_form.dart';
 
@@ -92,7 +93,12 @@ class ScheduledPaymentScreen extends StatelessWidget {
                 const LoadScheduledPayments(),
               ),
             ),
-            ScheduledPaymentEmpty(:final autoCreated, :final error) =>
+            ScheduledPaymentEmpty(
+              :final autoCreated,
+              :final error,
+              :final committed30,
+              :final committed90,
+            ) =>
               AppContent(
                 padding: EdgeInsets.zero,
                 child: ListView(
@@ -110,7 +116,11 @@ class ScheduledPaymentScreen extends StatelessWidget {
                       l10n.scheduledPaymentsDescription,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    CommittedCashflowCard(
+                      thirtyDays: committed30,
+                      ninetyDays: committed90,
+                    ),
                     AppEmptyState(
                       icon: Icons.event_repeat_rounded,
                       title: l10n.noScheduledPayments,
@@ -125,6 +135,8 @@ class ScheduledPaymentScreen extends StatelessWidget {
               :final payments,
               :final autoCreated,
               :final error,
+              :final committed30,
+              :final committed90,
             ) =>
               AppContent(
                 padding: EdgeInsets.zero,
@@ -148,6 +160,10 @@ class ScheduledPaymentScreen extends StatelessWidget {
                       _ErrorBanner(message: error),
                       const SizedBox(height: 12),
                     ],
+                    CommittedCashflowCard(
+                      thirtyDays: committed30,
+                      ninetyDays: committed90,
+                    ),
                     for (final payment in payments)
                       ScheduledPaymentCard(
                         payment: payment,

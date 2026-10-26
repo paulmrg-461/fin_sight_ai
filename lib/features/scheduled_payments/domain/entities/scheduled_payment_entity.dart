@@ -62,6 +62,8 @@ class ScheduledPaymentEntity extends Entity {
 
   bool get isIncome => type == TransactionType.income;
 
+  bool get isExpense => type == TransactionType.expense;
+
   bool isDue(DateTime now) {
     if (!isActive) {
       return false;

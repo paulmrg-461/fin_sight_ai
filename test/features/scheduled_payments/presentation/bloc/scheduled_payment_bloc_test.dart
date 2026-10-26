@@ -3,6 +3,8 @@ import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/committed_cashflow.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
@@ -24,6 +26,8 @@ class MockPayNow extends Mock implements PayScheduledPaymentUseCase {}
 class MockProcessDue extends Mock
     implements ProcessDueScheduledPaymentsUseCase {}
 
+class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
+
 void main() {
   late MockGetPayments getPayments;
   late MockAddPayment addPayment;
@@ -31,6 +35,7 @@ void main() {
   late MockDeletePayment deletePayment;
   late MockPayNow payNow;
   late MockProcessDue processDue;
+  late MockGetCommitted getCommitted;
 
   final payment = ScheduledPaymentEntity(
     id: 'pay-1',
@@ -67,6 +72,9 @@ void main() {
     registerFallbackValue(
       const SetScheduledPaymentActiveParams(id: 'id', isActive: true),
     );
+    registerFallbackValue(
+      CommittedCashflowParams(from: DateTime(2026, 10, 1), days: 30),
+    );
   });
 
   setUp(() {
@@ -76,6 +84,12 @@ void main() {
     deletePayment = MockDeletePayment();
     payNow = MockPayNow();
     processDue = MockProcessDue();
+    getCommitted = MockGetCommitted();
+    // Projection is optional: by default the card hides so existing state
+    // expectations stay focused on schedules.
+    when(() => getCommitted(any())).thenAnswer(
+      (_) async => const Left(CacheFailure('Projection unavailable.')),
+    );
   });
 
   ScheduledPaymentBloc buildBloc() => ScheduledPaymentBloc(
@@ -85,6 +99,7 @@ void main() {
     deletePayment,
     payNow,
     processDue,
+    getCommitted,
   );
 
   ScheduledPaymentRun runWith(int created) {
@@ -137,6 +152,37 @@ void main() {
     expect: () => [
       const ScheduledPaymentLoading(),
       const ScheduledPaymentEmpty(),
+    ],
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'exposes the committed projections in the loaded state',
+    setUp: () {
+      stubProcess();
+      stubGet(const []);
+      final projection = CommittedCashflow(
+        start: DateTime(2026, 10, 1),
+        end: DateTime(2026, 10, 31),
+        payments: [
+          CommittedPayment(
+            date: DateTime(2026, 10, 15),
+            name: 'Rent',
+            amount: 800,
+            category: 'Rent',
+            source: CommittedSource.scheduledPayment,
+          ),
+        ],
+      );
+      when(() => getCommitted(any()))
+          .thenAnswer((_) async => Right(projection));
+    },
+    build: buildBloc,
+    act: (bloc) => bloc.add(const LoadScheduledPayments()),
+    expect: () => [
+      const ScheduledPaymentLoading(),
+      isA<ScheduledPaymentEmpty>()
+          .having((state) => state.committed30, 'committed30', isNotNull)
+          .having((state) => state.committed90, 'committed90', isNotNull),
     ],
   );
 

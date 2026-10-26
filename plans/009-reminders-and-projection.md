@@ -15,6 +15,7 @@
 - **Depends on**: 003
 - **Category**: direction
 - **Planned at**: commit `4e42297`, 2026-10-23
+- **Status**: IN PROGRESS. Phase A DONE (pure projection use case + 30/90-day card). Phase B BLOCKED: `android/` and `ios/` are excluded from version control in this environment and the notification plugin needs platform setup; no workaround attempted.
 
 ## Why this matters
 
@@ -182,8 +183,8 @@ with a `kIsWeb`/platform check and the no-op fake in the harness.
 
 ## Done criteria
 
-- [ ] Projection card shows 30/90-day totals and next payments.
-- [ ] Projection use case is pure Dart and tested.
+- [x] Projection card shows 30/90-day totals and next payments.
+- [x] Projection use case is pure Dart and tested.
 - [ ] Reminder scheduler is invoked on add/pause/delete/pay.
 - [ ] Linux integration uses a no-op scheduler and passes.
 - [ ] Android/iOS setup documented in `README.md`.

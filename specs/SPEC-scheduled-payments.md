@@ -58,17 +58,19 @@ projected (user decision).
 - `DeleteScheduledPaymentUseCase`
 - `PayScheduledPaymentUseCase`
 - `ProcessDueScheduledPaymentsUseCase(DateTime now)`
+- `GetCommittedCashflowUseCase` (30/90-day projection over schedules and debt minimums)
 
 ## Persistence
 
 - Hive `scheduled_payments` box, JSON maps.
 - Repository depends on `TransactionRepository` to persist generated expenses, which enqueue normal
-  sync operations. Schedules themselves are local-only in this slice.
+  sync operations. Schedules themselves sync through the definitions queue (plan 007).
 
 ## Presentation
 
 - `ScheduledPaymentBloc`: load, add, pause/resume, delete, pay now, process due.
-  States: initial, loading, loaded (list + auto-created count + optional error), empty, failure.
+  States: initial, loading, loaded/empty (list or empty flag, auto-created count, optional error, and the
+  30/90-day committed projections), failure.
 - `/scheduled` screen: list cards with amount, category, frequency, next due date, overdue badge,
   pause/resume, pay now, delete; FAB adds a payment; empty state explains the feature.
 - Add form: name, amount, category, frequency, next due date, wallet, notes.

@@ -1969,6 +1969,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This removes the monthly limit for this category.'**
   String get deleteBudgetBody;
+
+  /// No description provided for @committedCashflow.
+  ///
+  /// In en, this message translates to:
+  /// **'Committed cashflow'**
+  String get committedCashflow;
+
+  /// No description provided for @committedDays30.
+  ///
+  /// In en, this message translates to:
+  /// **'30 days'**
+  String get committedDays30;
+
+  /// No description provided for @committedDays90.
+  ///
+  /// In en, this message translates to:
+  /// **'90 days'**
+  String get committedDays90;
+
+  /// No description provided for @committedTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Committed total'**
+  String get committedTotal;
+
+  /// No description provided for @noCommittedPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'No commitments yet'**
+  String get noCommittedPayments;
+
+  /// No description provided for @noCommittedPaymentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No active schedules or debt minimums fall in this window.'**
+  String get noCommittedPaymentsBody;
+
+  /// No description provided for @debtMinimumSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt minimum'**
+  String get debtMinimumSource;
 }
 
 class _AppLocalizationsDelegate

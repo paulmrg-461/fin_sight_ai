@@ -42,6 +42,7 @@ import 'package:fin_sight_ai/features/categories/presentation/bloc/category_even
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
@@ -383,6 +384,7 @@ class IntegrationHarness {
       DeleteScheduledPaymentUseCase(scheduledPaymentRepository),
       PayScheduledPaymentUseCase(scheduledPaymentRepository),
       ProcessDueScheduledPaymentsUseCase(scheduledPaymentRepository),
+      GetCommittedCashflowUseCase(scheduledPaymentRepository, debtRepository),
     );
 
     // Mirrors `main.dart`: sign-out reloads the feature blocs so they render

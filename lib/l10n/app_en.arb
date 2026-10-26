@@ -433,5 +433,12 @@
   "editBudget": "Edit budget",
   "budgetDeleted": "Budget deleted.",
   "deleteBudgetQuestion": "Delete budget?",
-  "deleteBudgetBody": "This removes the monthly limit for this category."
+  "deleteBudgetBody": "This removes the monthly limit for this category.",
+  "committedCashflow": "Committed cashflow",
+  "committedDays30": "30 days",
+  "committedDays90": "90 days",
+  "committedTotal": "Committed total",
+  "noCommittedPayments": "No commitments yet",
+  "noCommittedPaymentsBody": "No active schedules or debt minimums fall in this window.",
+  "debtMinimumSource": "Debt minimum"
 }

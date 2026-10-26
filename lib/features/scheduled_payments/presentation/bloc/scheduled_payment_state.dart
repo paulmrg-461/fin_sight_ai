@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/committed_cashflow.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
 
 sealed class ScheduledPaymentState extends Equatable {
@@ -22,9 +23,17 @@ final class ScheduledPaymentLoaded extends ScheduledPaymentState {
     this.payments, {
     this.autoCreated = 0,
     this.error,
+    this.committed30,
+    this.committed90,
   });
 
   final List<ScheduledPaymentEntity> payments;
+
+  /// Projection for the next 30 days, when available.
+  final CommittedCashflow? committed30;
+
+  /// Projection for the next 90 days, when available.
+  final CommittedCashflow? committed90;
 
   /// Expenses auto-generated during the last load/action, shown as a banner.
   final int autoCreated;
@@ -33,17 +42,30 @@ final class ScheduledPaymentLoaded extends ScheduledPaymentState {
   final String? error;
 
   @override
-  List<Object?> get props => [payments, autoCreated, error];
+  List<Object?> get props => [
+    payments,
+    autoCreated,
+    error,
+    committed30,
+    committed90,
+  ];
 }
 
 final class ScheduledPaymentEmpty extends ScheduledPaymentState {
-  const ScheduledPaymentEmpty({this.autoCreated = 0, this.error});
+  const ScheduledPaymentEmpty({
+    this.autoCreated = 0,
+    this.error,
+    this.committed30,
+    this.committed90,
+  });
 
   final int autoCreated;
   final String? error;
+  final CommittedCashflow? committed30;
+  final CommittedCashflow? committed90;
 
   @override
-  List<Object?> get props => [autoCreated, error];
+  List<Object?> get props => [autoCreated, error, committed30, committed90];
 }
 
 final class ScheduledPaymentFailure extends ScheduledPaymentState {

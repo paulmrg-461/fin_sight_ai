@@ -56,6 +56,7 @@ import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.d
 import 'package:fin_sight_ai/features/ocr/domain/usecases/save_receipt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/usecases/scan_receipt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_state.dart';
@@ -143,6 +144,8 @@ class MockPayScheduledPayment extends Mock
 
 class MockProcessDuePayments extends Mock
     implements ProcessDueScheduledPaymentsUseCase {}
+
+class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
 
 class MockScanReceipt extends Mock implements ScanReceiptUseCase {}
 
@@ -345,6 +348,7 @@ void main() {
       MockDeleteScheduledPayment(),
       MockPayScheduledPayment(),
       MockProcessDuePayments(),
+      MockGetCommitted(),
     );
 
     router = buildRouter(

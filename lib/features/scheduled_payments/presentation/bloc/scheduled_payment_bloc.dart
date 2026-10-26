@@ -3,6 +3,10 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../domain/entities/committed_cashflow.dart';
+import '../../domain/entities/scheduled_payment_entity.dart';
+import '../../domain/services/schedule_calculator.dart';
+import '../../domain/usecases/committed_cashflow_usecase.dart';
 import '../../domain/usecases/scheduled_payment_usecases.dart';
 import 'scheduled_payment_event.dart';
 import 'scheduled_payment_state.dart';
@@ -17,6 +21,7 @@ class ScheduledPaymentBloc
     this._deletePayment,
     this._payNow,
     this._processDue,
+    this._getCommitted,
   ) : super(const ScheduledPaymentInitial()) {
     on<LoadScheduledPayments>(_onLoad);
     on<AddScheduledPayment>(_onAdd);
@@ -32,6 +37,7 @@ class ScheduledPaymentBloc
   final DeleteScheduledPaymentUseCase _deletePayment;
   final PayScheduledPaymentUseCase _payNow;
   final ProcessDueScheduledPaymentsUseCase _processDue;
+  final GetCommittedCashflowUseCase _getCommitted;
 
   Future<void> _onLoad(
     LoadScheduledPayments event,
@@ -129,17 +135,47 @@ class ScheduledPaymentBloc
     String? error,
   }) async {
     final result = await _getPayments(const NoParams());
-    result.fold(
-      (failure) => emit(ScheduledPaymentFailure(failure.message)),
-      (payments) => payments.isEmpty
-          ? emit(ScheduledPaymentEmpty(autoCreated: autoCreated, error: error))
-          : emit(
-              ScheduledPaymentLoaded(
-                payments,
-                autoCreated: autoCreated,
-                error: error,
-              ),
-            ),
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      emit(ScheduledPaymentFailure(failure.message));
+      return;
+    }
+
+    final payments = result.getOrElse((_) => const <ScheduledPaymentEntity>[]);
+    final projection = await _projection();
+    if (payments.isEmpty) {
+      emit(
+        ScheduledPaymentEmpty(
+          autoCreated: autoCreated,
+          error: error,
+          committed30: projection.$1,
+          committed90: projection.$2,
+        ),
+      );
+      return;
+    }
+
+    emit(
+      ScheduledPaymentLoaded(
+        payments,
+        autoCreated: autoCreated,
+        error: error,
+        committed30: projection.$1,
+        committed90: projection.$2,
+      ),
     );
+  }
+
+  /// Both windows are projected so the card can switch without another read.
+  /// Projection failures are non-fatal: the card simply hides.
+  Future<(CommittedCashflow?, CommittedCashflow?)> _projection() async {
+    final from = ScheduleCalculator.dateOnly(DateTime.now());
+    final thirty = await _getCommitted(
+      CommittedCashflowParams(from: from, days: 30),
+    );
+    final ninety = await _getCommitted(
+      CommittedCashflowParams(from: from, days: 90),
+    );
+    return (thirty.getRight().toNullable(), ninety.getRight().toNullable());
   }
 }

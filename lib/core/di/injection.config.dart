@@ -156,6 +156,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/data/scheduled_payments
     as _i942;
 import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart'
     as _i312;
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart'
+    as _i387;
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart'
     as _i160;
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart'
@@ -591,6 +593,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1013.TransferBetweenWalletsUseCase>(),
       ),
     );
+    gh.lazySingleton<_i387.GetCommittedCashflowUseCase>(
+      () => _i387.GetCommittedCashflowUseCase(
+        gh<_i312.ScheduledPaymentRepository>(),
+        gh<_i268.DebtRepository>(),
+      ),
+    );
     gh.lazySingleton<_i642.UpdateReceivableUseCase>(
       () => _i642.UpdateReceivableUseCase(
         gh<_i554.ReceivableRepository>(),
@@ -694,6 +702,17 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
+    gh.factory<_i200.ScheduledPaymentBloc>(
+      () => _i200.ScheduledPaymentBloc(
+        gh<_i160.GetScheduledPaymentsUseCase>(),
+        gh<_i160.AddScheduledPaymentUseCase>(),
+        gh<_i160.SetScheduledPaymentActiveUseCase>(),
+        gh<_i160.DeleteScheduledPaymentUseCase>(),
+        gh<_i160.PayScheduledPaymentUseCase>(),
+        gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
+        gh<_i387.GetCommittedCashflowUseCase>(),
+      ),
+    );
     gh.factory<_i9.ReceivableBloc>(
       () => _i9.ReceivableBloc(
         gh<_i728.GetReceivablesUseCase>(),
@@ -707,16 +726,6 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i470.SyncBloc(
         gh<_i558.SyncNowUseCase>(),
         gh<_i558.GetSyncStatusUseCase>(),
-      ),
-    );
-    gh.factory<_i200.ScheduledPaymentBloc>(
-      () => _i200.ScheduledPaymentBloc(
-        gh<_i160.GetScheduledPaymentsUseCase>(),
-        gh<_i160.AddScheduledPaymentUseCase>(),
-        gh<_i160.SetScheduledPaymentActiveUseCase>(),
-        gh<_i160.DeleteScheduledPaymentUseCase>(),
-        gh<_i160.PayScheduledPaymentUseCase>(),
-        gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
       ),
     );
     gh.factory<_i1031.OcrBloc>(

@@ -9,6 +9,8 @@ import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecas
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_state.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/committed_cashflow.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/widgets/scheduled_payment_card.dart';
@@ -54,6 +56,8 @@ class MockPayNow extends Mock implements PayScheduledPaymentUseCase {}
 class MockProcessDue extends Mock
     implements ProcessDueScheduledPaymentsUseCase {}
 
+class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
+
 void main() {
   final createdAt = DateTime.utc(2026, 10, 1);
   final salary = CategoryEntity(
@@ -90,6 +94,9 @@ void main() {
     );
     registerFallbackValue(
       const SetScheduledPaymentActiveParams(id: 'id', isActive: true),
+    );
+    registerFallbackValue(
+      CommittedCashflowParams(from: DateTime(2026, 10, 1), days: 30),
     );
   });
 
@@ -208,6 +215,16 @@ void main() {
         .thenAnswer((_) async => const Right(ScheduledPaymentRun()));
     final getPayments = MockGetPayments();
     when(() => getPayments(any())).thenAnswer((_) async => Right([income]));
+    final getCommitted = MockGetCommitted();
+    when(() => getCommitted(any())).thenAnswer(
+      (_) async => Right(
+        CommittedCashflow(
+          start: DateTime(2026, 10, 1),
+          end: DateTime(2026, 10, 31),
+          payments: const [],
+        ),
+      ),
+    );
     final scheduledBloc = ScheduledPaymentBloc(
       getPayments,
       addPayment,
@@ -215,6 +232,7 @@ void main() {
       MockDeletePayment(),
       MockPayNow(),
       processDue,
+      getCommitted,
     );
     addTearDown(scheduledBloc.close);
 

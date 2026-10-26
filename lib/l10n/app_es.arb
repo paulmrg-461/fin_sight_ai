@@ -384,5 +384,12 @@
   "editBudget": "Editar presupuesto",
   "budgetDeleted": "Presupuesto eliminado.",
   "deleteBudgetQuestion": "¿Eliminar presupuesto?",
-  "deleteBudgetBody": "Esto elimina el límite mensual de esta categoría."
+  "deleteBudgetBody": "Esto elimina el límite mensual de esta categoría.",
+  "committedCashflow": "Flujo comprometido",
+  "committedDays30": "30 días",
+  "committedDays90": "90 días",
+  "committedTotal": "Total comprometido",
+  "noCommittedPayments": "Sin compromisos aún",
+  "noCommittedPaymentsBody": "No hay pagos programados ni mínimos de deuda en este periodo.",
+  "debtMinimumSource": "Mínimo de deuda"
 }

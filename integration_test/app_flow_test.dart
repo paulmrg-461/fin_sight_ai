@@ -885,6 +885,8 @@ void main() {
     await pumpUntil(tester, find.text('1 scheduled entry was added.'));
     await pumpUntilGone(tester, find.text('New scheduled payment'));
     expect(find.text('Rent payment'), findsOneWidget);
+    expect(find.text('Committed cashflow'), findsOneWidget);
+    expect(find.text('30 days'), findsOneWidget);
 
     harness.router.goNamed(AppRoutes.transactionsName);
     await pumpUntil(tester, find.text('Add'));

@@ -1033,4 +1033,26 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get deleteBudgetBody =>
       'Esto elimina el límite mensual de esta categoría.';
+
+  @override
+  String get committedCashflow => 'Flujo comprometido';
+
+  @override
+  String get committedDays30 => '30 días';
+
+  @override
+  String get committedDays90 => '90 días';
+
+  @override
+  String get committedTotal => 'Total comprometido';
+
+  @override
+  String get noCommittedPayments => 'Sin compromisos aún';
+
+  @override
+  String get noCommittedPaymentsBody =>
+      'No hay pagos programados ni mínimos de deuda en este periodo.';
+
+  @override
+  String get debtMinimumSource => 'Mínimo de deuda';
 }

@@ -1032,4 +1032,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteBudgetBody =>
       'This removes the monthly limit for this category.';
+
+  @override
+  String get committedCashflow => 'Committed cashflow';
+
+  @override
+  String get committedDays30 => '30 days';
+
+  @override
+  String get committedDays90 => '90 days';
+
+  @override
+  String get committedTotal => 'Committed total';
+
+  @override
+  String get noCommittedPayments => 'No commitments yet';
+
+  @override
+  String get noCommittedPaymentsBody =>
+      'No active schedules or debt minimums fall in this window.';
+
+  @override
+  String get debtMinimumSource => 'Debt minimum';
 }
