@@ -514,5 +514,6 @@
   "errProcess": "Unable to process the request.",
   "errScan": "Unable to scan the receipt.",
   "errTransfer": "Unable to transfer money.",
-  "errGeneric": "Something went wrong. Please try again."
+  "errGeneric": "Something went wrong. Please try again.",
+  "savedInsights": "Showing saved insights. Reconnect to refresh."
 }

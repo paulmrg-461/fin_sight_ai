@@ -15,6 +15,7 @@ class AppBoxes {
     required this.settings,
     required this.categories,
     required this.scheduledPayments,
+    required this.aiInsights,
   });
 
   final Box<dynamic> transactions;
@@ -29,4 +30,5 @@ class AppBoxes {
   final Box<dynamic> settings;
   final Box<dynamic> categories;
   final Box<dynamic> scheduledPayments;
+  final Box<dynamic> aiInsights;
 }

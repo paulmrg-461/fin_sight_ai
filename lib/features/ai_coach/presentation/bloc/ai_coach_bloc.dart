@@ -5,6 +5,7 @@ import '../../../../core/usecase/usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/domain/usecases/get_transactions_usecase.dart';
 import '../../domain/entities/financial_insight_entity.dart';
+import '../../domain/repositories/insight_cache.dart';
 import '../../domain/usecases/analyze_spending_usecase.dart';
 import '../../domain/usecases/get_insights_usecase.dart';
 import '../../domain/usecases/get_savings_suggestions_usecase.dart';
@@ -19,6 +20,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     this._analyzeSpending,
     this._getSuggestions,
     this._getTransactions,
+    this._cache,
   ) : super(const AiCoachInitial()) {
     on<LoadInsights>(_onLoadInsights);
     on<AnalyzeSpending>(_onAnalyzeSpending);
@@ -29,6 +31,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   final AnalyzeSpendingUseCase _analyzeSpending;
   final GetSavingsSuggestionsUseCase _getSuggestions;
   final GetTransactionsUseCase _getTransactions;
+  final InsightCache _cache;
 
   Future<void> _onLoadInsights(
     LoadInsights event,
@@ -37,12 +40,24 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     emit(const AiCoachLoading());
     final context = await _buildContext(event.languageCode);
     final result = await _getInsights(context);
-    result.fold(
-      (failure) => emit(AiCoachFailure(failure.message)),
-      (insights) => emit(
-        insights.isEmpty ? const AiCoachEmpty() : AiCoachLoaded(insights),
-      ),
-    );
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      final cached = await _cache.read(event.languageCode);
+      if (cached != null && cached.isNotEmpty) {
+        emit(AiCoachLoaded(cached, fromCache: true));
+        return;
+      }
+      emit(AiCoachFailure(failure.message));
+      return;
+    }
+
+    final insights = result.getOrElse((_) => const <FinancialInsightEntity>[]);
+    if (insights.isEmpty) {
+      emit(const AiCoachEmpty());
+      return;
+    }
+    await _cache.write(event.languageCode, insights);
+    emit(AiCoachLoaded(insights));
   }
 
   Future<void> _onAnalyzeSpending(
@@ -53,10 +68,22 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     emit(const AiCoachLoading());
     final context = await _buildContext(event.languageCode);
     final result = await _analyzeSpending(context);
-    result.fold(
-      (failure) => emit(AiCoachFailure(failure.message)),
-      (insight) => emit(AiCoachLoaded([insight, ...previous])),
-    );
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      if (previous.isNotEmpty) {
+        emit(AiCoachLoaded(previous, fromCache: true));
+        return;
+      }
+      emit(AiCoachFailure(failure.message));
+      return;
+    }
+    final insight = result.toNullable();
+    if (insight == null) {
+      return;
+    }
+    final insights = [insight, ...previous];
+    await _cache.write(event.languageCode, insights);
+    emit(AiCoachLoaded(insights));
   }
 
   Future<void> _onGetSuggestions(
@@ -67,10 +94,22 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     emit(const AiCoachLoading());
     final context = await _buildContext(event.languageCode);
     final result = await _getSuggestions(context);
-    result.fold(
-      (failure) => emit(AiCoachFailure(failure.message)),
-      (insight) => emit(AiCoachLoaded([insight, ...previous])),
-    );
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      if (previous.isNotEmpty) {
+        emit(AiCoachLoaded(previous, fromCache: true));
+        return;
+      }
+      emit(AiCoachFailure(failure.message));
+      return;
+    }
+    final insight = result.toNullable();
+    if (insight == null) {
+      return;
+    }
+    final insights = [insight, ...previous];
+    await _cache.write(event.languageCode, insights);
+    emit(AiCoachLoaded(insights));
   }
 
   List<FinancialInsightEntity> get _currentInsights {

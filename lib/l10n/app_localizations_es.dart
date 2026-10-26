@@ -1281,4 +1281,8 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errGeneric => 'Algo salió mal. Inténtalo de nuevo.';
+
+  @override
+  String get savedInsights =>
+      'Mostrando ideas guardadas. Reconéctate para actualizar.';
 }

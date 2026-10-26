@@ -27,6 +27,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 017 | Copy last month's budgets | P2 | S | 016 | DONE (946 unit, 28 integration) |
 | 018 | Localize failure messages | P2 | M | 004 | DONE (949 unit, 28 integration) |
 | 019 | Answer AI coaching in the active language | P3 | S | 004 | DONE (950 unit, 28 integration) |
+| 020 | Cache AI insights for offline use | P3 | M | 019 | DONE (955 unit, 28 integration) |
+
+- 020 added a per-language Hive cache so the AI Coach keeps showing saved insights offline, with a clear banner.
 
 - 019 passes the active locale to the AI coach so generated insights follow the UI language.
 

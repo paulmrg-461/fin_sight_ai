@@ -13,6 +13,7 @@ abstract final class AppConstants {
   static const String settingsBoxName = 'settings';
   static const String categoriesBoxName = 'categories';
   static const String scheduledPaymentsBoxName = 'scheduled_payments';
+  static const String aiInsightsBoxName = 'ai_insights';
   static const String calendarMigrationFlagKey = 'calendar_migration_v1';
   static const int maxNoteLength = 500;
   static const int maxDebtorNameLength = 120;

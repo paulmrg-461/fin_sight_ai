@@ -2413,6 +2413,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get errGeneric;
+
+  /// No description provided for @savedInsights.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing saved insights. Reconnect to refresh.'**
+  String get savedInsights;
 }
 
 class _AppLocalizationsDelegate

@@ -23,8 +23,16 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 950 unit/widget tests, coverage gate green, 28 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 955 unit/widget tests, coverage gate green, 28 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## AI insight cache (plan 020)
+
+- `ai_insights` is a user-owned Hive box (cleared by `LocalDataScope` on sign-out) storing the last insights per language.
+- `InsightCache`/`HiveInsightCache` parse defensively; corrupt entries are skipped and cache errors never reach the UI.
+- `AiCoachBloc` writes on successful load/analyze/suggest; a failed load falls back to the cache with `AiCoachLoaded.fromCache`, and failed analyses keep the insights already on screen.
+- The screen shows a “Showing saved insights. Reconnect to refresh.” banner in that state.
+- Tests cover per-language storage, corrupt data, offline fallback, write-on-success, and sign-out clearing.
 
 ## AI Coach language (plan 019)
 
@@ -251,7 +259,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 
 ## Known gaps / next
 
-1. Cache AI insights for offline use and remember the language they were generated in.
+1. Poblar `categoryId` canónico en transacciones y presupuestos.
 2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.

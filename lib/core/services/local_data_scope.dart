@@ -61,6 +61,7 @@ class HiveLocalDataScope implements LocalDataScope {
     _boxes.walletTransfers,
     _boxes.categories,
     _boxes.scheduledPayments,
+    _boxes.aiInsights,
     _boxes.syncQueue,
     _boxes.syncMeta,
   ];

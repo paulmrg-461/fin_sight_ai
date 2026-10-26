@@ -1274,4 +1274,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get savedInsights => 'Showing saved insights. Reconnect to refresh.';
 }

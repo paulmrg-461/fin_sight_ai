@@ -33,10 +33,14 @@ import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasou
     as _i323;
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/groq_api_datasource.dart'
     as _i369;
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_insight_cache.dart'
+    as _i220;
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart'
     as _i587;
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/ai_coach_repository.dart'
     as _i853;
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart'
+    as _i802;
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart'
     as _i177;
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart'
@@ -246,6 +250,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i956.Clock>(() => const _i956.Clock());
     gh.lazySingleton<_i880.OcrDataSource>(
       () => const _i598.MlKitOcrDataSource(),
+    );
+    gh.lazySingleton<_i802.InsightCache>(
+      () => _i220.HiveInsightCache(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i441.SessionStorage>(() => _i26.SecureSessionStorage());
     gh.lazySingleton<_i666.ReceiptImageStore>(
@@ -626,14 +633,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i243.GetDebtsUseCase>(
       () => _i243.GetDebtsUseCase(gh<_i268.DebtRepository>()),
     );
-    gh.factory<_i872.AiCoachBloc>(
-      () => _i872.AiCoachBloc(
-        gh<_i811.GetInsightsUseCase>(),
-        gh<_i177.AnalyzeSpendingUseCase>(),
-        gh<_i363.GetSavingsSuggestionsUseCase>(),
-        gh<_i1051.GetTransactionsUseCase>(),
-      ),
-    );
     gh.lazySingleton<_i558.SyncNowUseCase>(
       () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
     );
@@ -654,6 +653,15 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i826.ScanReceiptUseCase>(
       () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
+    );
+    gh.factory<_i872.AiCoachBloc>(
+      () => _i872.AiCoachBloc(
+        gh<_i811.GetInsightsUseCase>(),
+        gh<_i177.AnalyzeSpendingUseCase>(),
+        gh<_i363.GetSavingsSuggestionsUseCase>(),
+        gh<_i1051.GetTransactionsUseCase>(),
+        gh<_i802.InsightCache>(),
+      ),
     );
     gh.lazySingleton<_i160.GetScheduledPaymentsUseCase>(
       () => _i160.GetScheduledPaymentsUseCase(

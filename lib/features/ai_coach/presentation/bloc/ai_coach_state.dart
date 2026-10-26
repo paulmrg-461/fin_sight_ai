@@ -19,12 +19,15 @@ final class AiCoachLoading extends AiCoachState {
 }
 
 final class AiCoachLoaded extends AiCoachState {
-  const AiCoachLoaded(this.insights);
+  const AiCoachLoaded(this.insights, {this.fromCache = false});
 
   final List<FinancialInsightEntity> insights;
 
+  /// True when the network failed and these came from the local cache.
+  final bool fromCache;
+
   @override
-  List<Object?> get props => [insights];
+  List<Object?> get props => [insights, fromCache];
 }
 
 final class AiCoachEmpty extends AiCoachState {

@@ -15,6 +15,7 @@ import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
@@ -158,6 +159,8 @@ class MockGetReceipts extends Mock implements GetReceiptsUseCase {}
 
 class MockGetInsights extends Mock implements GetInsightsUseCase {}
 
+class MockInsightCache extends Mock implements InsightCache {}
+
 class MockAnalyzeSpending extends Mock implements AnalyzeSpendingUseCase {}
 
 class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
@@ -290,6 +293,7 @@ void main() {
       MockAnalyzeSpending(),
       MockGetSavings(),
       getTransactions,
+      MockInsightCache(),
     );
     final getDashboard = MockGetDashboardData();
     when(() => getDashboard(any())).thenAnswer(

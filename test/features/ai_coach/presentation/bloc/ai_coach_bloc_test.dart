@@ -4,6 +4,7 @@ import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/entities/financial_insight_entity.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_event.dart';
@@ -22,11 +23,14 @@ class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
 
 class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
 
+class MockInsightCache extends Mock implements InsightCache {}
+
 void main() {
   late MockGetInsights getInsights;
   late MockAnalyzeSpending analyzeSpending;
   late MockGetSavings getSavings;
   late MockGetTransactions getTransactions;
+  late MockInsightCache cache;
 
   final suggestion = FinancialInsightEntity(
     id: 'i-1',
@@ -69,12 +73,20 @@ void main() {
     analyzeSpending = MockAnalyzeSpending();
     getSavings = MockGetSavings();
     getTransactions = MockGetTransactions();
+    cache = MockInsightCache();
+    when(() => cache.read(any())).thenAnswer((_) async => null);
+    when(() => cache.write(any(), any())).thenAnswer((_) async {});
     when(() => getTransactions(any()))
         .thenAnswer((_) async => Right(transactions));
   });
 
-  AiCoachBloc buildBloc() =>
-      AiCoachBloc(getInsights, analyzeSpending, getSavings, getTransactions);
+  AiCoachBloc buildBloc() => AiCoachBloc(
+    getInsights,
+    analyzeSpending,
+    getSavings,
+    getTransactions,
+    cache,
+  );
 
   group('AiCoachBloc', () {
     test('initial state is AiCoachInitial', () {
@@ -118,6 +130,41 @@ void main() {
         final context =
             verify(() => getInsights(captureAny())).captured.single as String;
         expect(context, contains('Write the response in Spanish.'));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'falls back to cached insights when the network fails',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => const Left(ServerFailure('Offline.')));
+        when(() => cache.read('es')).thenAnswer((_) async => [suggestion]);
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights(languageCode: 'es')),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion], fromCache: true),
+      ],
+      verify: (_) {
+        verifyNever(() => cache.write(any(), any()));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'caches fresh insights for the active language',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => Right([suggestion]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights(languageCode: 'es')),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion]),
+      ],
+      verify: (_) {
+        verify(() => cache.write('es', [suggestion])).called(1);
       },
     );
 
@@ -188,7 +235,10 @@ void main() {
       build: buildBloc,
       seed: () => AiCoachLoaded([suggestion]),
       act: (bloc) => bloc.add(const AnalyzeSpending()),
-      expect: () => [const AiCoachLoading(), const AiCoachFailure('Timeout.')],
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion], fromCache: true),
+      ],
     );
   });
 }

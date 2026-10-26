@@ -105,6 +105,8 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_insight_cache.dart';
+
 import 'fakes.dart';
 
 /// Builds the production widget graph with real Hive persistence and fake
@@ -132,6 +134,7 @@ class IntegrationHarness {
   late Box<dynamic> _settingsBox;
   late Box<dynamic> _categoriesBox;
   late Box<dynamic> _scheduledPaymentsBox;
+  late Box<dynamic> _aiInsightsBox;
 
   late LocalDataScope localDataScope;
   late AuthRepository authRepository;
@@ -190,6 +193,7 @@ class IntegrationHarness {
     _settingsBox = await Hive.openBox<dynamic>('settings');
     _categoriesBox = await Hive.openBox<dynamic>('categories');
     _scheduledPaymentsBox = await Hive.openBox<dynamic>('scheduled_payments');
+    _aiInsightsBox = await Hive.openBox<dynamic>('ai_insights');
   }
 
   void _wire() {
@@ -206,6 +210,7 @@ class IntegrationHarness {
       settings: _settingsBox,
       categories: _categoriesBox,
       scheduledPayments: _scheduledPaymentsBox,
+      aiInsights: _aiInsightsBox,
     );
     localDataScope = HiveLocalDataScope(boxes);
     final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
@@ -302,6 +307,7 @@ class IntegrationHarness {
       analyzeSpending,
       getSavings,
       getTransactions,
+      HiveInsightCache(boxes),
     );
     dashboardBloc = DashboardBloc(getDashboard);
 
@@ -487,6 +493,7 @@ class IntegrationHarness {
     await _settingsBox.close();
     await _categoriesBox.close();
     await _scheduledPaymentsBox.close();
+    await _aiInsightsBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -560,6 +567,9 @@ class IntegrationHarness {
     }
     if (_scheduledPaymentsBox.isOpen) {
       await _scheduledPaymentsBox.close();
+    }
+    if (_aiInsightsBox.isOpen) {
+      await _aiInsightsBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {

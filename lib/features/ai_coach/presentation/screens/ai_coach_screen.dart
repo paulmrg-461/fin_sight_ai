@@ -34,7 +34,7 @@ class AiCoachScreen extends StatelessWidget {
                 LoadInsights(languageCode: _languageCode(context)),
               ),
             ),
-            AiCoachLoaded(:final insights) => ListView(
+            AiCoachLoaded(:final insights, :final fromCache) => ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               children: [
                 Text(
@@ -46,6 +46,7 @@ class AiCoachScreen extends StatelessWidget {
                   context.l10n.insightsDisclaimer,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
+                if (fromCache) ...[const SizedBox(height: 12), _CachedBanner()],
                 const SizedBox(height: 16),
                 for (final insight in insights) InsightCard(insight: insight),
               ],
@@ -85,6 +86,38 @@ class AiCoachScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CachedBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.cloud_off_outlined,
+            size: 18,
+            color: theme.colorScheme.onSecondaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              context.l10n.savedInsights,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSecondaryContainer,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
