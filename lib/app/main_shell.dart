@@ -9,6 +9,8 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/theme_controller.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
+import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../features/dashboard/presentation/bloc/dashboard_event.dart';
 import '../features/sync/presentation/widgets/sync_status_chip.dart';
 import 'branding/app_logo.dart';
 
@@ -91,6 +93,10 @@ class _MainShellState extends State<MainShell> {
       index,
       initialLocation: index == navigationShell.currentIndex,
     );
+    if (index == 0) {
+      // The dashboard owns projections that change from other branches.
+      context.read<DashboardBloc>().add(const RefreshData());
+    }
   }
 
   bool _goToPrimary(String routeName) {

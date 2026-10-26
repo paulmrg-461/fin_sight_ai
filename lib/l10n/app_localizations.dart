@@ -2419,6 +2419,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Showing saved insights. Reconnect to refresh.'**
   String get savedInsights;
+
+  /// No description provided for @committedNext30Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Committed next 30 days'**
+  String get committedNext30Days;
 }
 
 class _AppLocalizationsDelegate

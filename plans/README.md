@@ -28,6 +28,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 018 | Localize failure messages | P2 | M | 004 | DONE (949 unit, 28 integration) |
 | 019 | Answer AI coaching in the active language | P3 | S | 004 | DONE (950 unit, 28 integration) |
 | 020 | Cache AI insights for offline use | P3 | M | 019 | DONE (955 unit, 28 integration) |
+| 021 | Show committed cashflow on the dashboard | P2 | S | 009, 012, 016 | DONE (957 unit, 29 integration) |
+
+- 021 surfaced the 30-day committed projection on the dashboard and refreshes it when the tab is selected.
 
 - 020 added a per-language Hive cache so the AI Coach keeps showing saved insights offline, with a clear banner.
 

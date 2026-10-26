@@ -23,8 +23,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 955 unit/widget tests, coverage gate green, 28 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 957 unit/widget tests, coverage gate green, 29 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Dashboard committed card (plan 021)
+
+- `DashboardBloc` calls `GetCommittedCashflowUseCase` for the next 30 days and exposes `DashboardLoaded.committed30`; projection failures hide the card.
+- `Committed30DaysCard` shows the total and next three commitments, and opens `/scheduled` on tap; it only renders when payments exist.
+- `MainShell` refreshes the dashboard when its bottom-navigation tab is selected, so schedules/debts added in other branches appear immediately without extra startup reads.
+- Tests: BLoC projection, widget preview/tap, and an integration flow where a debt minimum appears on the dashboard.
 
 ## AI insight cache (plan 020)
 

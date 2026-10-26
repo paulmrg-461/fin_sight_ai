@@ -309,7 +309,10 @@ class IntegrationHarness {
       getTransactions,
       HiveInsightCache(boxes),
     );
-    dashboardBloc = DashboardBloc(getDashboard);
+    dashboardBloc = DashboardBloc(
+      getDashboard,
+      GetCommittedCashflowUseCase(scheduledPaymentRepository, debtRepository),
+    );
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
     authRepository = AuthRepositoryImpl(

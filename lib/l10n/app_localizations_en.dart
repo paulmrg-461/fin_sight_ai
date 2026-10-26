@@ -1277,4 +1277,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get savedInsights => 'Showing saved insights. Reconnect to refresh.';
+
+  @override
+  String get committedNext30Days => 'Committed next 30 days';
 }

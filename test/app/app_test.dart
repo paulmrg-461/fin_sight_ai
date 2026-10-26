@@ -157,6 +157,9 @@ class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
 
 class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
+class MockDashboardCommitted extends Mock
+    implements GetCommittedCashflowUseCase {}
+
 class MockSyncNow extends Mock implements SyncNowUseCase {}
 
 class MockGetSyncStatus extends Mock implements GetSyncStatusUseCase {}
@@ -300,7 +303,7 @@ void main() {
       ),
     );
 
-    dashboardBloc = DashboardBloc(getDashboard);
+    dashboardBloc = DashboardBloc(getDashboard, MockDashboardCommitted());
 
     syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
     authBloc = AuthBloc(

@@ -1285,4 +1285,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get savedInsights =>
       'Mostrando ideas guardadas. Reconéctate para actualizar.';
+
+  @override
+  String get committedNext30Days => 'Comprometido próximos 30 días';
 }

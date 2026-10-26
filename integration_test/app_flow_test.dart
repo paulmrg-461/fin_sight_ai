@@ -122,6 +122,35 @@ void main() {
     });
   });
 
+  testWidgets('shows committed debt minimums on the dashboard', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 2000,
+        type: TransactionType.income,
+        category: 'Salary',
+        description: 'Monthly pay',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.addDebt(
+      AddDebtParams(
+        creditorName: 'Bank',
+        totalAmount: 1000,
+        remainingAmount: 1000,
+        interestRate: 0,
+        minimumPayment: 150,
+        dueDate: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('Balance'));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -320));
+    await tester.pumpAndSettle();
+    await pumpUntil(tester, find.text('Committed next 30 days'));
+    expect(find.text(money(150)), findsWidgets);
+  });
+
   testWidgets('scans a receipt and creates an expense transaction', (
     tester,
   ) async {

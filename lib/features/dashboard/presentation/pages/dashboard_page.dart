@@ -18,6 +18,7 @@ import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 import '../../domain/entities/dashboard_entities.dart';
 import '../widgets/category_pie_chart.dart';
+import '../widgets/committed_30_days_card.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../../../auth/presentation/widgets/account_button.dart';
@@ -143,6 +144,7 @@ class DashboardPage extends StatelessWidget {
               :final recentTransactions,
               :final start,
               :final end,
+              :final committed30,
             ) =>
               RefreshIndicator(
                 onRefresh: () async {
@@ -170,6 +172,14 @@ class DashboardPage extends StatelessWidget {
                         onTap: () =>
                             _openFeature(context, AppRoutes.receivablesName),
                       ),
+                      if (committed30 != null && !committed30.isEmpty)
+                        Committed30DaysCard(
+                          cashflow: committed30,
+                          onTap: () => _openFeature(
+                            context,
+                            AppRoutes.scheduledPaymentsName,
+                          ),
+                        ),
                       const SizedBox(height: 16),
                       CategoryPieChart(breakdown: breakdown),
                       MonthlyComparisonChart(comparison: comparison),

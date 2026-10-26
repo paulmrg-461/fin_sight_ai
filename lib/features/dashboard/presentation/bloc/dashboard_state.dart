@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../scheduled_payments/domain/entities/committed_cashflow.dart';
 import '../../domain/entities/dashboard_entities.dart';
 
 /// Base state for the dashboard.
@@ -27,6 +28,7 @@ final class DashboardLoaded extends DashboardState {
     required this.recentTransactions,
     required this.start,
     required this.end,
+    this.committed30,
   });
 
   final DashboardSummaryEntity summary;
@@ -36,6 +38,9 @@ final class DashboardLoaded extends DashboardState {
   final DateTime start;
   final DateTime end;
 
+  /// Outflows committed in the next 30 days, when available.
+  final CommittedCashflow? committed30;
+
   @override
   List<Object?> get props => [
     summary,
@@ -44,6 +49,7 @@ final class DashboardLoaded extends DashboardState {
     recentTransactions,
     start,
     end,
+    committed30,
   ];
 }
 

@@ -482,9 +482,6 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
-    gh.factory<_i850.DashboardBloc>(
-      () => _i850.DashboardBloc(gh<_i905.GetDashboardDataUseCase>()),
-    );
     gh.lazySingleton<_i734.AddReceivableUseCase>(
       () => _i734.AddReceivableUseCase(
         gh<_i554.ReceivableRepository>(),
@@ -693,6 +690,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i978.MakePaymentUseCase>(),
         gh<_i24.DeleteDebtUseCase>(),
         gh<_i1045.CalculatePayoffUseCase>(),
+      ),
+    );
+    gh.factory<_i850.DashboardBloc>(
+      () => _i850.DashboardBloc(
+        gh<_i905.GetDashboardDataUseCase>(),
+        gh<_i387.GetCommittedCashflowUseCase>(),
       ),
     );
     gh.lazySingleton<_i160.AddScheduledPaymentUseCase>(

@@ -3,6 +3,8 @@ import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/committed_cashflow.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
@@ -13,8 +15,11 @@ import 'package:mocktail/mocktail.dart';
 
 class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
+class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
+
 void main() {
   late MockGetDashboardData getDashboard;
+  late MockGetCommitted getCommitted;
 
   const summary = DashboardSummaryEntity(
     totalIncome: 1000,
@@ -80,10 +85,16 @@ void main() {
         end: DateTime.utc(2026, 10, 31),
       ),
     );
+    registerFallbackValue(
+      CommittedCashflowParams(from: DateTime(2026, 10, 1), days: 30),
+    );
   });
 
   setUp(() {
     getDashboard = MockGetDashboardData();
+    getCommitted = MockGetCommitted();
+    when(() => getCommitted(any()))
+        .thenAnswer((_) async => const Left(CacheFailure('No projection.')));
 
     when(() => getDashboard(any())).thenAnswer((invocation) async {
       final params =
@@ -92,7 +103,7 @@ void main() {
     });
   });
 
-  DashboardBloc buildBloc() => DashboardBloc(getDashboard);
+  DashboardBloc buildBloc() => DashboardBloc(getDashboard, getCommitted);
 
   group('DashboardBloc', () {
     test('initial state is DashboardInitial', () {
@@ -152,6 +163,39 @@ void main() {
       expect: () => [
         const DashboardLoading(),
         DashboardEmpty(start: monthStart(), end: monthEnd()),
+      ],
+    );
+
+    blocTest<DashboardBloc, DashboardState>(
+      'includes the next 30 days of committed cashflow',
+      setUp: () {
+        when(() => getCommitted(any())).thenAnswer(
+          (_) async => Right(
+            CommittedCashflow(
+              start: DateTime(2026, 10, 1),
+              end: DateTime(2026, 10, 31),
+              payments: [
+                CommittedPayment(
+                  date: DateTime(2026, 10, 15),
+                  name: 'Rent',
+                  amount: 800,
+                  category: 'Rent',
+                  source: CommittedSource.scheduledPayment,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadDashboard()),
+      expect: () => [
+        const DashboardLoading(),
+        isA<DashboardLoaded>().having(
+          (state) => state.committed30?.total,
+          'committed30',
+          800,
+        ),
       ],
     );
 
