@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
+import 'app/startup_loader.dart';
 import 'core/di/injection.dart';
 import 'core/services/app_boxes.dart';
 import 'core/services/calendar_migration.dart';
@@ -56,29 +58,21 @@ Future<void> main() async {
     budgetRepository: getIt<BudgetRepository>(),
   ).migrate();
 
-  // Materialize due expenses before the dashboard and wallets read storage.
-  final startupPayments = await getIt<ProcessDueScheduledPaymentsUseCase>()(
-    const NoParams(),
-  );
-  final startupAutoCreated = startupPayments.fold(
-    (_) => 0,
-    (run) => run.createdCount,
-  );
-
-  final transactionBloc = getIt<TransactionBloc>()
-    ..add(const LoadTransactions());
-  final debtBloc = getIt<DebtBloc>()..add(const LoadDebts());
-  final receivableBloc = getIt<ReceivableBloc>()..add(const LoadReceivables());
-  final ocrBloc = getIt<OcrBloc>()..add(const LoadReceipts());
+  // Only the dashboard and the UI preferences block the first frame. Feature
+  // blocs and due-schedule processing load after it so a large ledger does not
+  // delay the dashboard.
+  final transactionBloc = getIt<TransactionBloc>();
+  final debtBloc = getIt<DebtBloc>();
+  final receivableBloc = getIt<ReceivableBloc>();
+  final ocrBloc = getIt<OcrBloc>();
   final dashboardBloc = getIt<DashboardBloc>()..add(const LoadDashboard());
   final syncBloc = getIt<SyncBloc>();
-  final budgetBloc = getIt<BudgetBloc>()..add(const LoadBudgets());
-  final walletBloc = getIt<WalletBloc>()..add(const LoadWallets());
+  final budgetBloc = getIt<BudgetBloc>();
+  final walletBloc = getIt<WalletBloc>();
   final currencyBloc = getIt<CurrencyBloc>()..add(const LoadCurrency());
   final localeBloc = getIt<LocaleBloc>()..add(const LoadLocale());
-  final categoryBloc = getIt<CategoryBloc>()..add(const LoadCategories());
-  final scheduledPaymentBloc = getIt<ScheduledPaymentBloc>()
-    ..add(LoadScheduledPayments(previousAutoCreated: startupAutoCreated));
+  final categoryBloc = getIt<CategoryBloc>();
+  final scheduledPaymentBloc = getIt<ScheduledPaymentBloc>();
   final authBloc = getIt<AuthBloc>()..add(const RestoreAuthSession());
   authBloc.stream.listen((state) {
     if (state is AuthAuthenticated) {
@@ -98,8 +92,6 @@ Future<void> main() async {
       scheduledPaymentBloc.add(const LoadScheduledPayments());
     }
   });
-  syncBloc.add(const SyncNow());
-
   runApp(
     FinSightApp(
       themeController: getIt(),
@@ -120,4 +112,40 @@ Future<void> main() async {
       scheduledPaymentBloc: scheduledPaymentBloc,
     ),
   );
+
+  // Deferred startup: materialize due schedules, then load the remaining
+  // screens and the sync queue once the dashboard has painted.
+  const StartupLoader().afterFirstFrame([
+    () async {
+      final stopwatch = Stopwatch()..start();
+      final startupPayments = await getIt<ProcessDueScheduledPaymentsUseCase>()(
+        const NoParams(),
+      );
+      final autoCreated = startupPayments.fold(
+        (_) => 0,
+        (run) => run.createdCount,
+      );
+
+      transactionBloc.add(const LoadTransactions());
+      debtBloc.add(const LoadDebts());
+      receivableBloc.add(const LoadReceivables());
+      ocrBloc.add(const LoadReceipts());
+      budgetBloc.add(const LoadBudgets());
+      walletBloc.add(const LoadWallets());
+      categoryBloc.add(const LoadCategories());
+      scheduledPaymentBloc.add(
+        LoadScheduledPayments(previousAutoCreated: autoCreated),
+      );
+      syncBloc.add(const SyncNow());
+      if (autoCreated > 0) {
+        dashboardBloc.add(const RefreshData());
+      }
+      if (kDebugMode) {
+        debugPrint(
+          'STARTUP deferred loads scheduled in '
+          '${stopwatch.elapsedMilliseconds}ms',
+        );
+      }
+    },
+  ]);
 }

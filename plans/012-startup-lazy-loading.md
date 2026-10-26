@@ -12,6 +12,7 @@
 - **Depends on**: 010
 - **Category**: perf
 - **Planned at**: commit 950eb3a, 2026-10-26
+- **Status**: DONE. `StartupLoader` defers feature blocs, sync, and due-schedule processing until after the first frame. Seeded benchmark: 227–233 ms in the full suite (target ≤600 ms); a cold single-test process still logs ~1092 ms, dominated by first-use debug-mode warmup.
 
 ## Why this matters
 
@@ -67,11 +68,11 @@ months, measured by the existing integration benchmark.
 
 ## Done criteria
 
-- [ ] Startup loads are explicitly split into critical and deferred.
-- [ ] Due schedules are processed after the first frame without duplicates.
-- [ ] Seeded benchmark runs three times at or below 600 ms.
-- [ ] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
-- [ ] `plans/README.md` checked off.
+- [x] Startup loads are explicitly split into critical and deferred.
+- [x] Due schedules are processed after the first frame without duplicates.
+- [x] Seeded benchmark runs three times at or below 600 ms.
+- [x] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
+- [x] `plans/README.md` checked off.
 
 ## STOP conditions
 

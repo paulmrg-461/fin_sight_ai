@@ -430,19 +430,25 @@ class IntegrationHarness {
 
   Future<void> pumpApp(WidgetTester tester) async {
     await tester.pumpWidget(buildApp());
-    transactionBloc.add(const LoadTransactions());
-    debtBloc.add(const LoadDebts());
-    receivableBloc.add(const LoadReceivables());
-    ocrBloc.add(const LoadReceipts());
+    // Mirrors `main.dart`: the dashboard paints first, then the remaining
+    // screens and sync status load after the first frame.
     dashboardBloc.add(const LoadDashboard());
-    syncBloc.add(const LoadSyncStatus());
     authBloc.add(const RestoreAuthSession());
-    budgetBloc.add(const LoadBudgets());
-    walletBloc.add(const LoadWallets());
     currencyBloc.add(const LoadCurrency());
     localeBloc.add(const LoadLocale());
-    categoryBloc.add(const LoadCategories());
-    scheduledPaymentBloc.add(const LoadScheduledPayments());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      transactionBloc.add(const LoadTransactions());
+      debtBloc.add(const LoadDebts());
+      receivableBloc.add(const LoadReceivables());
+      ocrBloc.add(const LoadReceipts());
+      syncBloc.add(const LoadSyncStatus());
+      budgetBloc.add(const LoadBudgets());
+      walletBloc.add(const LoadWallets());
+      categoryBloc.add(const LoadCategories());
+      scheduledPaymentBloc.add(const LoadScheduledPayments());
+    });
+
     await tester.pump();
   }
 
