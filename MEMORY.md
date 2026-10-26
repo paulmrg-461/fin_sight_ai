@@ -23,8 +23,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 946 unit/widget tests, coverage gate green, 28 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 949 unit/widget tests, coverage gate green, 28 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Localized failures (plan 018)
+
+- `FailureText.failureText` (extension on `BuildContext`) maps the domain's stable English messages to ARB strings; exact mappings plus prefix families (`Unable to read/save/delete/update/…`, `Could not …`) and an English fallback.
+- Every failure-rendering screen uses the helper: transactions, debts, receivables, budgets, wallets, schedules, categories, dashboard, OCR, AI coach, sync, and login.
+- The mapping is message-based to avoid threading failure codes through every state; migrating states to carry `Failure.code` remains a future refactor.
+- Known gap: AI-generated insight content still arrives from the model in English.
 
 ## Copy previous budgets (plan 017)
 
@@ -237,7 +244,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 
 ## Known gaps / next
 
-1. Localize domain `Failure` messages and AI-generated insight content.
+1. Localize AI-generated insight content (domain failures are now translated at the UI boundary).
 2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.

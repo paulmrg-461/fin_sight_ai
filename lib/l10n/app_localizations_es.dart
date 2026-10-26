@@ -1094,4 +1094,191 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get copyPreviousBudgets => 'Copiar mes anterior';
+
+  @override
+  String get errAmountPositive => 'El monto debe ser mayor que cero.';
+
+  @override
+  String get errAmountLentPositive =>
+      'El monto prestado debe ser mayor que cero.';
+
+  @override
+  String get errPaymentAmountPositive =>
+      'El monto del pago debe ser mayor que cero.';
+
+  @override
+  String get errMonthlyLimitPositive =>
+      'El límite mensual debe ser mayor que cero.';
+
+  @override
+  String get errMonthlyPaymentPositive =>
+      'El pago mensual debe ser mayor que cero.';
+
+  @override
+  String get errTotalPositive => 'El monto total debe ser mayor que cero.';
+
+  @override
+  String get errTransferPositive =>
+      'El monto de la transferencia debe ser mayor que cero.';
+
+  @override
+  String get errReceiptTotalPositive =>
+      'El total del recibo debe ser mayor que cero.';
+
+  @override
+  String get errQuantityPositive => 'La cantidad debe ser mayor que cero.';
+
+  @override
+  String get errCategoryRequired => 'La categoría es obligatoria.';
+
+  @override
+  String get errCategoryNameRequired =>
+      'El nombre de la categoría es obligatorio.';
+
+  @override
+  String get errCategoryNotFound => 'Categoría no encontrada.';
+
+  @override
+  String get errCategoryDuplicate => 'Ya existe una categoría con ese nombre.';
+
+  @override
+  String get errTransactionNotFound => 'Transacción no encontrada.';
+
+  @override
+  String get errDebtNotFound => 'Deuda no encontrada.';
+
+  @override
+  String get errReceivableNotFound => 'Cuenta por cobrar no encontrada.';
+
+  @override
+  String get errScheduledNotFound => 'Pago programado no encontrado.';
+
+  @override
+  String get errWalletNotFound => 'Billetera no encontrada.';
+
+  @override
+  String get errStartBeforeEnd =>
+      'La fecha inicial debe ser anterior a la final.';
+
+  @override
+  String get errDueAfterLent =>
+      'La fecha de vencimiento no puede ser anterior a la fecha del préstamo.';
+
+  @override
+  String get errAmountLocked =>
+      'El monto no puede cambiar después de recibir pagos.';
+
+  @override
+  String get errDebtPaid => 'Esta deuda ya está pagada.';
+
+  @override
+  String get errReceivablePaid => 'Esta cuenta por cobrar ya está pagada.';
+
+  @override
+  String get errInsufficientFunds =>
+      'Fondos insuficientes en la billetera de origen.';
+
+  @override
+  String get errChooseDifferentWallets => 'Elige dos billeteras diferentes.';
+
+  @override
+  String get errChooseWallets => 'Elige ambas billeteras.';
+
+  @override
+  String get errNotesTooLong => 'Las notas deben tener 500 caracteres o menos.';
+
+  @override
+  String get errDescriptionTooLong =>
+      'La descripción debe tener 500 caracteres o menos.';
+
+  @override
+  String get errCreditorRequired => 'El nombre del acreedor es obligatorio.';
+
+  @override
+  String get errDebtorRequired => 'El nombre del deudor es obligatorio.';
+
+  @override
+  String get errDebtorTooLong => 'El nombre del deudor es demasiado largo.';
+
+  @override
+  String get errPaymentNameRequired => 'El nombre del pago es obligatorio.';
+
+  @override
+  String get errMerchantRequired => 'El nombre del comercio es obligatorio.';
+
+  @override
+  String get errReceiptItemName => 'Cada ítem del recibo necesita un nombre.';
+
+  @override
+  String get errReceiptNoText => 'No se detectó texto en la imagen del recibo.';
+
+  @override
+  String get errReceiptImage => 'La imagen del recibo es obligatoria.';
+
+  @override
+  String get errInvalidEmail => 'Ingresa un correo válido.';
+
+  @override
+  String get errWeakPassword =>
+      'La contraseña debe tener al menos 6 caracteres.';
+
+  @override
+  String get errAuthFailed => 'No se pudo autenticar.';
+
+  @override
+  String get errSignupFailed => 'No se pudo crear la cuenta.';
+
+  @override
+  String get errRestoreFailed => 'No se pudo restaurar la sesión.';
+
+  @override
+  String get errSyncFailed => 'No se pudo sincronizar.';
+
+  @override
+  String get errSyncFailedQueueKept =>
+      'No se pudo sincronizar. Los cambios pendientes se conservaron.';
+
+  @override
+  String get errSyncInvalidData => 'La sincronización recibió datos inválidos.';
+
+  @override
+  String get errAiEmpty => 'El coach de IA devolvió una respuesta vacía.';
+
+  @override
+  String get errAiUnreachable =>
+      'No se pudo contactar al coach de IA. Inténtalo de nuevo.';
+
+  @override
+  String get errReadLocal => 'No se pudieron leer los datos locales.';
+
+  @override
+  String get errSaveLocal => 'No se pudieron guardar los datos localmente.';
+
+  @override
+  String get errDeleteLocal => 'No se pudieron eliminar los datos localmente.';
+
+  @override
+  String get errUpdateLocal =>
+      'No se pudieron actualizar los datos localmente.';
+
+  @override
+  String get errCalculate => 'No se pudo calcular la información solicitada.';
+
+  @override
+  String get errRecord => 'No se pudo registrar la operación.';
+
+  @override
+  String get errRename => 'No se pudo renombrar el registro.';
+
+  @override
+  String get errProcess => 'No se pudo procesar la solicitud.';
+
+  @override
+  String get errScan => 'No se pudo escanear el recibo.';
+
+  @override
+  String get errTransfer => 'No se pudo transferir el dinero.';
+
+  @override
+  String get errGeneric => 'Algo salió mal. Inténtalo de nuevo.';
 }

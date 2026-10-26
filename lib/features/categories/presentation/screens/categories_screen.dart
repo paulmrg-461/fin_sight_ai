@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../domain/entities/category_entity.dart';
 import '../bloc/category_bloc.dart';
@@ -89,7 +90,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               child: CircularProgressIndicator(),
             ),
             CategoryFailure(:final message) => _CategoriesError(
-              message: message,
+              message: context.failureText(message),
               onRetry: () =>
                   context.read<CategoryBloc>().add(const LoadCategories()),
             ),
@@ -155,7 +156,7 @@ class _CategoriesList extends StatelessWidget {
         if (error != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: _ErrorBanner(message: error!),
+            child: _ErrorBanner(message: context.failureText(error!)),
           ),
         SwitchListTile(
           value: showArchived,
@@ -277,7 +278,7 @@ class _CategoriesEmpty extends StatelessWidget {
             ),
             if (error != null) ...[
               const SizedBox(height: 12),
-              _ErrorBanner(message: error!),
+              _ErrorBanner(message: context.failureText(error!)),
             ],
             const SizedBox(height: 16),
             FilledButton.icon(

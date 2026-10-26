@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../app/branding/app_logo.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -94,7 +95,7 @@ class DashboardPage extends StatelessWidget {
               ),
             ),
             DashboardFailure(:final message) => AppErrorState(
-              message: message,
+              message: context.failureText(message),
               onRetry: () =>
                   context.read<DashboardBloc>().add(const LoadDashboard()),
             ),

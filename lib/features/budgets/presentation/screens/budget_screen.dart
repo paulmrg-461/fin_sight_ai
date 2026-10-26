@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_layout.dart';
@@ -118,7 +119,7 @@ class BudgetScreen extends StatelessWidget {
               ),
             ),
             BudgetFailure(:final message) => AppErrorState(
-              message: message,
+              message: context.failureText(message),
               onRetry: () =>
                   context.read<BudgetBloc>().add(const LoadBudgets()),
             ),

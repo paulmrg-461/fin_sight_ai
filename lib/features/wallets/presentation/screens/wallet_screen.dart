@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/widgets/app_section_header.dart';
@@ -96,7 +97,7 @@ class _WalletScreenState extends State<WalletScreen>
               ),
             ),
             WalletFailure(:final message) => AppErrorState(
-              message: message,
+              message: context.failureText(message),
               onRetry: () =>
                   context.read<WalletBloc>().add(const LoadWallets()),
             ),

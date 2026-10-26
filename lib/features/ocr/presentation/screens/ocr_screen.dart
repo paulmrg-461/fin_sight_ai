@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/receipt_image_picker.dart';
 import '../../../../core/utils/date_formatters.dart';
@@ -125,7 +126,7 @@ class OcrScreen extends StatelessWidget {
       OcrSaved() ||
       OcrTransactionFailure() => _BusyState(message: context.l10n.finishingUp),
       OcrFailure(:final message) => _ErrorState(
-        message: message,
+        message: context.failureText(message),
         onRetry: () => context.read<OcrBloc>().add(const LoadReceipts()),
       ),
       OcrReceiptsLoaded(:final receipts) => ListView.builder(
@@ -242,7 +243,10 @@ class _BusyState extends StatelessWidget {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(message, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            context.failureText(message),
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
         ],
       ),
     );

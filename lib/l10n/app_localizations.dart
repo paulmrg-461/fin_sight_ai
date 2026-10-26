@@ -2071,6 +2071,348 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy previous month'**
   String get copyPreviousBudgets;
+
+  /// No description provided for @errAmountPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount must be greater than zero.'**
+  String get errAmountPositive;
+
+  /// No description provided for @errAmountLentPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount lent must be greater than zero.'**
+  String get errAmountLentPositive;
+
+  /// No description provided for @errPaymentAmountPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment amount must be greater than zero.'**
+  String get errPaymentAmountPositive;
+
+  /// No description provided for @errMonthlyLimitPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly limit must be greater than zero.'**
+  String get errMonthlyLimitPositive;
+
+  /// No description provided for @errMonthlyPaymentPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly payment must be greater than zero.'**
+  String get errMonthlyPaymentPositive;
+
+  /// No description provided for @errTotalPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Total amount must be greater than zero.'**
+  String get errTotalPositive;
+
+  /// No description provided for @errTransferPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer amount must be greater than zero.'**
+  String get errTransferPositive;
+
+  /// No description provided for @errReceiptTotalPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt total must be greater than zero.'**
+  String get errReceiptTotalPositive;
+
+  /// No description provided for @errQuantityPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Item quantity must be greater than zero.'**
+  String get errQuantityPositive;
+
+  /// No description provided for @errCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category is required.'**
+  String get errCategoryRequired;
+
+  /// No description provided for @errCategoryNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name is required.'**
+  String get errCategoryNameRequired;
+
+  /// No description provided for @errCategoryNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Category not found.'**
+  String get errCategoryNotFound;
+
+  /// No description provided for @errCategoryDuplicate.
+  ///
+  /// In en, this message translates to:
+  /// **'A category with that name already exists.'**
+  String get errCategoryDuplicate;
+
+  /// No description provided for @errTransactionNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction not found.'**
+  String get errTransactionNotFound;
+
+  /// No description provided for @errDebtNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt not found.'**
+  String get errDebtNotFound;
+
+  /// No description provided for @errReceivableNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Receivable not found.'**
+  String get errReceivableNotFound;
+
+  /// No description provided for @errScheduledNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Scheduled payment not found.'**
+  String get errScheduledNotFound;
+
+  /// No description provided for @errWalletNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet not found.'**
+  String get errWalletNotFound;
+
+  /// No description provided for @errStartBeforeEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'The start date must be before the end date.'**
+  String get errStartBeforeEnd;
+
+  /// No description provided for @errDueAfterLent.
+  ///
+  /// In en, this message translates to:
+  /// **'The due date cannot be before the date lent.'**
+  String get errDueAfterLent;
+
+  /// No description provided for @errAmountLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'The amount cannot change after payments were received.'**
+  String get errAmountLocked;
+
+  /// No description provided for @errDebtPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'This debt is already paid off.'**
+  String get errDebtPaid;
+
+  /// No description provided for @errReceivablePaid.
+  ///
+  /// In en, this message translates to:
+  /// **'This receivable is already paid.'**
+  String get errReceivablePaid;
+
+  /// No description provided for @errInsufficientFunds.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient funds in the source wallet.'**
+  String get errInsufficientFunds;
+
+  /// No description provided for @errChooseDifferentWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose two different wallets.'**
+  String get errChooseDifferentWallets;
+
+  /// No description provided for @errChooseWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose both wallets.'**
+  String get errChooseWallets;
+
+  /// No description provided for @errNotesTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes must be 500 characters or fewer.'**
+  String get errNotesTooLong;
+
+  /// No description provided for @errDescriptionTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Description must be 500 characters or fewer.'**
+  String get errDescriptionTooLong;
+
+  /// No description provided for @errCreditorRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Creditor name is required.'**
+  String get errCreditorRequired;
+
+  /// No description provided for @errDebtorRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Debtor name is required.'**
+  String get errDebtorRequired;
+
+  /// No description provided for @errDebtorTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Debtor name is too long.'**
+  String get errDebtorTooLong;
+
+  /// No description provided for @errPaymentNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment name is required.'**
+  String get errPaymentNameRequired;
+
+  /// No description provided for @errMerchantRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant name is required.'**
+  String get errMerchantRequired;
+
+  /// No description provided for @errReceiptItemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Every receipt item needs a name.'**
+  String get errReceiptItemName;
+
+  /// No description provided for @errReceiptNoText.
+  ///
+  /// In en, this message translates to:
+  /// **'No text was detected in the receipt image.'**
+  String get errReceiptNoText;
+
+  /// No description provided for @errReceiptImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt image path is required.'**
+  String get errReceiptImage;
+
+  /// No description provided for @errInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid email address.'**
+  String get errInvalidEmail;
+
+  /// No description provided for @errWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters.'**
+  String get errWeakPassword;
+
+  /// No description provided for @errAuthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed.'**
+  String get errAuthFailed;
+
+  /// No description provided for @errSignupFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the account.'**
+  String get errSignupFailed;
+
+  /// No description provided for @errRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not restore the session.'**
+  String get errRestoreFailed;
+
+  /// No description provided for @errSyncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronization failed.'**
+  String get errSyncFailed;
+
+  /// No description provided for @errSyncFailedQueueKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronization failed. Pending changes were kept.'**
+  String get errSyncFailedQueueKept;
+
+  /// No description provided for @errSyncInvalidData.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronization received invalid data.'**
+  String get errSyncInvalidData;
+
+  /// No description provided for @errAiEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI coach returned an empty response.'**
+  String get errAiEmpty;
+
+  /// No description provided for @errAiUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to reach the AI coach. Please try again.'**
+  String get errAiUnreachable;
+
+  /// No description provided for @errReadLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to read local data.'**
+  String get errReadLocal;
+
+  /// No description provided for @errSaveLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to save data locally.'**
+  String get errSaveLocal;
+
+  /// No description provided for @errDeleteLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to delete data locally.'**
+  String get errDeleteLocal;
+
+  /// No description provided for @errUpdateLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to update data locally.'**
+  String get errUpdateLocal;
+
+  /// No description provided for @errCalculate.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to calculate the requested data.'**
+  String get errCalculate;
+
+  /// No description provided for @errRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to record the operation.'**
+  String get errRecord;
+
+  /// No description provided for @errRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to rename the record.'**
+  String get errRename;
+
+  /// No description provided for @errProcess.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to process the request.'**
+  String get errProcess;
+
+  /// No description provided for @errScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to scan the receipt.'**
+  String get errScan;
+
+  /// No description provided for @errTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to transfer money.'**
+  String get errTransfer;
+
+  /// No description provided for @errGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errGeneric;
 }
 
 class _AppLocalizationsDelegate

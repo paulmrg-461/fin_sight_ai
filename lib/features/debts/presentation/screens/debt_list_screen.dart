@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/widgets/app_states.dart';
@@ -57,7 +58,7 @@ class DebtListScreen extends StatelessWidget {
               ),
             ),
             DebtFailure(:final message) => AppErrorState(
-              message: message,
+              message: context.failureText(message),
               onRetry: () => context.read<DebtBloc>().add(const LoadDebts()),
             ),
             DebtEmpty() => AppContent(

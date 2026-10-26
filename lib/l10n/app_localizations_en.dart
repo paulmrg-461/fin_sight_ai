@@ -1093,4 +1093,185 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyPreviousBudgets => 'Copy previous month';
+
+  @override
+  String get errAmountPositive => 'Amount must be greater than zero.';
+
+  @override
+  String get errAmountLentPositive => 'Amount lent must be greater than zero.';
+
+  @override
+  String get errPaymentAmountPositive =>
+      'Payment amount must be greater than zero.';
+
+  @override
+  String get errMonthlyLimitPositive =>
+      'Monthly limit must be greater than zero.';
+
+  @override
+  String get errMonthlyPaymentPositive =>
+      'Monthly payment must be greater than zero.';
+
+  @override
+  String get errTotalPositive => 'Total amount must be greater than zero.';
+
+  @override
+  String get errTransferPositive =>
+      'Transfer amount must be greater than zero.';
+
+  @override
+  String get errReceiptTotalPositive =>
+      'Receipt total must be greater than zero.';
+
+  @override
+  String get errQuantityPositive => 'Item quantity must be greater than zero.';
+
+  @override
+  String get errCategoryRequired => 'Category is required.';
+
+  @override
+  String get errCategoryNameRequired => 'Category name is required.';
+
+  @override
+  String get errCategoryNotFound => 'Category not found.';
+
+  @override
+  String get errCategoryDuplicate =>
+      'A category with that name already exists.';
+
+  @override
+  String get errTransactionNotFound => 'Transaction not found.';
+
+  @override
+  String get errDebtNotFound => 'Debt not found.';
+
+  @override
+  String get errReceivableNotFound => 'Receivable not found.';
+
+  @override
+  String get errScheduledNotFound => 'Scheduled payment not found.';
+
+  @override
+  String get errWalletNotFound => 'Wallet not found.';
+
+  @override
+  String get errStartBeforeEnd => 'The start date must be before the end date.';
+
+  @override
+  String get errDueAfterLent => 'The due date cannot be before the date lent.';
+
+  @override
+  String get errAmountLocked =>
+      'The amount cannot change after payments were received.';
+
+  @override
+  String get errDebtPaid => 'This debt is already paid off.';
+
+  @override
+  String get errReceivablePaid => 'This receivable is already paid.';
+
+  @override
+  String get errInsufficientFunds => 'Insufficient funds in the source wallet.';
+
+  @override
+  String get errChooseDifferentWallets => 'Choose two different wallets.';
+
+  @override
+  String get errChooseWallets => 'Choose both wallets.';
+
+  @override
+  String get errNotesTooLong => 'Notes must be 500 characters or fewer.';
+
+  @override
+  String get errDescriptionTooLong =>
+      'Description must be 500 characters or fewer.';
+
+  @override
+  String get errCreditorRequired => 'Creditor name is required.';
+
+  @override
+  String get errDebtorRequired => 'Debtor name is required.';
+
+  @override
+  String get errDebtorTooLong => 'Debtor name is too long.';
+
+  @override
+  String get errPaymentNameRequired => 'Payment name is required.';
+
+  @override
+  String get errMerchantRequired => 'Merchant name is required.';
+
+  @override
+  String get errReceiptItemName => 'Every receipt item needs a name.';
+
+  @override
+  String get errReceiptNoText => 'No text was detected in the receipt image.';
+
+  @override
+  String get errReceiptImage => 'Receipt image path is required.';
+
+  @override
+  String get errInvalidEmail => 'Enter a valid email address.';
+
+  @override
+  String get errWeakPassword => 'Password must be at least 6 characters.';
+
+  @override
+  String get errAuthFailed => 'Authentication failed.';
+
+  @override
+  String get errSignupFailed => 'Could not create the account.';
+
+  @override
+  String get errRestoreFailed => 'Could not restore the session.';
+
+  @override
+  String get errSyncFailed => 'Synchronization failed.';
+
+  @override
+  String get errSyncFailedQueueKept =>
+      'Synchronization failed. Pending changes were kept.';
+
+  @override
+  String get errSyncInvalidData => 'Synchronization received invalid data.';
+
+  @override
+  String get errAiEmpty => 'The AI coach returned an empty response.';
+
+  @override
+  String get errAiUnreachable =>
+      'Unable to reach the AI coach. Please try again.';
+
+  @override
+  String get errReadLocal => 'Unable to read local data.';
+
+  @override
+  String get errSaveLocal => 'Unable to save data locally.';
+
+  @override
+  String get errDeleteLocal => 'Unable to delete data locally.';
+
+  @override
+  String get errUpdateLocal => 'Unable to update data locally.';
+
+  @override
+  String get errCalculate => 'Unable to calculate the requested data.';
+
+  @override
+  String get errRecord => 'Unable to record the operation.';
+
+  @override
+  String get errRename => 'Unable to rename the record.';
+
+  @override
+  String get errProcess => 'Unable to process the request.';
+
+  @override
+  String get errScan => 'Unable to scan the receipt.';
+
+  @override
+  String get errTransfer => 'Unable to transfer money.';
+
+  @override
+  String get errGeneric => 'Something went wrong. Please try again.';
 }

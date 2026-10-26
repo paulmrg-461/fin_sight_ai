@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/branding/app_logo.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../sync/presentation/bloc/sync_bloc.dart';
@@ -209,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
-                                                failure,
+                                                context.failureText(failure),
                                                 style: theme
                                                     .textTheme
                                                     .bodyMedium

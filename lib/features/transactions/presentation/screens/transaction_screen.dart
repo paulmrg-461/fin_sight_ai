@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/main_shell.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
@@ -211,7 +212,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                     TransactionInitial() ||
                     TransactionLoading() => const _LoadingView(),
                     TransactionFailure(:final message) => AppErrorState(
-                      message: message,
+                      message: context.failureText(message),
                       onRetry: () => context.read<TransactionBloc>().add(
                         const LoadTransactions(),
                       ),

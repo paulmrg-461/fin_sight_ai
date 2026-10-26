@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../bloc/ai_coach_bloc.dart';
 import '../bloc/ai_coach_event.dart';
@@ -24,7 +25,7 @@ class AiCoachScreen extends StatelessWidget {
             ),
             AiCoachLoading() => const _CoachLoading(),
             AiCoachFailure(:final message) => _CoachError(
-              message: message,
+              message: context.failureText(message),
               onRetry: () =>
                   context.read<AiCoachBloc>().add(const LoadInsights()),
             ),

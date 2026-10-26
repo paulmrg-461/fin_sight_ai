@@ -25,6 +25,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 015 | Copy transactions as CSV | P3 | S | 008, 014 | DONE (944 unit, 26 integration) |
 | 016 | Navigate budget months | P2 | S | 003, 008 | DONE (945 unit, 27 integration) |
 | 017 | Copy last month's budgets | P2 | S | 016 | DONE (946 unit, 28 integration) |
+| 018 | Localize failure messages | P2 | M | 004 | DONE (949 unit, 28 integration) |
+
+- 018 translated validation, storage, auth, sync, and AI failures at the presentation boundary, with prefix families and an English fallback.
 
 - 017 added one-tap copying of the previous month's limits into the selected month.
 

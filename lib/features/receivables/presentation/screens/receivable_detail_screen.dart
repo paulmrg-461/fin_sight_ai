@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
@@ -125,7 +126,7 @@ class ReceivableDetailScreen extends StatelessWidget {
           }
           if (state is ReceivableFailure) {
             return AppErrorState(
-              message: state.message,
+              message: context.failureText(state.message),
               onRetry: () =>
                   context.read<ReceivableBloc>().add(const LoadReceivables()),
             );

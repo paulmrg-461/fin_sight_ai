@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
+import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/utils/date_formatters.dart';
@@ -95,7 +96,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
             ScheduledPaymentInitial() || ScheduledPaymentLoading() =>
               const Center(child: CircularProgressIndicator()),
             ScheduledPaymentFailure(:final message) => AppErrorState(
-              message: message,
+              message: context.failureText(message),
               onRetry: () => context.read<ScheduledPaymentBloc>().add(
                 const LoadScheduledPayments(),
               ),
@@ -116,7 +117,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                     if (error != null) ...[
-                      _ErrorBanner(message: error),
+                      _ErrorBanner(message: context.failureText(error)),
                       const SizedBox(height: 12),
                     ],
                     Text(
@@ -164,7 +165,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                     if (error != null) ...[
-                      _ErrorBanner(message: error),
+                      _ErrorBanner(message: context.failureText(error)),
                       const SizedBox(height: 12),
                     ],
                     CommittedCashflowCard(
