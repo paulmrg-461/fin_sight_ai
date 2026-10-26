@@ -2041,6 +2041,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear search'**
   String get clearSearch;
+
+  /// No description provided for @copyCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy CSV'**
+  String get copyCsv;
+
+  /// No description provided for @csvCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Copied 1 transaction to the clipboard.} other{Copied {count} transactions to the clipboard.}}'**
+  String csvCopied(int count);
 }
 
 class _AppLocalizationsDelegate

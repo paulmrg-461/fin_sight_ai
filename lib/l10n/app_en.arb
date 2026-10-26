@@ -445,5 +445,14 @@
   "searchTransactions": "Search transactions",
   "noMatchingTransactions": "No matching transactions",
   "noMatchingTransactionsBody": "Try another description, category, or amount.",
-  "clearSearch": "Clear search"
+  "clearSearch": "Clear search",
+  "copyCsv": "Copy CSV",
+  "csvCopied": "{count, plural, =1{Copied 1 transaction to the clipboard.} other{Copied {count} transactions to the clipboard.}}",
+  "@csvCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

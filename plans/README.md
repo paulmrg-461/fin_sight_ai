@@ -22,6 +22,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 012 | Defer non-critical startup loads (PERF-02) | P2 | M | 010 | DONE (911 unit, 23 integration; seeded launch 227–233 ms) |
 | 013 | Edit scheduled payments in place | P2 | M | 008, 012 | DONE (938 unit, 24 integration) |
 | 014 | Search transactions by text | P2 | S | 008 | DONE (941 unit, 25 integration) |
+| 015 | Copy transactions as CSV | P3 | S | 008, 014 | DONE (944 unit, 26 integration) |
+
+- 015 added clipboard CSV export for the visible ledger (pure Dart, RFC-4180 escaping, pluralized confirmation).
 
 - 014 added client-side transaction search composed with the date and category filters; the bloc caches the active period so typing never re-reads Hive.
 

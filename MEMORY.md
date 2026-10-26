@@ -23,8 +23,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 941 unit/widget tests, coverage gate green, 25 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 944 unit/widget tests, coverage gate green, 26 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## CSV export (plan 015)
+
+- `TransactionCsv.build` emits a stable header (`date,type,category,description,amount,wallet`), ISO dates, raw positive amounts, English type tokens, and RFC-4180 escaping.
+- The transactions app bar copies the **visible** rows (date range, category chips, and search apply) to the clipboard and shows a pluralized confirmation.
+- It uses Flutter's clipboard only: no platform plugin, and the integration test verifies both the snackbar and the clipboard text.
 
 ## Transaction search (plan 014)
 

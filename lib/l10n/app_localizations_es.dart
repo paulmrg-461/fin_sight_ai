@@ -1071,4 +1071,18 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get clearSearch => 'Limpiar búsqueda';
+
+  @override
+  String get copyCsv => 'Copiar CSV';
+
+  @override
+  String csvCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se copiaron $count transacciones al portapapeles.',
+      one: 'Se copió 1 transacción al portapapeles.',
+    );
+    return '$_temp0';
+  }
 }

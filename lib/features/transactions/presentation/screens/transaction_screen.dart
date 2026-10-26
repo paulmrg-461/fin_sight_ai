@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -7,6 +8,7 @@ import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/transaction_entity.dart';
+import '../../domain/services/transaction_csv.dart';
 import '../bloc/transaction_bloc.dart';
 import '../bloc/transaction_event.dart';
 import '../bloc/transaction_state.dart';
@@ -148,6 +150,20 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
+  Future<void> _copyCsv(
+    BuildContext context,
+    List<TransactionEntity> transactions,
+  ) async {
+    final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    await Clipboard.setData(
+      ClipboardData(text: TransactionCsv.build(transactions)),
+    );
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.csvCopied(transactions.length))),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,6 +171,20 @@ class _TransactionScreenState extends State<TransactionScreen> {
         leading: const AppMenuButton(),
         title: Text(context.l10n.transactions),
         actions: [
+          BlocBuilder<TransactionBloc, TransactionState>(
+            builder: (context, state) {
+              final transactions = state is TransactionLoaded
+                  ? state.transactions
+                  : null;
+              return IconButton(
+                onPressed: transactions == null
+                    ? null
+                    : () => _copyCsv(context, transactions),
+                tooltip: context.l10n.copyCsv,
+                icon: const Icon(Icons.content_copy_rounded),
+              );
+            },
+          ),
           IconButton(
             onPressed: () => _pickDateRange(context),
             tooltip: context.l10n.filterByDate,

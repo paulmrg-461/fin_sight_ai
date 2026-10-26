@@ -8,7 +8,8 @@ Let users record income and expenses, browse them offline, filter by date and ca
 
 - Users can add income/expense transactions with amount, category, description, date, and optional receipt path.
 - Invalid amounts, missing categories, and overlong descriptions are rejected with `ValidationFailure`.
-- The list is newest first, filterable by an inclusive date range, by category, and by free text (description, category, or formatted amount). Text search filters the cached period in memory and composes with the other filters.
+- The list is newest first, filterable by an inclusive date range, by category, and by free text (description, category, or formatted amount).
+- The visible rows can be copied as CSV (`date,type,category,description,amount,wallet`), with RFC-4180 escaping; filters define what gets exported. Text search filters the cached period in memory and composes with the other filters.
 - Deletions are persisted immediately.
 - Every behavior is covered by unit, data, and BLoC tests.
 
@@ -57,7 +58,7 @@ ResultFuture<List<TransactionEntity>> getTransactionsByDateRange({
 
 States: `TransactionInitial`, `TransactionLoading`, `TransactionLoaded`, `TransactionEmpty`, `TransactionFailure`.
 
-Screens/widgets: `TransactionScreen` (form bottom sheet, date range picker, text search, retry/empty states) and `TransactionList` (category filter, edit/delete actions).
+Screens/widgets: `TransactionScreen` (form bottom sheet, date range picker, text search, CSV copy, retry/empty states) and `TransactionList` (category filter, edit/delete actions).
 
 ## Verification
 

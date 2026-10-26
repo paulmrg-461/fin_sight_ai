@@ -396,5 +396,14 @@
   "searchTransactions": "Buscar transacciones",
   "noMatchingTransactions": "Sin transacciones coincidentes",
   "noMatchingTransactionsBody": "Prueba con otra descripción, categoría o monto.",
-  "clearSearch": "Limpiar búsqueda"
+  "clearSearch": "Limpiar búsqueda",
+  "copyCsv": "Copiar CSV",
+  "csvCopied": "{count, plural, =1{Se copió 1 transacción al portapapeles.} other{Se copiaron {count} transacciones al portapapeles.}}",
+  "@csvCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

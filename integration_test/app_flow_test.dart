@@ -15,6 +15,7 @@ import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_event.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/wallets/presentation/screens/wallet_screen.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -608,6 +609,32 @@ void main() {
     await tester.tap(find.text('Clear search'));
     await pumpUntil(tester, find.text('Coffee beans'));
     expect(find.text('Monthly rent'), findsOneWidget);
+  });
+
+  testWidgets('copies the visible transactions as CSV', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 12.5,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Coffee beans',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Coffee beans'));
+
+    await tester.tap(find.byTooltip('Copy CSV'));
+    await pumpUntil(
+      tester,
+      find.text('Copied 1 transaction to the clipboard.'),
+    );
+
+    final clipboard = await Clipboard.getData(Clipboard.kTextPlain);
+    expect(clipboard?.text, contains('date,type,category,description,amount'));
+    expect(clipboard?.text, contains('Coffee beans'));
   });
 
   testWidgets('filters transactions by date range', (tester) async {
