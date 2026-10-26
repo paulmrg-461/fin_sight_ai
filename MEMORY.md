@@ -23,7 +23,7 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 957 unit/widget tests, coverage gate green, 30 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 968 unit/widget tests, coverage gate green, 30 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 
 ## Duplicate transaction (plan 022)
@@ -95,13 +95,23 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `ScheduledPaymentForm(initial:)` prefills the form and switches the title/button to “Edit scheduled payment” / “Save changes”; the card popup menu exposes Edit alongside pause/resume and delete.
 - Tests: repository audit-date and queue assertions, use-case validation, BLoC success/failure, and an integration edit flow that keeps the same id.
 
+## Local reminders (plan 009 Phase B)
+
+- `flutter_local_notifications` + `timezone`; `ReminderScheduler` interface and `LocalReminderScheduler` implementation registered through `ReminderModule`.
+- Reminder at 09:00 local on the next due date; no reminder for due-today/overdue payments because in-app processing owns them.
+- Stable FNV-1a notification id per payment; `scheduleFor` replaces, inactive schedules cancel, delete cancels by id, an empty list cancels all.
+- `ScheduledPaymentBloc` reschedules all stored payments after every reload (covers due-processing date changes), so add/pause/update/delete/pay stay aligned.
+- Android: `POST_NOTIFICATIONS` + `RECEIVE_BOOT_COMPLETED`, plugin boot/scheduled receivers, `inexactAllowWhileIdle` (no exact-alarm approval). iOS: `UNUserNotificationCenter` delegate + runtime alert/badge/sound permission.
+- Desktop/web/tests are no-ops; the integration harness uses the real scheduler, which no-ops on Linux.
+- Platform scaffolds (Android/iOS/desktop/web) are tracked after commit `7b7d168`, so these files are versioned.
+
 ## Committed cashflow (plan 009 Phase A)
 
 - `GetCommittedCashflowUseCase` projects the next 30/90 days from active expense schedules and active debt minimums; income and paused schedules are excluded, overdue sources advance into the window, and results are date-sorted.
 - The projection is read-only; due processing remains the only writer. Debt minimums recur monthly on the debt due day.
 - `ScheduledPaymentBloc` computes both windows on every reload (projection failures hide the card) and exposes them on `ScheduledPaymentLoaded`/`ScheduledPaymentEmpty`.
 - `CommittedCashflowCard` on `/scheduled` shows the total, the next three payments, and a 30/90-day toggle; it hides when both windows are unavailable.
-- Phase B (local due-date notifications) is BLOCKED: `android/` and `ios/` are excluded from version control in this environment and the plugin/platform setup cannot be committed or verified here.
+- Phase B (local due-date notifications) was previously blocked because `android/` and `ios/` were hidden by a machine-level excludes file. The platform scaffolds are now tracked in git, so Phase B can proceed (plugin + permissions still required).
 
 ## Definitions sync (plan 007)
 
@@ -276,6 +286,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.
+5. Consider exact alarms or a timezone plugin if reminders need minute precision or correct DST labels.
 6. Money as integer minor units instead of `double`.
 7. Golden/screenshot tests in CI.
 8. Rotate the Groq key and Supabase DB password shared during setup.

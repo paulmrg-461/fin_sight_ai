@@ -143,3 +143,17 @@ Current status:
 - Conventional commits; every feature is committed and pushed before it is reported as done.
 
 Operating instructions for agents live in [AGENTS.md](AGENTS.md). Session state and pending work live in [MEMORY.md](MEMORY.md).
+
+## Local reminders
+
+Scheduled payments request a local notification at **9:00 local time on the next
+due date** (Android and iOS). Payments due today or already overdue are handled
+by the in-app due processing instead, so the reminder never duplicates a charge.
+
+- Android: `POST_NOTIFICATIONS` and `RECEIVE_BOOT_COMPLETED`; the plugin receivers
+  restore schedules after a reboot. Scheduling is inexact (`inexactAllowWhileIdle`)
+  to avoid exact-alarm approval; the OS may drift by a few minutes.
+- iOS: the app sets `UNUserNotificationCenter` as the delegate and requests
+  alert/badge/sound permission on the first reminder.
+- Linux, macOS, Windows, web, and tests use a no-op scheduler; navigation and
+  integration tests remain deterministic.

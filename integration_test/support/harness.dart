@@ -5,6 +5,7 @@ import 'package:fin_sight_ai/core/routing/app_router.dart';
 import 'package:fin_sight_ai/core/services/app_boxes.dart';
 import 'package:fin_sight_ai/core/services/calendar_migration.dart';
 import 'package:fin_sight_ai/core/services/local_data_scope.dart';
+import 'package:fin_sight_ai/core/services/local_reminder_scheduler.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
@@ -398,6 +399,7 @@ class IntegrationHarness {
       PayScheduledPaymentUseCase(scheduledPaymentRepository),
       ProcessDueScheduledPaymentsUseCase(scheduledPaymentRepository),
       GetCommittedCashflowUseCase(scheduledPaymentRepository, debtRepository),
+      LocalReminderScheduler(),
     );
 
     // Mirrors `main.dart`: sign-out reloads the feature blocs so they render

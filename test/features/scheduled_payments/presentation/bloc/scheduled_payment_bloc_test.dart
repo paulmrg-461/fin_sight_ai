@@ -9,6 +9,9 @@ import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/schedul
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_state.dart';
+
+import '../../../../support/fake_reminder_scheduler.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -39,6 +42,7 @@ void main() {
   late MockPayNow payNow;
   late MockProcessDue processDue;
   late MockGetCommitted getCommitted;
+  late FakeReminderScheduler reminders;
 
   final payment = ScheduledPaymentEntity(
     id: 'pay-1',
@@ -98,6 +102,7 @@ void main() {
     payNow = MockPayNow();
     processDue = MockProcessDue();
     getCommitted = MockGetCommitted();
+    reminders = FakeReminderScheduler();
     // Projection is optional: by default the card hides so existing state
     // expectations stay focused on schedules.
     when(() => getCommitted(any())).thenAnswer(
@@ -114,6 +119,7 @@ void main() {
     payNow,
     processDue,
     getCommitted,
+    reminders,
   );
 
   ScheduledPaymentRun runWith(int created) {
@@ -380,6 +386,67 @@ void main() {
     expect: () => [
       ScheduledPaymentLoaded([payment], error: 'Payment not found.'),
     ],
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'schedules a reminder when a payment is added',
+    setUp: () {
+      stubProcess();
+      stubGet([payment]);
+      when(() => addPayment(any())).thenAnswer((_) async => Right(payment));
+    },
+    build: buildBloc,
+    act: (bloc) => bloc.add(
+      AddScheduledPayment(
+        AddScheduledPaymentParams(
+          name: 'Rent',
+          amount: 800,
+          category: 'Rent',
+          nextDueDate: DateTime(2026, 10, 23),
+        ),
+      ),
+    ),
+    verify: (_) {
+      expect(reminders.scheduled.map((item) => item.id), contains('pay-1'));
+    },
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'cancels the reminder when a payment is paused',
+    setUp: () {
+      var paused = false;
+      when(
+        () => getPayments(any()),
+      ).thenAnswer((_) async => Right([payment.copyWith(isActive: !paused)]));
+      when(() => setActive(any())).thenAnswer((_) async {
+        paused = true;
+        return Right(payment.copyWith(isActive: false));
+      });
+    },
+    build: buildBloc,
+    act: (bloc) =>
+        bloc.add(const SetScheduledPaymentActive(id: 'pay-1', isActive: false)),
+    verify: (_) {
+      expect(reminders.scheduled.last.isActive, isFalse);
+    },
+  );
+
+  blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(
+    'cancels the reminder and clears empty schedules on delete',
+    setUp: () {
+      stubGet(const []);
+      when(() => deletePayment(any()))
+          .thenAnswer((_) async => const Right(null));
+    },
+    build: buildBloc,
+    act: (bloc) async {
+      bloc.add(const DeleteScheduledPayment('pay-1'));
+      await pumpEventQueue();
+    },
+    verify: (_) {
+      expect(reminders.cancelled, contains('pay-1'));
+      expect(reminders.cancelAllCalls, greaterThan(0));
+    },
   );
 
   blocTest<ScheduledPaymentBloc, ScheduledPaymentState>(

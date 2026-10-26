@@ -15,6 +15,8 @@ import '../../features/transactions/data/datasources/transaction_local_data_sour
 import '../routing/app_router.dart';
 import '../services/app_boxes.dart';
 import '../services/local_data_scope.dart';
+import '../services/local_reminder_scheduler.dart';
+import '../services/reminder_scheduler.dart';
 import '../services/receipt_image_picker.dart';
 import '../theme/theme_controller.dart';
 import '../utils/app_constants.dart';
@@ -32,6 +34,12 @@ Future<void> configureDependencies({String? environment}) async {
 }
 
 /// Third-party and async registrations that injectable cannot infer.
+@module
+abstract class ReminderModule {
+  @lazySingleton
+  ReminderScheduler provideReminderScheduler() => LocalReminderScheduler();
+}
+
 @module
 abstract class CoreModule {
   @lazySingleton

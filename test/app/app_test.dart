@@ -70,6 +70,9 @@ import 'package:fin_sight_ai/features/wallets/domain/usecases/wallet_usecases.da
 import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_bloc.dart';
 import 'package:fin_sight_ai/features/wallets/presentation/bloc/wallet_state.dart';
 import 'package:material_ui/material_ui.dart';
+
+import '../support/fake_reminder_scheduler.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
@@ -341,6 +344,7 @@ void main() {
       MockPayScheduledPayment(),
       MockProcessDuePayments(),
       MockGetCommitted(),
+      FakeReminderScheduler(),
     );
   });
 

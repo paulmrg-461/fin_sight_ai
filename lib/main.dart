@@ -6,6 +6,7 @@ import 'app/startup_loader.dart';
 import 'core/di/injection.dart';
 import 'core/services/app_boxes.dart';
 import 'core/services/calendar_migration.dart';
+import 'core/services/reminder_scheduler.dart' show ReminderScheduler;
 import 'features/debts/presentation/bloc/debt_bloc.dart';
 import 'features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
@@ -118,6 +119,7 @@ Future<void> main() async {
   const StartupLoader().afterFirstFrame([
     () async {
       final stopwatch = Stopwatch()..start();
+      await getIt<ReminderScheduler>().initialize();
       final startupPayments = await getIt<ProcessDueScheduledPaymentsUseCase>()(
         const NoParams(),
       );

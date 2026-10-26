@@ -16,7 +16,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 006 | Give categories a stable id and cascade renames | P2 | M | 003 | DONE (rename cascade by name; categoryId deferred) |
 | 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | DONE (migration `0006_definitions_sync.sql`; 909 unit, 23 integration) |
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | DONE (886 unit, 23 integration) |
-| 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | IN PROGRESS (Phase A DONE; Phase B blocked: platform folders untracked) |
+| 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | DONE (projection + local notifications; 968 unit, 30 integration) |
 | 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | DONE (2 reads per refresh; 885 unit, 23 integration) |
 | 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | DONE (worktree `navigation-shell`, commit `62b1ede`) |
 | 012 | Defer non-critical startup loads (PERF-02) | P2 | M | 010 | DONE (911 unit, 23 integration; seeded launch 227–233 ms) |
@@ -51,7 +51,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 
 - 013 added in-place schedule editing (same id, preserved audit dates, one sync upsert) with an Edit action on each card.
 
-- 009 Phase A shipped the 30/90-day committed-cashflow projection and card. Phase B (local notifications) is blocked until Android/iOS projects are tracked and the plugin is verified on the beta SDK.
+- 009 shipped the 30/90-day committed projection plus local due-date notifications (`flutter_local_notifications`) with inexact scheduling, Android/iOS permissions, and no-op desktop/tests.
 
 - 012 split startup into critical (dashboard, currency, locale, auth) and deferred (feature blocs, sync, due schedules) via `StartupLoader`; the seeded benchmark now logs 227–233 ms in-suite.
 

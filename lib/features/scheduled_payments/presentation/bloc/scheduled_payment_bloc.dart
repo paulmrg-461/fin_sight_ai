@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/domain/failure.dart';
+import '../../../../core/services/reminder_scheduler.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/committed_cashflow.dart';
 import '../../domain/entities/scheduled_payment_entity.dart';
@@ -23,6 +24,7 @@ class ScheduledPaymentBloc
     this._payNow,
     this._processDue,
     this._getCommitted,
+    this._reminders,
   ) : super(const ScheduledPaymentInitial()) {
     on<LoadScheduledPayments>(_onLoad);
     on<AddScheduledPayment>(_onAdd);
@@ -41,6 +43,7 @@ class ScheduledPaymentBloc
   final PayScheduledPaymentUseCase _payNow;
   final ProcessDueScheduledPaymentsUseCase _processDue;
   final GetCommittedCashflowUseCase _getCommitted;
+  final ReminderScheduler _reminders;
 
   Future<void> _onLoad(
     LoadScheduledPayments event,
@@ -91,7 +94,11 @@ class ScheduledPaymentBloc
     Emitter<ScheduledPaymentState> emit,
   ) async {
     final result = await _deletePayment(event.id);
-    await _handleActionResult(emit, result.fold((f) => f, (_) => null));
+    final failure = result.fold((f) => f, (_) => null);
+    if (failure == null) {
+      await _reminders.cancelFor(event.id);
+    }
+    await _handleActionResult(emit, failure);
   }
 
   Future<void> _onPayNow(
@@ -160,6 +167,7 @@ class ScheduledPaymentBloc
     final payments = result.getOrElse((_) => const <ScheduledPaymentEntity>[]);
     final projection = await _projection();
     if (payments.isEmpty) {
+      await _reminders.cancelAll();
       emit(
         ScheduledPaymentEmpty(
           autoCreated: autoCreated,
@@ -171,6 +179,7 @@ class ScheduledPaymentBloc
       return;
     }
 
+    await _syncReminders(payments);
     emit(
       ScheduledPaymentLoaded(
         payments,
@@ -180,6 +189,23 @@ class ScheduledPaymentBloc
         committed90: projection.$2,
       ),
     );
+  }
+
+  /// Keeps OS reminders aligned with the stored schedules. The scheduler is
+  /// idempotent: scheduling an id replaces the previous reminder.
+  Future<void> _syncReminders(List<ScheduledPaymentEntity> payments) async {
+    for (final payment in payments) {
+      await _reminders.scheduleFor(
+        ScheduledPaymentReminder(
+          id: payment.id,
+          name: payment.name,
+          category: payment.category,
+          amount: payment.amount,
+          nextDueDate: payment.nextDueDate,
+          isActive: payment.isActive,
+        ),
+      );
+    }
   }
 
   /// Both windows are projected so the card can switch without another read.

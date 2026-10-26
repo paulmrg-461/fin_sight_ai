@@ -15,7 +15,7 @@
 - **Depends on**: 003
 - **Category**: direction
 - **Planned at**: commit `4e42297`, 2026-10-23
-- **Status**: IN PROGRESS. Phase A DONE (pure projection use case + 30/90-day card). Phase B BLOCKED: `android/` and `ios/` are excluded from version control in this environment and the notification plugin needs platform setup; no workaround attempted.
+- **Status**: DONE. Phase A shipped the projection use case/card; Phase B shipped local reminders behind `ReminderScheduler` with Android/iOS setup and no-op desktop/tests.
 
 ## Why this matters
 
@@ -185,11 +185,11 @@ with a `kIsWeb`/platform check and the no-op fake in the harness.
 
 - [x] Projection card shows 30/90-day totals and next payments.
 - [x] Projection use case is pure Dart and tested.
-- [ ] Reminder scheduler is invoked on add/pause/delete/pay.
-- [ ] Linux integration uses a no-op scheduler and passes.
-- [ ] Android/iOS setup documented in `README.md`.
-- [ ] `flutter analyze`, unit coverage, coverage gate pass.
-- [ ] `plans/README.md` updated (including BLOCKED if Phase B cannot resolve).
+- [x] Reminder scheduler is invoked on add/pause/delete/pay.
+- [x] Linux integration uses a no-op scheduler and passes.
+- [x] Android/iOS setup documented in `README.md`.
+- [x] `flutter analyze`, unit coverage, coverage gate pass.
+- [x] `plans/README.md` updated (including BLOCKED if Phase B cannot resolve).
 
 ## STOP conditions
 

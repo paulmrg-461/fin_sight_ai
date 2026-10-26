@@ -25,6 +25,7 @@ import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/local_data_scope.dart' as _i1041;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
+import 'package:fin_sight_ai/core/services/reminder_scheduler.dart' as _i244;
 import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
@@ -225,6 +226,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) async {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final storageModule = _$StorageModule();
+    final reminderModule = _$ReminderModule();
     final coreModule = _$CoreModule();
     final currencyModule = _$CurrencyModule();
     final localDataModule = _$LocalDataModule();
@@ -242,6 +244,9 @@ extension GetItInjectableX on _i174.GetIt {
     await gh.factoryAsync<_i422.AppBoxes>(
       () => storageModule.provideAppBoxes(),
       preResolve: true,
+    );
+    gh.lazySingleton<_i244.ReminderScheduler>(
+      () => reminderModule.provideReminderScheduler(),
     );
     gh.lazySingleton<_i706.Uuid>(() => coreModule.provideUuid());
     gh.lazySingleton<_i1042.AppEnv>(() => coreModule.provideAppEnv());
@@ -719,18 +724,6 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
-    gh.factory<_i200.ScheduledPaymentBloc>(
-      () => _i200.ScheduledPaymentBloc(
-        gh<_i160.GetScheduledPaymentsUseCase>(),
-        gh<_i160.AddScheduledPaymentUseCase>(),
-        gh<_i160.UpdateScheduledPaymentUseCase>(),
-        gh<_i160.SetScheduledPaymentActiveUseCase>(),
-        gh<_i160.DeleteScheduledPaymentUseCase>(),
-        gh<_i160.PayScheduledPaymentUseCase>(),
-        gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
-        gh<_i387.GetCommittedCashflowUseCase>(),
-      ),
-    );
     gh.factory<_i9.ReceivableBloc>(
       () => _i9.ReceivableBloc(
         gh<_i728.GetReceivablesUseCase>(),
@@ -744,6 +737,19 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i470.SyncBloc(
         gh<_i558.SyncNowUseCase>(),
         gh<_i558.GetSyncStatusUseCase>(),
+      ),
+    );
+    gh.factory<_i200.ScheduledPaymentBloc>(
+      () => _i200.ScheduledPaymentBloc(
+        gh<_i160.GetScheduledPaymentsUseCase>(),
+        gh<_i160.AddScheduledPaymentUseCase>(),
+        gh<_i160.UpdateScheduledPaymentUseCase>(),
+        gh<_i160.SetScheduledPaymentActiveUseCase>(),
+        gh<_i160.DeleteScheduledPaymentUseCase>(),
+        gh<_i160.PayScheduledPaymentUseCase>(),
+        gh<_i160.ProcessDueScheduledPaymentsUseCase>(),
+        gh<_i387.GetCommittedCashflowUseCase>(),
+        gh<_i244.ReminderScheduler>(),
       ),
     );
     gh.factory<_i1031.OcrBloc>(
@@ -760,6 +766,8 @@ extension GetItInjectableX on _i174.GetIt {
 }
 
 class _$StorageModule extends _i1015.StorageModule {}
+
+class _$ReminderModule extends _i1015.ReminderModule {}
 
 class _$CoreModule extends _i1015.CoreModule {}
 
