@@ -84,6 +84,40 @@ void main() {
     expect(transfers.map((t) => t.id), ['new', 'old']);
   });
 
+  test('hides tombstones and purges them on demand', () async {
+    await dataSource.saveWallet(
+      WalletModel(
+        id: 'wallet-bank',
+        name: 'Bank',
+        type: WalletType.bank,
+        openingBalance: 0,
+        updatedAt: DateTime.utc(2026, 10, 1),
+        deletedAt: DateTime.utc(2026, 10, 1),
+      ),
+    );
+    await dataSource.saveTransfer(
+      WalletTransferModel(
+        id: 't-1',
+        fromWalletId: 'wallet-bank',
+        toWalletId: 'wallet-cash',
+        amount: 10,
+        date: DateTime.utc(2026, 10, 1),
+        createdAt: DateTime.utc(2026, 10, 1),
+        updatedAt: DateTime.utc(2026, 10, 1),
+        deletedAt: DateTime.utc(2026, 10, 1),
+      ),
+    );
+
+    expect(await dataSource.getWallets(), isEmpty);
+    expect(await dataSource.getTransfers(), isEmpty);
+    expect(await dataSource.getAllWallets(), hasLength(1));
+    expect(await dataSource.getAllTransfers(), hasLength(1));
+
+    expect(await dataSource.purgeTombstones(DateTime.utc(2026, 10, 2)), 2);
+    expect(await dataSource.getAllWallets(), isEmpty);
+    expect(await dataSource.getAllTransfers(), isEmpty);
+  });
+
   test('maps corrupted data to CacheException', () async {
     await walletsBox.put('broken', 'not-a-map');
 

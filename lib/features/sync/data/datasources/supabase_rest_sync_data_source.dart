@@ -42,6 +42,120 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   }
 
   @override
+  Future<Map<String, dynamic>?> fetchCategory(String id) async {
+    final rows = await _fetch('categories', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _categoryFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchCategories({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'categories',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_categoryFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertCategory(Map<String, dynamic> json) async {
+    await _upsert('categories', _categoryToRow(json));
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchScheduledPayment(String id) async {
+    final rows = await _fetch('scheduled_payments', {
+      'id': 'eq.$id',
+      'select': '*',
+    });
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _scheduledPaymentFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchScheduledPayments({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'scheduled_payments',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_scheduledPaymentFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertScheduledPayment(Map<String, dynamic> json) async {
+    await _upsert('scheduled_payments', _scheduledPaymentToRow(json));
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchWallet(String id) async {
+    final rows = await _fetch('wallets', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _walletFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchWallets({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'wallets',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_walletFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertWallet(Map<String, dynamic> json) async {
+    await _upsert('wallets', _walletToRow(json));
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchWalletTransfer(String id) async {
+    final rows = await _fetch('wallet_transfers', {
+      'id': 'eq.$id',
+      'select': '*',
+    });
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _walletTransferFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchWalletTransfers({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'wallet_transfers',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_walletTransferFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertWalletTransfer(Map<String, dynamic> json) async {
+    await _upsert('wallet_transfers', _walletTransferToRow(json));
+  }
+
+  @override
   Future<Map<String, dynamic>?> fetchTransaction(String id) async {
     final rows = await _fetch('transactions', {'id': 'eq.$id', 'select': '*'});
     if (rows.isEmpty) {
@@ -387,6 +501,124 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'dueDate': row['due_date'],
       'status': row['status'],
       'paymentHistory': row['payment_history'] ?? const [],
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _categoryToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'name': json['name'],
+      'is_archived': json['isArchived'] ?? false,
+      'created_at': json['createdAt'],
+      'updated_at': json['updatedAt'] ?? json['createdAt'],
+      'deleted_at': json['deletedAt'],
+    };
+  }
+
+  Map<String, dynamic> _categoryFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'name': row['name'],
+      'isArchived': row['is_archived'] ?? false,
+      'createdAt': row['created_at'],
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _scheduledPaymentToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'name': json['name'],
+      'amount': json['amount'],
+      'type': json['type'] ?? 'expense',
+      'category': json['category'],
+      'frequency': json['frequency'],
+      'next_due_date': json['nextDueDate'],
+      'day_of_month': json['dayOfMonth'],
+      'wallet_id': json['walletId'],
+      'notes': json['notes'] ?? '',
+      'is_active': json['isActive'] ?? true,
+      'created_at': json['createdAt'],
+      'updated_at': json['updatedAt'] ?? json['createdAt'],
+      'last_paid_at': json['lastPaidAt'],
+      'deleted_at': json['deletedAt'],
+    };
+  }
+
+  Map<String, dynamic> _scheduledPaymentFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'name': row['name'],
+      'amount': row['amount'],
+      'type': row['type'] ?? 'expense',
+      'category': row['category'],
+      'frequency': row['frequency'],
+      'nextDueDate': row['next_due_date'],
+      'dayOfMonth': row['day_of_month'],
+      'walletId': row['wallet_id'],
+      'notes': row['notes'] ?? '',
+      'isActive': row['is_active'] ?? true,
+      'createdAt': row['created_at'],
+      'updatedAt': row['updated_at'],
+      'lastPaidAt': row['last_paid_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _walletToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'name': json['name'],
+      'type': json['type'],
+      'opening_balance': json['openingBalance'],
+      'currency': json['currency'] ?? 'COP',
+      'updated_at': json['updatedAt'],
+      'deleted_at': json['deletedAt'],
+    };
+  }
+
+  Map<String, dynamic> _walletFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'name': row['name'],
+      'type': row['type'],
+      'openingBalance': row['opening_balance'],
+      'currency': row['currency'] ?? 'COP',
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _walletTransferToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'from_wallet_id': json['fromWalletId'],
+      'to_wallet_id': json['toWalletId'],
+      'amount': json['amount'],
+      'date': json['date'],
+      'note': json['note'] ?? '',
+      'created_at': json['createdAt'],
+      'updated_at': json['updatedAt'] ?? json['createdAt'],
+      'deleted_at': json['deletedAt'],
+    };
+  }
+
+  Map<String, dynamic> _walletTransferFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'fromWalletId': row['from_wallet_id'],
+      'toWalletId': row['to_wallet_id'],
+      'amount': row['amount'],
+      'date': row['date'],
+      'note': row['note'] ?? '',
+      'createdAt': row['created_at'],
       'updatedAt': row['updated_at'],
       'deletedAt': row['deleted_at'],
       'isSynced': true,

@@ -18,6 +18,8 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     super.isActive,
     super.updatedAt,
     super.lastPaidAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory ScheduledPaymentModel.fromEntity(ScheduledPaymentEntity payment) {
@@ -36,6 +38,8 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
       createdAt: payment.createdAt,
       updatedAt: payment.updatedAt,
       lastPaidAt: payment.lastPaidAt,
+      isSynced: payment.isSynced,
+      deletedAt: payment.deletedAt,
     );
   }
 
@@ -99,6 +103,10 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
       lastPaidAt: json['lastPaidAt'] is String
           ? DateTime.tryParse(json['lastPaidAt'] as String)
           : null,
+      isSynced: json['isSynced'] is bool ? json['isSynced'] as bool : false,
+      deletedAt: json['deletedAt'] is String
+          ? DateTime.tryParse(json['deletedAt'] as String)
+          : null,
     );
   }
 
@@ -117,6 +125,8 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     'createdAt': createdAt.toIso8601String(),
     if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
     if (lastPaidAt != null) 'lastPaidAt': lastPaidAt!.toIso8601String(),
+    'isSynced': isSynced,
+    if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
   };
 
   @override
@@ -135,6 +145,8 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? lastPaidAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return ScheduledPaymentModel(
       id: id ?? this.id,
@@ -151,6 +163,8 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastPaidAt: lastPaidAt ?? this.lastPaidAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -169,5 +183,7 @@ class ScheduledPaymentModel extends ScheduledPaymentEntity {
     createdAt: createdAt,
     updatedAt: updatedAt,
     lastPaidAt: lastPaidAt,
+    isSynced: isSynced,
+    deletedAt: deletedAt,
   );
 }

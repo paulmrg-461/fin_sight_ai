@@ -89,6 +89,21 @@ void main() {
     expect(await dataSource.getPayments(), isEmpty);
   });
 
+  test('hides tombstones from reads and purges them on demand', () async {
+    await dataSource.savePayment(
+      model().copyWith(
+        deletedAt: DateTime.utc(2026, 10, 1),
+        updatedAt: DateTime.utc(2026, 10, 1),
+      ),
+    );
+
+    expect(await dataSource.getPayments(), isEmpty);
+    expect(await dataSource.getAllPayments(), hasLength(1));
+
+    expect(await dataSource.purgeTombstones(DateTime.utc(2026, 10, 2)), 1);
+    expect(await dataSource.getAllPayments(), isEmpty);
+  });
+
   test('maps storage errors to CacheException', () async {
     await box.close();
 

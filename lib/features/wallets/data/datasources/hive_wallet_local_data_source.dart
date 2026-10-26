@@ -12,6 +12,14 @@ class HiveWalletLocalDataSource implements WalletLocalDataSource {
 
   @override
   Future<List<WalletModel>> getWallets() async {
+    final wallets = await getAllWallets();
+    return List<WalletModel>.unmodifiable(
+      wallets.where((wallet) => !wallet.isDeleted),
+    );
+  }
+
+  @override
+  Future<List<WalletModel>> getAllWallets() async {
     try {
       final wallets = <WalletModel>[];
       for (final value in _walletsBox.values) {
@@ -47,6 +55,14 @@ class HiveWalletLocalDataSource implements WalletLocalDataSource {
 
   @override
   Future<List<WalletTransferModel>> getTransfers() async {
+    final transfers = await getAllTransfers();
+    return List<WalletTransferModel>.unmodifiable(
+      transfers.where((transfer) => !transfer.isDeleted),
+    );
+  }
+
+  @override
+  Future<List<WalletTransferModel>> getAllTransfers() async {
     try {
       final transfers = <WalletTransferModel>[];
       for (final value in _transfersBox.values) {
@@ -77,5 +93,52 @@ class HiveWalletLocalDataSource implements WalletLocalDataSource {
         code: 'transfer_write_failed',
       );
     }
+  }
+
+  @override
+  Future<int> purgeTombstones(DateTime before) async {
+    try {
+      var purged = 0;
+      purged += await _purgeBox(_walletsBox, WalletModel.fromJson, before);
+      purged += await _purgeBox(
+        _transfersBox,
+        WalletTransferModel.fromJson,
+        before,
+      );
+      return purged;
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge wallet tombstones.',
+        code: 'wallet_purge_failed',
+      );
+    }
+  }
+
+  Future<int> _purgeBox<T>(
+    Box<dynamic> box,
+    T Function(Map<String, dynamic>) parse,
+    DateTime before,
+  ) async {
+    final keys = <dynamic>[];
+    for (final key in box.keys) {
+      final value = box.get(key);
+      if (value is! Map) {
+        continue;
+      }
+      final model = parse(Map<String, dynamic>.from(value));
+      final deletedAt = switch (model) {
+        final WalletModel wallet => wallet.deletedAt,
+        final WalletTransferModel transfer => transfer.deletedAt,
+        _ => null,
+      };
+      if (deletedAt != null && deletedAt.isBefore(before)) {
+        keys.add(key);
+      }
+    }
+    if (keys.isEmpty) {
+      return 0;
+    }
+    await box.deleteAll(keys);
+    return keys.length;
   }
 }

@@ -13,6 +13,14 @@ class HiveScheduledPaymentLocalDataSource
 
   @override
   Future<List<ScheduledPaymentModel>> getPayments() async {
+    final payments = await getAllPayments();
+    return List<ScheduledPaymentModel>.unmodifiable(
+      payments.where((payment) => !payment.isDeleted),
+    );
+  }
+
+  @override
+  Future<List<ScheduledPaymentModel>> getAllPayments() async {
     try {
       final payments = <ScheduledPaymentModel>[];
       for (final value in _box.values) {
@@ -56,6 +64,36 @@ class HiveScheduledPaymentLocalDataSource
       throw const CacheException(
         'Unable to delete the scheduled payment.',
         code: 'scheduled_payment_delete_failed',
+      );
+    }
+  }
+
+  @override
+  Future<int> purgeTombstones(DateTime before) async {
+    try {
+      final keys = <dynamic>[];
+      for (final key in _box.keys) {
+        final value = _box.get(key);
+        if (value is! Map) {
+          continue;
+        }
+        final model = ScheduledPaymentModel.fromJson(
+          Map<String, dynamic>.from(value),
+        );
+        final deletedAt = model.deletedAt;
+        if (deletedAt != null && deletedAt.isBefore(before)) {
+          keys.add(key);
+        }
+      }
+      if (keys.isEmpty) {
+        return 0;
+      }
+      await _box.deleteAll(keys);
+      return keys.length;
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge scheduled payment tombstones.',
+        code: 'scheduled_payment_purge_failed',
       );
     }
   }

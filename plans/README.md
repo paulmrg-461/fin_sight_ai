@@ -14,7 +14,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 004 | Refresh wallet balances, fix OCR posting, and finish i18n | P1 | S | 003 (date normalization) | DONE (worktree `plan-004-wallet-ocr`, commit `873c05b`) |
 | 005 | Make sync resilient to bad operations and bounded pulls | P1 | M | — | DONE (864 unit tests, 20 integration) |
 | 006 | Give categories a stable id and cascade renames | P2 | M | 003 | DONE (rename cascade by name; categoryId deferred) |
-| 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | TODO |
+| 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | DONE (migration `0006_definitions_sync.sql`; 909 unit, 23 integration) |
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | DONE (886 unit, 23 integration) |
 | 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | TODO |
 | 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | DONE (2 reads per refresh; 885 unit, 23 integration) |
@@ -26,6 +26,8 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 
 ## Review notes
+
+- 007 extended sync to categories, scheduled payments, wallets, and transfers with LWW merges, tombstones, and definitions-first pull order. The migration shipped as `0006_definitions_sync.sql` because `0005` was already used by receivables; `category_id` is reserved but not populated.
 
 - 008 delivered in-place transaction/budget editing (same id, one sync upsert), delete confirmation, and transaction undo. It also lets a picker keep a category that was renamed or archived so existing records stay editable.
 

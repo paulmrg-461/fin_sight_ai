@@ -19,6 +19,27 @@ void main() {
     expect(restored.toEntity(), model.toEntity());
   });
 
+  test('round-trips wallet sync metadata and tombstones', () {
+    final deletedAt = DateTime.utc(2026, 10, 20);
+    final wallet = WalletModel(
+      id: 'wallet-bank',
+      name: 'Bank',
+      type: WalletType.bank,
+      openingBalance: 10,
+      updatedAt: DateTime.utc(2026, 10, 19),
+      isSynced: true,
+      deletedAt: deletedAt,
+    );
+
+    final json = jsonDecode(jsonEncode(wallet.toJson()));
+    final restored = WalletModel.fromJson(json as Map<String, dynamic>);
+
+    expect(restored.isSynced, isTrue);
+    expect(restored.deletedAt, deletedAt);
+    expect(restored.isDeleted, isTrue);
+    expect(restored.lastModified, DateTime.utc(2026, 10, 19));
+  });
+
   test('round-trips a transfer', () {
     final transfer = WalletTransferModel(
       id: 't-1',
@@ -35,6 +56,26 @@ void main() {
     );
 
     expect(restored.toEntity(), transfer.toEntity());
+  });
+
+  test('round-trips transfer sync metadata', () {
+    final transfer = WalletTransferModel(
+      id: 't-2',
+      fromWalletId: 'bank',
+      toWalletId: 'cash',
+      amount: 40,
+      date: DateTime.utc(2026, 10, 2),
+      createdAt: DateTime.utc(2026, 10, 2),
+      updatedAt: DateTime.utc(2026, 10, 3),
+      isSynced: true,
+    );
+
+    final json = jsonDecode(jsonEncode(transfer.toJson()));
+    final restored = WalletTransferModel.fromJson(json as Map<String, dynamic>);
+
+    expect(restored.isSynced, isTrue);
+    expect(restored.updatedAt, DateTime.utc(2026, 10, 3));
+    expect(restored.lastModified, DateTime.utc(2026, 10, 3));
   });
 
   test('rejects invalid wallets and transfers', () {

@@ -8,6 +8,8 @@ class WalletModel extends WalletEntity {
     required super.openingBalance,
     super.currency,
     super.updatedAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory WalletModel.fromEntity(WalletEntity wallet) => WalletModel(
@@ -17,6 +19,8 @@ class WalletModel extends WalletEntity {
     openingBalance: wallet.openingBalance,
     currency: wallet.currency,
     updatedAt: wallet.updatedAt,
+    isSynced: wallet.isSynced,
+    deletedAt: wallet.deletedAt,
   );
 
   factory WalletModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class WalletModel extends WalletEntity {
     final openingBalance = json['openingBalance'];
     final currency = json['currency'];
     final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Wallet id is missing.');
@@ -50,6 +56,8 @@ class WalletModel extends WalletEntity {
       openingBalance: openingBalance.toDouble(),
       currency: currency is String ? currency : 'USD',
       updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
+      isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
     );
   }
 
@@ -60,6 +68,8 @@ class WalletModel extends WalletEntity {
     'openingBalance': openingBalance,
     'currency': currency,
     'updatedAt': updatedAt?.toUtc().toIso8601String(),
+    'isSynced': isSynced,
+    'deletedAt': deletedAt?.toUtc().toIso8601String(),
   };
 
   WalletEntity toEntity() => WalletEntity(
@@ -69,6 +79,8 @@ class WalletModel extends WalletEntity {
     openingBalance: openingBalance,
     currency: currency,
     updatedAt: updatedAt,
+    isSynced: isSynced,
+    deletedAt: deletedAt,
   );
 }
 
@@ -81,6 +93,9 @@ class WalletTransferModel extends WalletTransferEntity {
     required super.date,
     super.note,
     super.createdAt,
+    super.updatedAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory WalletTransferModel.fromEntity(WalletTransferEntity transfer) {
@@ -92,6 +107,9 @@ class WalletTransferModel extends WalletTransferEntity {
       date: transfer.date,
       note: transfer.note,
       createdAt: transfer.createdAt,
+      updatedAt: transfer.updatedAt,
+      isSynced: transfer.isSynced,
+      deletedAt: transfer.deletedAt,
     );
   }
 
@@ -103,6 +121,9 @@ class WalletTransferModel extends WalletTransferEntity {
     final date = json['date'];
     final note = json['note'];
     final createdAt = json['createdAt'];
+    final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Transfer id is missing.');
@@ -125,6 +146,9 @@ class WalletTransferModel extends WalletTransferEntity {
       date: DateTime.parse(date),
       note: note is String ? note : '',
       createdAt: createdAt is String ? DateTime.tryParse(createdAt) : null,
+      updatedAt: updatedAt is String ? DateTime.tryParse(updatedAt) : null,
+      isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: deletedAt is String ? DateTime.tryParse(deletedAt) : null,
     );
   }
 
@@ -136,6 +160,9 @@ class WalletTransferModel extends WalletTransferEntity {
     'date': date.toUtc().toIso8601String(),
     'note': note,
     'createdAt': createdAt?.toUtc().toIso8601String(),
+    'updatedAt': updatedAt?.toUtc().toIso8601String(),
+    'isSynced': isSynced,
+    'deletedAt': deletedAt?.toUtc().toIso8601String(),
   };
 
   WalletTransferEntity toEntity() => WalletTransferEntity(
@@ -146,5 +173,8 @@ class WalletTransferModel extends WalletTransferEntity {
     date: date,
     note: note,
     createdAt: createdAt,
+    updatedAt: updatedAt,
+    isSynced: isSynced,
+    deletedAt: deletedAt,
   );
 }

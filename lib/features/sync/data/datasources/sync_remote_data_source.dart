@@ -3,6 +3,46 @@
 /// Maps use the same camelCase shape as `TransactionModel` / `DebtModel` so the
 /// sync repository can reuse the existing JSON mappers.
 abstract interface class SyncRemoteDataSource {
+  Future<Map<String, dynamic>?> fetchCategory(String id);
+
+  Future<List<Map<String, dynamic>>> fetchCategories({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertCategory(Map<String, dynamic> json);
+
+  Future<Map<String, dynamic>?> fetchScheduledPayment(String id);
+
+  Future<List<Map<String, dynamic>>> fetchScheduledPayments({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertScheduledPayment(Map<String, dynamic> json);
+
+  Future<Map<String, dynamic>?> fetchWallet(String id);
+
+  Future<List<Map<String, dynamic>>> fetchWallets({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertWallet(Map<String, dynamic> json);
+
+  Future<Map<String, dynamic>?> fetchWalletTransfer(String id);
+
+  Future<List<Map<String, dynamic>>> fetchWalletTransfers({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertWalletTransfer(Map<String, dynamic> json);
+
   Future<Map<String, dynamic>?> fetchTransaction(String id);
 
   Future<List<Map<String, dynamic>>> fetchTransactions({

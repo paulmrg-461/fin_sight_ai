@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/features/categories/data/datasources/category_local_data_source.dart';
 import 'package:fin_sight_ai/features/categories/data/datasources/hive_category_local_data_source.dart';
 import 'package:fin_sight_ai/features/categories/data/models/category_model.dart';
@@ -13,6 +14,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockCategoryLocalDataSource extends Mock
     implements CategoryLocalDataSource {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
 
 void main() {
   late Directory directory;
@@ -28,6 +31,14 @@ void main() {
         id: 'fallback',
         name: 'Fallback',
         createdAt: DateTime.utc(2026),
+      ),
+    );
+    registerFallbackValue(
+      SyncOperation.upsert(
+        entityType: SyncEntityType.category,
+        entityId: 'fallback',
+        payload: const {},
+        queuedAt: DateTime.utc(2026),
       ),
     );
   });
@@ -49,8 +60,50 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  CategoryRepositoryImpl repository({String languageCode = 'en'}) =>
-      CategoryRepositoryImpl(dataSource, languageCode: languageCode);
+  CategoryRepositoryImpl repository({
+    String languageCode = 'en',
+    SyncQueue? syncQueue,
+  }) => CategoryRepositoryImpl(
+    dataSource,
+    languageCode: languageCode,
+    syncQueue: syncQueue,
+  );
+
+  test('enqueues an upsert for every catalog mutation', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    final repo = repository(syncQueue: queue);
+
+    final added = await repo.addCategory('Coffee');
+    final id = added.fold((_) => '', (value) => value.id);
+    await repo.renameCategory(id, 'Coffee beans');
+    await repo.setArchived(id, true);
+
+    final operations = verify(() => queue.enqueue(captureAny())).captured
+        .cast<SyncOperation>();
+    expect(operations, hasLength(3));
+    expect(
+      operations.map((operation) => operation.entityType),
+      everyElement(SyncEntityType.category),
+    );
+    expect(operations.map((operation) => operation.payload['name']), [
+      'Coffee',
+      'Coffee beans',
+      'Coffee beans',
+    ]);
+    expect(operations.last.payload['isArchived'], isTrue);
+  });
+
+  test('keeps the local write when the sync queue fails', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenThrow(Exception('queue down'));
+
+    final result = await repository(syncQueue: queue).addCategory('Coffee');
+
+    expect(result.isRight(), isTrue);
+    final stored = await dataSource.getCategories();
+    expect(stored.map((category) => category.name), contains('Coffee'));
+  });
 
   test('seeds English defaults once', () async {
     final result = await repository().getCategories();

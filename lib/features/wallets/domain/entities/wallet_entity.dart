@@ -12,6 +12,8 @@ class WalletEntity extends Entity {
     required this.openingBalance,
     this.currency = 'USD',
     this.updatedAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -25,6 +27,21 @@ class WalletEntity extends Entity {
   final String currency;
   final DateTime? updatedAt;
 
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? _epoch;
+
+  static final DateTime _epoch = DateTime.fromMillisecondsSinceEpoch(
+    0,
+    isUtc: true,
+  );
+
   WalletEntity copyWith({
     String? id,
     String? name,
@@ -32,6 +49,8 @@ class WalletEntity extends Entity {
     double? openingBalance,
     String? currency,
     DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return WalletEntity(
       id: id ?? this.id,
@@ -40,6 +59,8 @@ class WalletEntity extends Entity {
       openingBalance: openingBalance ?? this.openingBalance,
       currency: currency ?? this.currency,
       updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -52,11 +73,21 @@ class WalletEntity extends Entity {
           other.type == type &&
           other.openingBalance == openingBalance &&
           other.currency == currency &&
-          other.updatedAt == updatedAt;
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, type, openingBalance, currency, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    type,
+    openingBalance,
+    currency,
+    updatedAt,
+    isSynced,
+    deletedAt,
+  );
 
   @override
   String toString() => 'WalletEntity($name, $type, opening: $openingBalance)';
@@ -72,6 +103,9 @@ class WalletTransferEntity extends Entity {
     required this.date,
     this.note = '',
     this.createdAt,
+    this.updatedAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -83,6 +117,43 @@ class WalletTransferEntity extends Entity {
   final DateTime date;
   final String note;
   final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? createdAt ?? date;
+
+  WalletTransferEntity copyWith({
+    String? id,
+    String? fromWalletId,
+    String? toWalletId,
+    double? amount,
+    DateTime? date,
+    String? note,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
+  }) {
+    return WalletTransferEntity(
+      id: id ?? this.id,
+      fromWalletId: fromWalletId ?? this.fromWalletId,
+      toWalletId: toWalletId ?? this.toWalletId,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      note: note ?? this.note,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
 
   @override
   bool operator ==(Object other) =>
@@ -94,11 +165,24 @@ class WalletTransferEntity extends Entity {
           other.amount == amount &&
           other.date == date &&
           other.note == note &&
-          other.createdAt == createdAt;
+          other.createdAt == createdAt &&
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
-  int get hashCode =>
-      Object.hash(id, fromWalletId, toWalletId, amount, date, note, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    fromWalletId,
+    toWalletId,
+    amount,
+    date,
+    note,
+    createdAt,
+    updatedAt,
+    isSynced,
+    deletedAt,
+  );
 
   @override
   String toString() =>

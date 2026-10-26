@@ -6,17 +6,25 @@ import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
 import 'package:fin_sight_ai/features/budgets/data/datasources/budget_local_data_source.dart';
+import 'package:fin_sight_ai/features/categories/data/datasources/category_local_data_source.dart';
+import 'package:fin_sight_ai/features/categories/data/models/category_model.dart';
 import 'package:fin_sight_ai/features/budgets/data/models/budget_model.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
 import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
 import 'package:fin_sight_ai/features/receivables/data/models/receivable_model.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/data/models/scheduled_payment_model.dart';
+import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_remote_data_source.dart';
 import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
 import 'package:fin_sight_ai/features/transactions/data/datasources/transaction_local_data_source.dart';
 import 'package:fin_sight_ai/features/transactions/data/models/transaction_model.dart';
+import 'package:fin_sight_ai/features/wallets/data/datasources/wallet_local_data_source.dart';
+import 'package:fin_sight_ai/features/wallets/data/models/wallet_model.dart';
+import 'package:fin_sight_ai/features/wallets/domain/entities/wallet_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -34,6 +42,14 @@ class MockBudgetLocalDataSource extends Mock implements BudgetLocalDataSource {}
 
 class MockReceivableLocalDataSource extends Mock
     implements ReceivableLocalDataSource {}
+
+class MockCategoryLocalDataSource extends Mock
+    implements CategoryLocalDataSource {}
+
+class MockScheduledPaymentLocalDataSource extends Mock
+    implements ScheduledPaymentLocalDataSource {}
+
+class MockWalletLocalDataSource extends Mock implements WalletLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -110,6 +126,39 @@ ReceivableModel buildReceivable({
   );
 }
 
+CategoryModel buildCategory({
+  DateTime? updatedAt,
+  DateTime? deletedAt,
+  bool isSynced = false,
+}) {
+  return CategoryModel(
+    id: 'cat-1',
+    name: 'Coffee',
+    createdAt: DateTime.utc(2026, 10, 1),
+    updatedAt: updatedAt ?? DateTime.utc(2026, 10, 20),
+    deletedAt: deletedAt,
+    isSynced: isSynced,
+  );
+}
+
+ScheduledPaymentModel buildSchedule({
+  DateTime? deletedAt,
+  DateTime? updatedAt,
+}) {
+  return ScheduledPaymentModel(
+    id: 'pay-1',
+    name: 'Rent',
+    amount: 800,
+    category: 'Rent',
+    frequency: PaymentFrequency.monthly,
+    nextDueDate: DateTime.utc(2026, 11, 1),
+    dayOfMonth: 1,
+    createdAt: DateTime.utc(2026, 10, 1),
+    updatedAt: updatedAt ?? DateTime.utc(2026, 10, 20),
+    deletedAt: deletedAt,
+  );
+}
+
 void main() {
   final now = DateTime.utc(2026, 10, 22, 15);
 
@@ -119,6 +168,9 @@ void main() {
   late MockDebtLocalDataSource debtLocal;
   late MockBudgetLocalDataSource budgetLocal;
   late MockReceivableLocalDataSource receivableLocal;
+  late MockCategoryLocalDataSource categoryLocal;
+  late MockScheduledPaymentLocalDataSource scheduledPaymentLocal;
+  late MockWalletLocalDataSource walletLocal;
   late MockAuthRepository auth;
 
   SyncRepositoryImpl buildRepository({
@@ -136,6 +188,9 @@ void main() {
       debtLocal,
       budgetLocal,
       receivableLocal,
+      categoryLocal,
+      scheduledPaymentLocal,
+      walletLocal,
       env,
       auth,
       clock: FixedClock(now),
@@ -162,6 +217,25 @@ void main() {
       ),
     );
     registerFallbackValue(DateTime.utc(2026));
+    registerFallbackValue(buildCategory());
+    registerFallbackValue(buildSchedule());
+    registerFallbackValue(
+      WalletModel(
+        id: 'wallet-bank',
+        name: 'Bank',
+        type: WalletType.bank,
+        openingBalance: 0,
+      ),
+    );
+    registerFallbackValue(
+      WalletTransferModel(
+        id: 't-1',
+        fromWalletId: 'wallet-bank',
+        toWalletId: 'wallet-cash',
+        amount: 1,
+        date: DateTime.utc(2026),
+      ),
+    );
   });
 
   setUp(() {
@@ -171,6 +245,61 @@ void main() {
     debtLocal = MockDebtLocalDataSource();
     budgetLocal = MockBudgetLocalDataSource();
     receivableLocal = MockReceivableLocalDataSource();
+    categoryLocal = MockCategoryLocalDataSource();
+    scheduledPaymentLocal = MockScheduledPaymentLocalDataSource();
+    walletLocal = MockWalletLocalDataSource();
+
+    when(() => categoryLocal.getAllCategories()).thenAnswer((_) async => []);
+    when(() => scheduledPaymentLocal.getAllPayments())
+        .thenAnswer((_) async => []);
+    when(() => walletLocal.getAllWallets()).thenAnswer((_) async => []);
+    when(() => walletLocal.getAllTransfers()).thenAnswer((_) async => []);
+    when(() => categoryLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
+    when(() => scheduledPaymentLocal.purgeTombstones(any()))
+        .thenAnswer((_) async => 0);
+    when(() => walletLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
+    when(() => categoryLocal.saveCategory(any())).thenAnswer((_) async {});
+    when(() => remote.upsertCategory(any())).thenAnswer((_) async {});
+    when(() => remote.upsertScheduledPayment(any())).thenAnswer((_) async {});
+    when(() => remote.upsertWallet(any())).thenAnswer((_) async {});
+    when(() => remote.upsertWalletTransfer(any())).thenAnswer((_) async {});
+    when(() => remote.fetchCategory(any())).thenAnswer((_) async => null);
+    when(() => remote.fetchScheduledPayment(any()))
+        .thenAnswer((_) async => null);
+    when(() => remote.fetchWallet(any())).thenAnswer((_) async => null);
+    when(() => remote.fetchWalletTransfer(any())).thenAnswer((_) async => null);
+    when(() => scheduledPaymentLocal.savePayment(any()))
+        .thenAnswer((_) async {});
+    when(() => walletLocal.saveWallet(any())).thenAnswer((_) async {});
+    when(() => walletLocal.saveTransfer(any())).thenAnswer((_) async {});
+    when(
+      () => remote.fetchCategories(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => remote.fetchScheduledPayments(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => remote.fetchWallets(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
+    when(
+      () => remote.fetchWalletTransfers(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
     auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
@@ -732,6 +861,300 @@ void main() {
           offset: 500,
         ),
       ).called(1);
+    });
+  });
+
+  group('definition sync', () {
+    test('pushes a category upsert and marks it synced', () async {
+      final model = buildCategory();
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.category,
+        entityId: model.id,
+        payload: model.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => remote.fetchCategory(model.id)).thenAnswer((_) async => null);
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pushed, 1);
+      verify(() => remote.upsertCategory(any())).called(1);
+      final saved =
+          verify(() => categoryLocal.saveCategory(captureAny())).captured.single
+              as CategoryModel;
+      expect(saved.isSynced, isTrue);
+      expect(saved.name, 'Coffee');
+    });
+
+    test('resolves a category conflict when the remote row is newer', () async {
+      final model = buildCategory(updatedAt: DateTime.utc(2026, 10, 20));
+      final operation = SyncOperation.upsert(
+        entityType: SyncEntityType.category,
+        entityId: model.id,
+        payload: model.toJson(),
+        queuedAt: now,
+      );
+      when(() => local.pending()).thenAnswer((_) async => [operation]);
+      when(() => remote.fetchCategory(model.id)).thenAnswer(
+        (_) async =>
+            buildCategory(updatedAt: DateTime.utc(2026, 10, 21)).toJson(),
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.conflictsResolved, 1);
+      verifyNever(() => remote.upsertCategory(any()));
+      verify(() => categoryLocal.saveCategory(any())).called(1);
+    });
+
+    test('pulls category and schedule tombstones before the ledger', () async {
+      final deletedAt = DateTime.utc(2026, 10, 19);
+      when(
+        () => remote.fetchCategories(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [buildCategory(deletedAt: deletedAt).toJson()]);
+      when(
+        () => remote.fetchScheduledPayments(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [buildSchedule(deletedAt: deletedAt).toJson()]);
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pulled, 2);
+      final category =
+          verify(() => categoryLocal.saveCategory(captureAny())).captured.single
+              as CategoryModel;
+      expect(category.isDeleted, isTrue);
+      final schedule =
+          verify(() => scheduledPaymentLocal.savePayment(captureAny()))
+                  .captured
+                  .single
+              as ScheduledPaymentModel;
+      expect(schedule.isDeleted, isTrue);
+
+      verifyInOrder([
+        () => remote.fetchCategories(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+        () => remote.fetchScheduledPayments(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+        () => remote.fetchWallets(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+        () => remote.fetchWalletTransfers(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+        () => remote.fetchTransactions(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ]);
+    });
+
+    test(
+      'pushes schedules, wallets, and transfers with conflict resolution',
+      () async {
+        final schedule = buildSchedule();
+        final wallet = WalletModel(
+          id: 'wallet-bank',
+          name: 'Bank',
+          type: WalletType.bank,
+          openingBalance: 100,
+          updatedAt: DateTime.utc(2026, 10, 20),
+        );
+        final transfer = WalletTransferModel(
+          id: 't-1',
+          fromWalletId: 'wallet-bank',
+          toWalletId: 'wallet-cash',
+          amount: 25,
+          date: DateTime.utc(2026, 10, 2),
+          createdAt: DateTime.utc(2026, 10, 2),
+          updatedAt: DateTime.utc(2026, 10, 20),
+        );
+        when(() => local.pending()).thenAnswer(
+          (_) async => [
+            SyncOperation.upsert(
+              entityType: SyncEntityType.scheduledPayment,
+              entityId: schedule.id,
+              payload: schedule.toJson(),
+              queuedAt: now,
+            ),
+            SyncOperation.upsert(
+              entityType: SyncEntityType.wallet,
+              entityId: wallet.id,
+              payload: wallet.toJson(),
+              queuedAt: now,
+            ),
+            SyncOperation.upsert(
+              entityType: SyncEntityType.walletTransfer,
+              entityId: transfer.id,
+              payload: transfer.toJson(),
+              queuedAt: now,
+            ),
+          ],
+        );
+        when(() => remote.fetchScheduledPayment(schedule.id)).thenAnswer(
+          (_) async =>
+              buildSchedule(updatedAt: DateTime.utc(2026, 10, 21)).toJson(),
+        );
+        when(() => remote.fetchWallet(wallet.id)).thenAnswer(
+          (_) async => WalletModel(
+            id: wallet.id,
+            name: 'Bank',
+            type: WalletType.bank,
+            openingBalance: 120,
+            updatedAt: DateTime.utc(2026, 10, 21),
+          ).toJson(),
+        );
+        when(() => remote.fetchWalletTransfer(transfer.id)).thenAnswer(
+          (_) async => WalletTransferModel(
+            id: transfer.id,
+            fromWalletId: 'wallet-bank',
+            toWalletId: 'wallet-cash',
+            amount: 30,
+            date: DateTime.utc(2026, 10, 2),
+            createdAt: DateTime.utc(2026, 10, 2),
+            updatedAt: DateTime.utc(2026, 10, 21),
+          ).toJson(),
+        );
+
+        final report = (await buildRepository(
+          env: configuredEnv(),
+        ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+        expect(report.conflictsResolved, 3);
+        verifyNever(() => remote.upsertScheduledPayment(any()));
+        verifyNever(() => remote.upsertWallet(any()));
+        verifyNever(() => remote.upsertWalletTransfer(any()));
+        verify(() => scheduledPaymentLocal.savePayment(any())).called(1);
+        verify(() => walletLocal.saveWallet(any())).called(1);
+        verify(() => walletLocal.saveTransfer(any())).called(1);
+      },
+    );
+
+    test('pulls wallet and transfer rows', () async {
+      when(
+        () => remote.fetchWallets(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          {
+            'id': 'wallet-bank',
+            'name': 'Bank',
+            'type': 'bank',
+            'openingBalance': 100,
+            'currency': 'COP',
+            'updatedAt': '2026-10-20T00:00:00.000Z',
+          },
+        ],
+      );
+      when(
+        () => remote.fetchWalletTransfers(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          {
+            'id': 't-1',
+            'fromWalletId': 'wallet-bank',
+            'toWalletId': 'wallet-cash',
+            'amount': 25,
+            'date': '2026-10-02T00:00:00.000Z',
+            'createdAt': '2026-10-02T00:00:00.000Z',
+            'updatedAt': '2026-10-20T00:00:00.000Z',
+          },
+        ],
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pulled, 2);
+      final savedWallet =
+          verify(() => walletLocal.saveWallet(captureAny())).captured.single
+              as WalletModel;
+      expect(savedWallet.openingBalance, 100);
+      final savedTransfer =
+          verify(() => walletLocal.saveTransfer(captureAny())).captured.single
+              as WalletTransferModel;
+      expect(savedTransfer.amount, 25);
+    });
+
+    test('pushes wallet and transfer upserts', () async {
+      final wallet = WalletModel(
+        id: 'wallet-bank',
+        name: 'Bank',
+        type: WalletType.bank,
+        openingBalance: 100,
+        updatedAt: DateTime.utc(2026, 10, 20),
+      );
+      final transfer = WalletTransferModel(
+        id: 't-1',
+        fromWalletId: 'wallet-bank',
+        toWalletId: 'wallet-cash',
+        amount: 25,
+        date: DateTime.utc(2026, 10, 2),
+        createdAt: DateTime.utc(2026, 10, 2),
+        updatedAt: DateTime.utc(2026, 10, 2),
+      );
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.wallet,
+            entityId: wallet.id,
+            payload: wallet.toJson(),
+            queuedAt: now,
+          ),
+          SyncOperation.upsert(
+            entityType: SyncEntityType.walletTransfer,
+            entityId: transfer.id,
+            payload: transfer.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+      when(() => remote.fetchWallet(wallet.id)).thenAnswer((_) async => null);
+      when(() => remote.fetchWalletTransfer(transfer.id))
+          .thenAnswer((_) async => null);
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pushed, 2);
+      verify(() => remote.upsertWallet(any())).called(1);
+      verify(() => remote.upsertWalletTransfer(any())).called(1);
+      verify(() => walletLocal.saveWallet(any())).called(1);
+      verify(() => walletLocal.saveTransfer(any())).called(1);
     });
   });
 }

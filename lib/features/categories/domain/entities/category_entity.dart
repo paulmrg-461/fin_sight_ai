@@ -11,6 +11,8 @@ class CategoryEntity extends Entity {
     required this.createdAt,
     this.isArchived = false,
     this.updatedAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -24,12 +26,24 @@ class CategoryEntity extends Entity {
   final DateTime createdAt;
   final DateTime? updatedAt;
 
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? createdAt;
+
   CategoryEntity copyWith({
     String? id,
     String? name,
     bool? isArchived,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return CategoryEntity(
       id: id ?? this.id,
@@ -37,6 +51,8 @@ class CategoryEntity extends Entity {
       isArchived: isArchived ?? this.isArchived,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -48,10 +64,20 @@ class CategoryEntity extends Entity {
           other.name == name &&
           other.isArchived == isArchived &&
           other.createdAt == createdAt &&
-          other.updatedAt == updatedAt;
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
-  int get hashCode => Object.hash(id, name, isArchived, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    isArchived,
+    createdAt,
+    updatedAt,
+    isSynced,
+    deletedAt,
+  );
 
   @override
   String toString() =>

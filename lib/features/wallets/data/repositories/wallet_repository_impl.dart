@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -21,6 +22,7 @@ class WalletRepositoryImpl implements WalletRepository {
     this._transactionRepository, {
     this.uuid = const Uuid(),
     this.clock = const Clock(),
+    this.syncQueue,
   });
 
   static const String bankWalletId = 'wallet-bank';
@@ -30,6 +32,7 @@ class WalletRepositoryImpl implements WalletRepository {
   final TransactionRepository _transactionRepository;
   final Uuid uuid;
   final Clock clock;
+  final SyncQueue? syncQueue;
 
   @override
   ResultFuture<List<WalletBalance>> getWalletBalances() async {
@@ -94,8 +97,11 @@ class WalletRepositoryImpl implements WalletRepository {
       final updated = wallet.copyWith(
         openingBalance: _round(wallet.openingBalance + delta),
         updatedAt: clock.now(),
+        isSynced: false,
       );
-      await _localDataSource.saveWallet(WalletModel.fromEntity(updated));
+      final model = WalletModel.fromEntity(updated);
+      await _localDataSource.saveWallet(model);
+      await _enqueueWallet(model);
 
       return Right(WalletBalance(wallet: updated, balance: target));
     } on CacheException catch (exception) {
@@ -157,6 +163,7 @@ class WalletRepositoryImpl implements WalletRepository {
         );
       }
 
+      final now = clock.now();
       final transfer = WalletTransferEntity(
         id: uuid.v4(),
         fromWalletId: fromWalletId,
@@ -164,11 +171,12 @@ class WalletRepositoryImpl implements WalletRepository {
         amount: _round(amount),
         date: date,
         note: note,
-        createdAt: clock.now(),
+        createdAt: now,
+        updatedAt: now,
       );
-      await _localDataSource.saveTransfer(
-        WalletTransferModel.fromEntity(transfer),
-      );
+      final model = WalletTransferModel.fromEntity(transfer);
+      await _localDataSource.saveTransfer(model);
+      await _enqueueTransfer(model);
       return Right(transfer);
     } on CacheException catch (exception) {
       return Left(_cacheFailure(exception));
@@ -192,6 +200,7 @@ class WalletRepositoryImpl implements WalletRepository {
         updatedAt: clock.now(),
       );
       await _localDataSource.saveWallet(bank);
+      await _enqueueWallet(bank);
       wallets.add(bank.toEntity());
     }
     if (!wallets.any((wallet) => wallet.type == WalletType.cash)) {
@@ -203,6 +212,7 @@ class WalletRepositoryImpl implements WalletRepository {
         updatedAt: clock.now(),
       );
       await _localDataSource.saveWallet(cash);
+      await _enqueueWallet(cash);
       wallets.add(cash.toEntity());
     }
 
@@ -217,6 +227,44 @@ class WalletRepositoryImpl implements WalletRepository {
       }
     }
     return null;
+  }
+
+  Future<void> _enqueueWallet(WalletModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.wallet,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
+    }
+  }
+
+  Future<void> _enqueueTransfer(WalletTransferModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.walletTransfer,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
+    }
   }
 
   double _round(double value) => double.parse(value.toStringAsFixed(2));

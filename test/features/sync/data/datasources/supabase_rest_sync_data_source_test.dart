@@ -73,6 +73,55 @@ Map<String, dynamic> receivableRow({String id = 'receivable-1'}) => {
   'deleted_at': null,
 };
 
+Map<String, dynamic> categoryRow() => {
+  'id': 'cat-1',
+  'name': 'Coffee',
+  'is_archived': true,
+  'created_at': '2026-10-01T00:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
+Map<String, dynamic> scheduleRow() => {
+  'id': 'pay-1',
+  'name': 'Rent',
+  'amount': 800,
+  'type': 'expense',
+  'category': 'Rent',
+  'frequency': 'monthly',
+  'next_due_date': '2026-11-01T00:00:00.000Z',
+  'day_of_month': 1,
+  'wallet_id': 'wallet-bank',
+  'notes': 'Monthly',
+  'is_active': true,
+  'created_at': '2026-10-01T00:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'last_paid_at': null,
+  'deleted_at': null,
+};
+
+Map<String, dynamic> walletRow() => {
+  'id': 'wallet-bank',
+  'name': 'Bank',
+  'type': 'bank',
+  'opening_balance': 100,
+  'currency': 'COP',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
+Map<String, dynamic> transferRow() => {
+  'id': 't-1',
+  'from_wallet_id': 'wallet-bank',
+  'to_wallet_id': 'wallet-cash',
+  'amount': 25,
+  'date': '2026-10-22T00:00:00.000Z',
+  'note': 'ATM',
+  'created_at': '2026-10-22T00:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -494,6 +543,151 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('maps category rows in both directions', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode([categoryRow()]), 200);
+        }
+        return http.Response('', 204);
+      });
+      final dataSource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final rows = await dataSource.fetchCategories();
+      expect(rows.single['isArchived'], isTrue);
+      expect(rows.single['isSynced'], isTrue);
+
+      await dataSource.upsertCategory({
+        'id': 'cat-1',
+        'name': 'Coffee',
+        'isArchived': false,
+        'createdAt': '2026-10-01T00:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+      });
+
+      expect(requests.first.url.path, '/rest/v1/categories');
+      final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
+      expect(body['is_archived'], isFalse);
+      expect(body['deleted_at'], isNull);
+    });
+
+    test('maps scheduled payment rows in both directions', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode([scheduleRow()]), 200);
+        }
+        return http.Response('', 201);
+      });
+      final dataSource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final rows = await dataSource.fetchScheduledPayments();
+      expect(rows.single['nextDueDate'], '2026-11-01T00:00:00.000Z');
+      expect(rows.single['dayOfMonth'], 1);
+      expect(rows.single['isActive'], isTrue);
+
+      await dataSource.upsertScheduledPayment({
+        'id': 'pay-1',
+        'name': 'Rent',
+        'amount': 800,
+        'type': 'expense',
+        'category': 'Rent',
+        'frequency': 'monthly',
+        'nextDueDate': '2026-11-01T00:00:00.000Z',
+        'dayOfMonth': 1,
+        'walletId': 'wallet-bank',
+        'notes': 'Monthly',
+        'isActive': true,
+        'createdAt': '2026-10-01T00:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+      });
+
+      expect(requests.last.url.path, '/rest/v1/scheduled_payments');
+      final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
+      expect(body['next_due_date'], '2026-11-01T00:00:00.000Z');
+      expect(body['is_active'], isTrue);
+      expect(body['wallet_id'], 'wallet-bank');
+    });
+
+    test('maps wallet rows in both directions', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode([walletRow()]), 200);
+        }
+        return http.Response('', 204);
+      });
+      final dataSource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final rows = await dataSource.fetchWallets();
+      expect(rows.single['openingBalance'], 100);
+      expect(rows.single['currency'], 'COP');
+
+      await dataSource.upsertWallet({
+        'id': 'wallet-bank',
+        'name': 'Bank',
+        'type': 'bank',
+        'openingBalance': 100,
+        'currency': 'COP',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+      });
+
+      final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
+      expect(body['opening_balance'], 100);
+      expect(body['deleted_at'], isNull);
+    });
+
+    test('maps wallet transfer rows in both directions', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode([transferRow()]), 200);
+        }
+        return http.Response('', 204);
+      });
+      final dataSource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final rows = await dataSource.fetchWalletTransfers();
+      expect(rows.single['fromWalletId'], 'wallet-bank');
+      expect(rows.single['toWalletId'], 'wallet-cash');
+
+      await dataSource.upsertWalletTransfer({
+        'id': 't-1',
+        'fromWalletId': 'wallet-bank',
+        'toWalletId': 'wallet-cash',
+        'amount': 25,
+        'date': '2026-10-22T00:00:00.000Z',
+        'note': 'ATM',
+        'createdAt': '2026-10-22T00:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+      });
+
+      expect(requests.last.url.path, '/rest/v1/wallet_transfers');
+      final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
+      expect(body['from_wallet_id'], 'wallet-bank');
+      expect(body['to_wallet_id'], 'wallet-cash');
     });
   });
 }

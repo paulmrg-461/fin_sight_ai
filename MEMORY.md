@@ -1,6 +1,6 @@
 # Project Memory — FinSight AI
 
-_Last updated: 2026-10-24. Read this before starting a new session._
+_Last updated: 2026-10-26. Read this before starting a new session._
 
 ## Delivered and pushed
 
@@ -23,8 +23,19 @@ _Last updated: 2026-10-24. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 885 unit/widget tests, coverage gate green, 23 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 909 unit/widget tests, coverage gate green, 23 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Definitions sync (plan 007)
+
+- Synced entities now include `category`, `scheduledPayment`, `wallet`, and `walletTransfer`; `SyncEntityType` lists definitions before ledger entities and the pull order is categories → schedules → wallets → transfers → transactions → debts → budgets → receivables.
+- `CategoryEntity`, `ScheduledPaymentEntity`, `WalletEntity`, and `WalletTransferEntity` carry `isSynced`, `deletedAt`, and `lastModified`; models round-trip the new fields and default legacy rows to visible/unsynced.
+- Repositories enqueue upserts on every write: category add/rename/archive, schedule add/pause/resume/pay/rename plus tombstones on delete, wallet reconciliation/default creation, and transfer creation. Queue failures never fail the local write.
+- Hive data sources split visible reads from `getAll*` (including tombstones) and purge tombstones older than 30 days.
+- Remote mapping uses `categories`, `scheduled_payments` (incl. `type`, `next_due_date`, `is_active`, `last_paid_at`), `wallets`, and `wallet_transfers`; LWW and tombstones match the existing pipeline.
+- Migration: `supabase/migrations/0006_definitions_sync.sql` (0005 was already receivables), added to `apply_all.sh`/`.sql`, with RLS coverage for the four tables. Not yet applied to the live Supabase project.
+- `category_id` is reserved on `transactions`/`budgets` but remains unpopulated; category names stay canonical. Category defaults are device-local until first edit, so a second device may keep its own default names until a category is mutated or pulled.
+- Tests: model/data-source/repository enqueue tests, PostgREST mapping for all four entities, sync push/pull/LWW/tombstone/order tests.
 
 ## Dashboard performance (plan 010)
 
@@ -185,10 +196,9 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Known gaps / next
 
 1. Localize domain `Failure` messages and AI-generated insight content.
-2. Sync categories and scheduled payments (SQL migration + queue/pull).
-3. Cascade category renames to transactions, budgets, and schedules.
-4. Sync wallets and transfers.
-5. Sync receipt metadata; streaming AI responses.
+2. Apply `0006_definitions_sync.sql` to the live project and run the RLS script.
+3. Populate canonical `category_id` on transactions and budgets.
+4. Sync receipt metadata; streaming AI responses.
 6. Money as integer minor units instead of `double`.
 7. Golden/screenshot tests in CI.
 8. Rotate the Groq key and Supabase DB password shared during setup.

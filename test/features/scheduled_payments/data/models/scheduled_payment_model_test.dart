@@ -34,6 +34,22 @@ void main() {
     createdAt: DateTime.utc(2026, 10, 1),
   );
 
+  test('round-trips sync metadata and tombstones', () {
+    final deletedAt = DateTime.utc(2026, 10, 20);
+    final source = model().copyWith(
+      updatedAt: DateTime.utc(2026, 10, 19),
+      isSynced: true,
+      deletedAt: deletedAt,
+    );
+
+    final parsed = ScheduledPaymentModel.fromJson(source.toJson());
+
+    expect(parsed.isSynced, isTrue);
+    expect(parsed.deletedAt, deletedAt);
+    expect(parsed.isDeleted, isTrue);
+    expect(parsed.lastModified, DateTime.utc(2026, 10, 19));
+  });
+
   test('reads legacy JSON without a type as expense', () {
     final parsed = ScheduledPaymentModel.fromJson(legacyJson());
 

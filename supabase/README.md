@@ -17,6 +17,7 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0002_tombstone
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0003_budgets.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0004_wallet_ids.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0005_receivables.sql
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0006_definitions_sync.sql
 ```
 
 For local development, disable **Confirm email** in
@@ -26,7 +27,11 @@ project.
 
 `0001_init.sql` creates `transactions` and `debts` with owner-only RLS.
 `0002_tombstones.sql` adds `deleted_at` so deletions can propagate between
-devices.
+devices. `0003_budgets.sql` adds budgets, `0004_wallet_ids.sql` adds wallet
+references, `0005_receivables.sql` adds money lent, and
+`0006_definitions_sync.sql` adds synced categories, scheduled payments,
+wallets, and transfers (plus a reserved `category_id` column on transactions
+and budgets).
 
 ## Authentication
 

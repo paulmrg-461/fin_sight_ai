@@ -84,6 +84,21 @@ void main() {
     expect(categories.single.name, 'Rent');
   });
 
+  test('hides tombstones from reads and purges them on demand', () async {
+    await dataSource.saveCategory(
+      model().copyWith(
+        deletedAt: DateTime.utc(2026, 10, 1),
+        updatedAt: DateTime.utc(2026, 10, 1),
+      ),
+    );
+
+    expect(await dataSource.getCategories(), isEmpty);
+    expect(await dataSource.getAllCategories(), hasLength(1));
+
+    expect(await dataSource.purgeTombstones(DateTime.utc(2026, 10, 2)), 1);
+    expect(await dataSource.getAllCategories(), isEmpty);
+  });
+
   test('maps storage errors to CacheException', () async {
     await box.close();
 

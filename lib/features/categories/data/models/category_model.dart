@@ -8,6 +8,8 @@ class CategoryModel extends CategoryEntity {
     required super.createdAt,
     super.isArchived,
     super.updatedAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory CategoryModel.fromEntity(CategoryEntity category) {
@@ -17,6 +19,8 @@ class CategoryModel extends CategoryEntity {
       createdAt: category.createdAt,
       isArchived: category.isArchived,
       updatedAt: category.updatedAt,
+      isSynced: category.isSynced,
+      deletedAt: category.deletedAt,
     );
   }
 
@@ -27,6 +31,8 @@ class CategoryModel extends CategoryEntity {
     bool? isArchived,
     DateTime? createdAt,
     DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return CategoryModel(
       id: id ?? this.id,
@@ -34,6 +40,8 @@ class CategoryModel extends CategoryEntity {
       isArchived: isArchived ?? this.isArchived,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -43,6 +51,8 @@ class CategoryModel extends CategoryEntity {
     createdAt: createdAt,
     isArchived: isArchived,
     updatedAt: updatedAt,
+    isSynced: isSynced,
+    deletedAt: deletedAt,
   );
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
@@ -50,6 +60,8 @@ class CategoryModel extends CategoryEntity {
     final name = json['name'];
     final createdAt = json['createdAt'];
     final updatedAt = json['updatedAt'];
+    final isSynced = json['isSynced'];
+    final deletedAt = json['deletedAt'];
 
     if (id is! String || id.isEmpty) {
       throw const FormatException('Category id is missing or invalid.');
@@ -64,6 +76,8 @@ class CategoryModel extends CategoryEntity {
       createdAt: _parseDate(createdAt) ?? DateTime.now(),
       isArchived: json['isArchived'] == true,
       updatedAt: _parseDate(updatedAt),
+      isSynced: isSynced is bool ? isSynced : false,
+      deletedAt: _parseDate(deletedAt),
     );
   }
 
@@ -73,6 +87,8 @@ class CategoryModel extends CategoryEntity {
     'isArchived': isArchived,
     'createdAt': createdAt.toIso8601String(),
     if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
+    'isSynced': isSynced,
+    if (deletedAt != null) 'deletedAt': deletedAt!.toIso8601String(),
   };
 
   static DateTime? _parseDate(Object? value) =>

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
@@ -22,6 +23,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     this._transactionRepository, {
     this.uuid = const Uuid(),
     this.clock = const Clock(),
+    this.syncQueue,
   });
 
   static const int maxCatchUpPeriods = 60;
@@ -30,6 +32,7 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
   final TransactionRepository _transactionRepository;
   final Uuid uuid;
   final Clock clock;
+  final SyncQueue? syncQueue;
 
   @override
   ResultFuture<List<ScheduledPaymentEntity>> getPayments() async {
@@ -60,9 +63,10 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
     try {
       final now = clock.now();
       final model = ScheduledPaymentModel.fromEntity(
-        payment.copyWith(updatedAt: now),
+        payment.copyWith(updatedAt: now, isSynced: false),
       );
       await _localDataSource.savePayment(model);
+      await _enqueue(model);
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -94,8 +98,10 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       final updated = model.copyWith(
         isActive: isActive,
         updatedAt: clock.now(),
+        isSynced: false,
       );
       await _localDataSource.savePayment(updated);
+      await _enqueue(updated);
       return Right(updated.toEntity());
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -116,7 +122,12 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       if (model == null) {
         return const Right(null);
       }
-      await _localDataSource.deletePayment(id);
+      final now = clock.now();
+      final tombstone = ScheduledPaymentModel.fromEntity(
+        model.copyWith(updatedAt: now, isSynced: false, deletedAt: now),
+      );
+      await _localDataSource.savePayment(tombstone);
+      await _enqueue(tombstone);
       return const Right(null);
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -167,13 +178,16 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
         }
 
         final paidAt = clock.now();
-        await _localDataSource.savePayment(
+        final updated = ScheduledPaymentModel.fromEntity(
           model.copyWith(
             nextDueDate: due,
             lastPaidAt: paidAt,
             updatedAt: paidAt,
+            isSynced: false,
           ),
         );
+        await _localDataSource.savePayment(updated);
+        await _enqueue(updated);
       }
 
       return Right(
@@ -236,9 +250,16 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
       }
 
       final paidAt = clock.now();
-      await _localDataSource.savePayment(
-        model.copyWith(nextDueDate: due, lastPaidAt: paidAt, updatedAt: paidAt),
+      final updated = ScheduledPaymentModel.fromEntity(
+        model.copyWith(
+          nextDueDate: due,
+          lastPaidAt: paidAt,
+          updatedAt: paidAt,
+          isSynced: false,
+        ),
       );
+      await _localDataSource.savePayment(updated);
+      await _enqueue(updated);
 
       return Right(
         ScheduledPaymentRun(
@@ -276,9 +297,10 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           continue;
         }
         final next = ScheduledPaymentModel.fromEntity(
-          model.copyWith(category: to, updatedAt: clock.now()),
+          model.copyWith(category: to, updatedAt: clock.now(), isSynced: false),
         );
         await _localDataSource.savePayment(next);
+        await _enqueue(next);
         updated++;
       }
       return Right(updated);
@@ -291,6 +313,25 @@ class ScheduledPaymentRepositoryImpl implements ScheduledPaymentRepository {
           code: 'category_cascade_failed',
         ),
       );
+    }
+  }
+
+  Future<void> _enqueue(ScheduledPaymentModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.scheduledPayment,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
     }
   }
 

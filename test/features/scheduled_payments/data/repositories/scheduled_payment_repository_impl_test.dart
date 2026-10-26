@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
@@ -18,6 +19,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockScheduledPaymentLocalDataSource extends Mock
     implements ScheduledPaymentLocalDataSource {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
 
 class _FixedClock extends Clock {
   const _FixedClock(this.value);
@@ -94,6 +97,14 @@ void main() {
     directory = await Directory.systemTemp.createTemp('finsight_sched_repo_');
     Hive.init(directory.path);
     registerFallbackValue(
+      SyncOperation.upsert(
+        entityType: SyncEntityType.scheduledPayment,
+        entityId: 'fallback',
+        payload: const {},
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
+    registerFallbackValue(
       ScheduledPaymentModel(
         id: 'fallback',
         name: 'Fallback',
@@ -125,11 +136,12 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  ScheduledPaymentRepositoryImpl repository({Clock? clock}) =>
+  ScheduledPaymentRepositoryImpl repository({Clock? clock, SyncQueue? queue}) =>
       ScheduledPaymentRepositoryImpl(
         dataSource,
         transactions,
         clock: clock ?? const Clock(),
+        syncQueue: queue,
       );
 
   ScheduledPaymentEntity payment({
@@ -156,6 +168,28 @@ void main() {
       createdAt: DateTime.utc(2026, 1, 1),
     );
   }
+
+  test('enqueues upserts and a tombstone for schedule mutations', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    final repo = repository(queue: queue);
+    await repo.addPayment(payment());
+    await repo.setActive('pay-1', false);
+    await repo.deletePayment('pay-1');
+
+    final operations = verify(() => queue.enqueue(captureAny())).captured
+        .cast<SyncOperation>();
+    expect(operations, hasLength(3));
+    expect(
+      operations.map((operation) => operation.entityType),
+      everyElement(SyncEntityType.scheduledPayment),
+    );
+    expect(operations[1].payload['isActive'], isFalse);
+    expect(operations.last.payload['deletedAt'], isNotNull);
+
+    final all = await dataSource.getAllPayments();
+    expect(all.single.isDeleted, isTrue);
+  });
 
   test('stores and sorts payments by due date', () async {
     final repo = repository();

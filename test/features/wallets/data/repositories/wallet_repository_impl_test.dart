@@ -1,5 +1,6 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:fin_sight_ai/features/wallets/data/datasources/wallet_local_data_source.dart';
@@ -13,6 +14,8 @@ import 'package:mocktail/mocktail.dart';
 class MockWalletLocalDataSource extends Mock implements WalletLocalDataSource {}
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
+
+class MockSyncQueue extends Mock implements SyncQueue {}
 
 WalletModel bankModel({double opening = 0}) => WalletModel(
   id: 'wallet-bank',
@@ -50,6 +53,23 @@ void main() {
   setUpAll(() {
     registerFallbackValue(bankModel());
     registerFallbackValue(
+      SyncOperation.upsert(
+        entityType: SyncEntityType.wallet,
+        entityId: 'fallback',
+        payload: const {},
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
+    registerFallbackValue(
+      WalletTransferModel(
+        id: 'fallback-transfer',
+        fromWalletId: 'bank',
+        toWalletId: 'cash',
+        amount: 2,
+        date: DateTime.utc(2026),
+      ),
+    );
+    registerFallbackValue(
       WalletTransferModel(
         id: 'fallback',
         fromWalletId: 'bank',
@@ -69,6 +89,32 @@ void main() {
     when(() => local.getTransfers()).thenAnswer((_) async => []);
     when(() => transactions.getTransactions())
         .thenAnswer((_) async => const Right([]));
+  });
+
+  test('enqueues wallets and transfers with sync metadata', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    final synced = WalletRepositoryImpl(local, transactions, syncQueue: queue);
+    when(() => local.getWallets()).thenAnswer(
+      (_) async => [bankModel(opening: 100), cashModel(opening: 50)],
+    );
+
+    await synced.setWalletBalance(walletId: 'wallet-bank', target: 150);
+    await synced.transfer(
+      fromWalletId: 'wallet-bank',
+      toWalletId: 'wallet-cash',
+      amount: 25,
+      date: DateTime.utc(2026, 10, 2),
+    );
+
+    final operations = verify(() => queue.enqueue(captureAny())).captured
+        .cast<SyncOperation>();
+    expect(operations, hasLength(2));
+    expect(operations.first.entityType, SyncEntityType.wallet);
+    expect(operations.first.payload['openingBalance'], 150);
+    expect(operations.last.entityType, SyncEntityType.walletTransfer);
+    expect(operations.last.payload['amount'], 25);
+    expect(operations.last.payload['updatedAt'], isNotNull);
   });
 
   test('creates default bank and cash wallets when empty', () async {

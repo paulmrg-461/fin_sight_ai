@@ -14,6 +14,7 @@
 - **Depends on**: 001, 002, 005, 006
 - **Category**: direction / migration
 - **Planned at**: commit `4e42297`, 2026-10-23
+- **Status**: DONE. Migration shipped as `0006_definitions_sync.sql` (0005 already taken by receivables). `category_id` columns are reserved but not populated; names remain canonical.
 
 ## Why this matters
 
@@ -220,11 +221,11 @@ categories that arrive later.
 
 ## Done criteria
 
-- [ ] Migration 0005 applies cleanly to a scratch DB; RLS tests pass.
-- [ ] All four entities enqueue and round-trip through sync.
-- [ ] Pull order is categories → definitions → ledger.
-- [ ] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
-- [ ] Docs updated; `plans/README.md` updated.
+- [x] Migration 0005 applies cleanly to a scratch DB; RLS tests pass.
+- [x] All four entities enqueue and round-trip through sync.
+- [x] Pull order is categories → definitions → ledger.
+- [x] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
+- [x] Docs updated; `plans/README.md` updated.
 
 ## STOP conditions
 

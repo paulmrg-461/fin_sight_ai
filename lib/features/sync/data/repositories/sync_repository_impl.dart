@@ -9,13 +9,19 @@ import '../../../../core/utils/app_env.dart';
 import '../../../../core/utils/clock.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../budgets/data/datasources/budget_local_data_source.dart';
+import '../../../categories/data/datasources/category_local_data_source.dart';
+import '../../../categories/data/models/category_model.dart';
 import '../../../budgets/data/models/budget_model.dart';
 import '../../../debts/data/datasources/debt_local_data_source.dart';
 import '../../../debts/data/models/debt_model.dart';
 import '../../../receivables/data/datasources/receivable_local_data_source.dart';
 import '../../../receivables/data/models/receivable_model.dart';
+import '../../../scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart';
+import '../../../scheduled_payments/data/models/scheduled_payment_model.dart';
 import '../../../transactions/data/datasources/transaction_local_data_source.dart';
 import '../../../transactions/data/models/transaction_model.dart';
+import '../../../wallets/data/datasources/wallet_local_data_source.dart';
+import '../../../wallets/data/models/wallet_model.dart';
 import '../../domain/entities/sync_entities.dart';
 import '../../domain/repositories/sync_repository.dart';
 import '../datasources/sync_local_data_source.dart';
@@ -31,6 +37,9 @@ class SyncRepositoryImpl implements SyncRepository {
     this._debtLocalDataSource,
     this._budgetLocalDataSource,
     this._receivableLocalDataSource,
+    this._categoryLocalDataSource,
+    this._scheduledPaymentLocalDataSource,
+    this._walletLocalDataSource,
     this._env,
     this._auth, {
     this.clock = const Clock(),
@@ -47,6 +56,9 @@ class SyncRepositoryImpl implements SyncRepository {
   final DebtLocalDataSource _debtLocalDataSource;
   final BudgetLocalDataSource _budgetLocalDataSource;
   final ReceivableLocalDataSource _receivableLocalDataSource;
+  final CategoryLocalDataSource _categoryLocalDataSource;
+  final ScheduledPaymentLocalDataSource _scheduledPaymentLocalDataSource;
+  final WalletLocalDataSource _walletLocalDataSource;
   final AppEnv _env;
   final AuthRepository _auth;
   final Clock clock;
@@ -174,11 +186,115 @@ class SyncRepositoryImpl implements SyncRepository {
 
   Future<bool> _push(SyncOperation operation) {
     return switch (operation.entityType) {
+      SyncEntityType.category => _pushCategory(operation),
+      SyncEntityType.scheduledPayment => _pushScheduledPayment(operation),
+      SyncEntityType.wallet => _pushWallet(operation),
+      SyncEntityType.walletTransfer => _pushWalletTransfer(operation),
       SyncEntityType.transaction => _pushTransaction(operation),
       SyncEntityType.debt => _pushDebt(operation),
       SyncEntityType.budget => _pushBudget(operation),
       SyncEntityType.receivable => _pushReceivable(operation),
     };
+  }
+
+  Future<bool> _pushCategory(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchCategory(operation.entityId);
+    if (remoteRow != null) {
+      final remote = CategoryModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _categoryLocalDataSource.saveCategory(
+          CategoryModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertCategory(operation.payload);
+    final local = CategoryModel.fromJson(operation.payload);
+    await _categoryLocalDataSource.saveCategory(
+      CategoryModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
+  Future<bool> _pushScheduledPayment(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchScheduledPayment(
+      operation.entityId,
+    );
+    if (remoteRow != null) {
+      final remote = ScheduledPaymentModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _scheduledPaymentLocalDataSource.savePayment(
+          ScheduledPaymentModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertScheduledPayment(operation.payload);
+    final local = ScheduledPaymentModel.fromJson(operation.payload);
+    await _scheduledPaymentLocalDataSource.savePayment(
+      ScheduledPaymentModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
+  Future<bool> _pushWallet(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchWallet(operation.entityId);
+    if (remoteRow != null) {
+      final remote = WalletModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _walletLocalDataSource.saveWallet(
+          WalletModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertWallet(operation.payload);
+    final local = WalletModel.fromJson(operation.payload);
+    await _walletLocalDataSource.saveWallet(
+      WalletModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
+  Future<bool> _pushWalletTransfer(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchWalletTransfer(
+      operation.entityId,
+    );
+    if (remoteRow != null) {
+      final remote = WalletTransferModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _walletLocalDataSource.saveTransfer(
+          WalletTransferModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertWalletTransfer(operation.payload);
+    final local = WalletTransferModel.fromJson(operation.payload);
+    await _walletLocalDataSource.saveTransfer(
+      WalletTransferModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
   }
 
   Future<bool> _pushTransaction(SyncOperation operation) async {
@@ -290,6 +406,48 @@ class SyncRepositoryImpl implements SyncRepository {
     var pulled = 0;
     DateTime? watermark;
 
+    // Definitions first: ledger rows may reference categories, wallets, and
+    // schedules that arrive in the same pass.
+    final categories = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchCategories(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
+    );
+    pulled += await _mergeCategories(categories);
+    watermark = _maxUpdatedAt(categories, watermark);
+
+    final schedules = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchScheduledPayments(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
+    );
+    pulled += await _mergeScheduledPayments(schedules);
+    watermark = _maxUpdatedAt(schedules, watermark);
+
+    final wallets = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchWallets(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
+    );
+    pulled += await _mergeWallets(wallets);
+    watermark = _maxUpdatedAt(wallets, watermark);
+
+    final transfers = await _fetchAll(
+      (limit, offset) => _remoteDataSource.fetchWalletTransfers(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
+    );
+    pulled += await _mergeWalletTransfers(transfers);
+    watermark = _maxUpdatedAt(transfers, watermark);
+
     final transactions = await _fetchAll(
       (limit, offset) => _remoteDataSource.fetchTransactions(
         updatedAfter: lastSyncedAt,
@@ -365,6 +523,102 @@ class SyncRepositoryImpl implements SyncRepository {
       }
     }
     return max;
+  }
+
+  Future<int> _mergeCategories(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _categoryLocalDataSource.getAllCategories();
+    final byId = <String, CategoryModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = CategoryModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _categoryLocalDataSource.saveCategory(
+          CategoryModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
+  Future<int> _mergeScheduledPayments(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _scheduledPaymentLocalDataSource.getAllPayments();
+    final byId = <String, ScheduledPaymentModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = ScheduledPaymentModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _scheduledPaymentLocalDataSource.savePayment(
+          ScheduledPaymentModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
+  Future<int> _mergeWallets(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _walletLocalDataSource.getAllWallets();
+    final byId = <String, WalletModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = WalletModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _walletLocalDataSource.saveWallet(
+          WalletModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
+  Future<int> _mergeWalletTransfers(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _walletLocalDataSource.getAllTransfers();
+    final byId = <String, WalletTransferModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = WalletTransferModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _walletLocalDataSource.saveTransfer(
+          WalletTransferModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
   }
 
   Future<int> _mergeTransactions(List<Map<String, dynamic>> rows) async {
@@ -475,6 +729,9 @@ class SyncRepositoryImpl implements SyncRepository {
   Future<void> _purgeTombstones() async {
     final cutoff = clock.now().subtract(const Duration(days: 30));
     try {
+      await _categoryLocalDataSource.purgeTombstones(cutoff);
+      await _scheduledPaymentLocalDataSource.purgeTombstones(cutoff);
+      await _walletLocalDataSource.purgeTombstones(cutoff);
       await _transactionLocalDataSource.purgeTombstones(cutoff);
       await _debtLocalDataSource.purgeTombstones(cutoff);
       await _budgetLocalDataSource.purgeTombstones(cutoff);

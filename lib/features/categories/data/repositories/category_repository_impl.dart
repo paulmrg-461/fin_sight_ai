@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../domain/entities/category_entity.dart';
@@ -19,6 +20,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     this.uuid = const Uuid(),
     this.clock = const Clock(),
     this.languageCode,
+    this.syncQueue,
   });
 
   static const List<String> _defaultsEn = [
@@ -67,6 +69,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   final Uuid uuid;
   final Clock clock;
   final String? languageCode;
+  final SyncQueue? syncQueue;
 
   @override
   ResultFuture<List<CategoryEntity>> getCategories({
@@ -114,6 +117,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         updatedAt: now,
       );
       await _localDataSource.saveCategory(model);
+      await _enqueue(model);
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -148,8 +152,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
         );
       }
 
-      final updated = existing.copyWith(name: trimmed, updatedAt: clock.now());
+      final updated = existing.copyWith(
+        name: trimmed,
+        updatedAt: clock.now(),
+        isSynced: false,
+      );
       await _localDataSource.saveCategory(updated);
+      await _enqueue(updated);
       return Right(updated.toEntity());
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -177,8 +186,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
       final updated = existing.copyWith(
         isArchived: archived,
         updatedAt: clock.now(),
+        isSynced: false,
       );
       await _localDataSource.saveCategory(updated);
+      await _enqueue(updated);
       return Right(updated.toEntity());
     } on CacheException catch (exception) {
       return Left(CacheFailure(exception.message, code: exception.code));
@@ -234,6 +245,25 @@ class CategoryRepositoryImpl implements CategoryRepository {
       }
     }
     return null;
+  }
+
+  Future<void> _enqueue(CategoryModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.category,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
+    }
   }
 
   String get _deviceLanguage {

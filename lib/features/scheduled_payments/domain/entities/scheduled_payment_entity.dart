@@ -21,6 +21,8 @@ class ScheduledPaymentEntity extends Entity {
     this.isActive = true,
     this.updatedAt,
     this.lastPaidAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -48,6 +50,16 @@ class ScheduledPaymentEntity extends Entity {
   final DateTime? updatedAt;
   final DateTime? lastPaidAt;
 
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? createdAt;
+
   bool get isIncome => type == TransactionType.income;
 
   bool isDue(DateTime now) {
@@ -72,6 +84,8 @@ class ScheduledPaymentEntity extends Entity {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? lastPaidAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return ScheduledPaymentEntity(
       id: id ?? this.id,
@@ -88,6 +102,8 @@ class ScheduledPaymentEntity extends Entity {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       lastPaidAt: lastPaidAt ?? this.lastPaidAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -108,7 +124,9 @@ class ScheduledPaymentEntity extends Entity {
           other.isActive == isActive &&
           other.createdAt == createdAt &&
           other.updatedAt == updatedAt &&
-          other.lastPaidAt == lastPaidAt;
+          other.lastPaidAt == lastPaidAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt;
 
   @override
   int get hashCode => Object.hash(
@@ -126,6 +144,8 @@ class ScheduledPaymentEntity extends Entity {
     createdAt,
     updatedAt,
     lastPaidAt,
+    isSynced,
+    deletedAt,
   );
 
   @override
