@@ -23,8 +23,16 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 938 unit/widget tests, coverage gate green, 24 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 941 unit/widget tests, coverage gate green, 25 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Transaction search (plan 014)
+
+- `SearchTransactions` filters the active period in memory: the bloc caches `_periodTransactions` after each load, so typing does not hit Hive.
+- Matches description, category, or formatted amount, case-insensitively; composes with the date-range filter and is preserved across add/edit/delete reloads.
+- `LoadTransactions` clears both the date range and the query; `TransactionEmpty` carries the query so the UI shows “No matching transactions” with a clear-search action.
+- `TransactionScreen` owns the controller, shows the search field for loaded/empty states, and restores the active query when returning to the screen.
+- Tests: clearing restores the cache with a single read; integration covers search, no-match, and clear.
 
 ## Schedule editing (plan 013)
 

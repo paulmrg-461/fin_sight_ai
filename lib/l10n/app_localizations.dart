@@ -2017,6 +2017,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Edit scheduled payment'**
   String get editScheduledPayment;
+
+  /// No description provided for @searchTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search transactions'**
+  String get searchTransactions;
+
+  /// No description provided for @noMatchingTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching transactions'**
+  String get noMatchingTransactions;
+
+  /// No description provided for @noMatchingTransactionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another description, category, or amount.'**
+  String get noMatchingTransactionsBody;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
 }
 
 class _AppLocalizationsDelegate

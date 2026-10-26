@@ -1058,4 +1058,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get editScheduledPayment => 'Editar pago programado';
+
+  @override
+  String get searchTransactions => 'Buscar transacciones';
+
+  @override
+  String get noMatchingTransactions => 'Sin transacciones coincidentes';
+
+  @override
+  String get noMatchingTransactionsBody =>
+      'Prueba con otra descripción, categoría o monto.';
+
+  @override
+  String get clearSearch => 'Limpiar búsqueda';
 }

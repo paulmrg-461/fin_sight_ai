@@ -9,7 +9,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 ## Features
 
 - **Dashboard** — balance hero, cash/card balances, receivables summary, income/expense/savings KPIs, category donut, monthly comparison, recent activity, date-range filtering, and pull-to-refresh.
-- **Transactions** — income/expense tracking with date-range and category filters, receipt paths, in-place editing (same id, one sync update), delete confirmation with undo, and soft-delete tombstones.
+- **Transactions** — income/expense tracking with date-range and category filters, receipt paths, in-place editing (same id, one sync update), text search over the active period, delete confirmation with undo, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, and a compounded-interest payoff calculator.
 - **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, payment history, in-place editing, and Supabase sync.
 - **Budgets** — monthly category limits with spending progress, over-budget highlighting, category suggestions, in-place editing from the budget card, delete confirmation, and offline-first sync.

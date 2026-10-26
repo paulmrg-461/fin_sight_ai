@@ -22,9 +22,17 @@ final class TransactionLoading extends TransactionState {
 
 /// Transactions are available.
 final class TransactionLoaded extends TransactionState {
-  const TransactionLoaded({required this.transactions, this.start, this.end});
+  const TransactionLoaded({
+    required this.transactions,
+    this.start,
+    this.end,
+    this.query = '',
+  });
 
   final List<TransactionEntity> transactions;
+
+  /// Active free-text filter.
+  final String query;
 
   /// Active inclusive range, or `null` when showing all transactions.
   final DateTime? start;
@@ -32,21 +40,28 @@ final class TransactionLoaded extends TransactionState {
 
   bool get hasDateFilter => start != null && end != null;
 
+  bool get hasQuery => query.trim().isNotEmpty;
+
   @override
-  List<Object?> get props => [transactions, start, end];
+  List<Object?> get props => [transactions, start, end, query];
 }
 
 /// The query succeeded but there is nothing to show.
 final class TransactionEmpty extends TransactionState {
-  const TransactionEmpty({this.start, this.end});
+  const TransactionEmpty({this.start, this.end, this.query = ''});
 
   final DateTime? start;
   final DateTime? end;
 
+  /// Active free-text filter.
+  final String query;
+
   bool get hasDateFilter => start != null && end != null;
 
+  bool get hasQuery => query.trim().isNotEmpty;
+
   @override
-  List<Object?> get props => [start, end];
+  List<Object?> get props => [start, end, query];
 }
 
 /// The query failed with a safe, user-presentable message.

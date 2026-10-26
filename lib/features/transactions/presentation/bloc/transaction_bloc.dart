@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecase/usecase.dart';
+import '../../domain/entities/transaction_entity.dart';
 import '../../domain/usecases/add_transaction_usecase.dart';
 import '../../domain/usecases/delete_transaction_usecase.dart';
 import '../../domain/usecases/get_transactions_by_date_range_usecase.dart';
@@ -25,6 +26,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<UpdateTransaction>(_onUpdate);
     on<DeleteTransaction>(_onDelete);
     on<FilterByDateRange>(_onFilter);
+    on<SearchTransactions>(_onSearch);
   }
 
   final GetTransactionsUseCase _getTransactions;
@@ -35,6 +37,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
   DateTime? _start;
   DateTime? _end;
+  String _query = '';
+
+  /// Unfiltered rows for the active period, used for in-memory search.
+  List<TransactionEntity> _periodTransactions = const [];
 
   Future<void> _onLoad(
     LoadTransactions event,
@@ -42,6 +48,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   ) async {
     _start = null;
     _end = null;
+    _query = '';
     await _reload(emit);
   }
 
@@ -96,6 +103,31 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     await _reload(emit);
   }
 
+  Future<void> _onSearch(
+    SearchTransactions event,
+    Emitter<TransactionState> emit,
+  ) async {
+    _query = event.query.trim();
+    if (_periodTransactions.isEmpty && state is! TransactionLoaded) {
+      await _reload(emit);
+      return;
+    }
+
+    final filtered = _applyQuery(_periodTransactions);
+    if (filtered.isEmpty) {
+      emit(TransactionEmpty(start: _start, end: _end, query: _query));
+      return;
+    }
+    emit(
+      TransactionLoaded(
+        transactions: filtered,
+        start: _start,
+        end: _end,
+        query: _query,
+      ),
+    );
+  }
+
   Future<void> _onDelete(
     DeleteTransaction event,
     Emitter<TransactionState> emit,
@@ -125,6 +157,20 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     await _reload(emit);
   }
 
+  List<TransactionEntity> _applyQuery(List<TransactionEntity> transactions) {
+    final query = _query.toLowerCase();
+    if (query.isEmpty) {
+      return List<TransactionEntity>.unmodifiable(transactions);
+    }
+    return List<TransactionEntity>.unmodifiable(
+      transactions.where((transaction) {
+        return transaction.description.toLowerCase().contains(query) ||
+            transaction.category.toLowerCase().contains(query) ||
+            transaction.amount.toStringAsFixed(2).contains(query);
+      }),
+    );
+  }
+
   Future<void> _reload(Emitter<TransactionState> emit) async {
     emit(const TransactionLoading());
 
@@ -134,20 +180,25 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             DateRangeParams(start: _start!, end: _end!),
           );
 
-    result.fold((failure) => emit(TransactionFailure(failure.message)), (
-      transactions,
-    ) {
-      if (transactions.isEmpty) {
-        emit(TransactionEmpty(start: _start, end: _end));
-      } else {
-        emit(
-          TransactionLoaded(
-            transactions: transactions,
-            start: _start,
-            end: _end,
-          ),
-        );
-      }
-    });
+    final failure = result.getLeft().toNullable();
+    if (failure != null) {
+      emit(TransactionFailure(failure.message));
+      return;
+    }
+
+    _periodTransactions = result.getOrElse((_) => const <TransactionEntity>[]);
+    final transactions = _applyQuery(_periodTransactions);
+    if (transactions.isEmpty) {
+      emit(TransactionEmpty(start: _start, end: _end, query: _query));
+      return;
+    }
+    emit(
+      TransactionLoaded(
+        transactions: transactions,
+        start: _start,
+        end: _end,
+        query: _query,
+      ),
+    );
   }
 }

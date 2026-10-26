@@ -21,6 +21,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | DONE (worktree `navigation-shell`, commit `62b1ede`) |
 | 012 | Defer non-critical startup loads (PERF-02) | P2 | M | 010 | DONE (911 unit, 23 integration; seeded launch 227–233 ms) |
 | 013 | Edit scheduled payments in place | P2 | M | 008, 012 | DONE (938 unit, 24 integration) |
+| 014 | Search transactions by text | P2 | S | 008 | DONE (941 unit, 25 integration) |
+
+- 014 added client-side transaction search composed with the date and category filters; the bloc caches the active period so typing never re-reads Hive.
 
 - 013 added in-place schedule editing (same id, preserved audit dates, one sync upsert) with an Edit action on each card.
 

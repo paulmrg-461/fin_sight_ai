@@ -87,6 +87,16 @@ final class UpdateTransaction extends TransactionEvent {
   ];
 }
 
+/// Filters the loaded period by a free-text query.
+final class SearchTransactions extends TransactionEvent {
+  const SearchTransactions(this.query);
+
+  final String query;
+
+  @override
+  List<Object?> get props => [query];
+}
+
 /// Deletes a transaction and reloads the current view.
 final class DeleteTransaction extends TransactionEvent {
   const DeleteTransaction(this.id);

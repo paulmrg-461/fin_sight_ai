@@ -569,6 +569,47 @@ void main() {
     expect(harness.authStorage.session?.refreshToken, 'refreshed-refresh-2');
   });
 
+  testWidgets('searches transactions by text and clears the query', (
+    tester,
+  ) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 12,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Coffee beans',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 800,
+        type: TransactionType.expense,
+        category: 'Rent',
+        description: 'Monthly rent',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Coffee beans'));
+    expect(find.text('Monthly rent'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, 'coffee');
+    await tester.pump();
+    await pumpUntil(tester, find.text('Coffee beans'));
+    expect(find.text('Monthly rent'), findsNothing);
+
+    await tester.enterText(find.byType(TextField).first, 'zzz');
+    await tester.pump();
+    await pumpUntil(tester, find.text('No matching transactions'));
+
+    await tester.tap(find.text('Clear search'));
+    await pumpUntil(tester, find.text('Coffee beans'));
+    expect(find.text('Monthly rent'), findsOneWidget);
+  });
+
   testWidgets('filters transactions by date range', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

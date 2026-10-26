@@ -441,5 +441,9 @@
   "noCommittedPayments": "No commitments yet",
   "noCommittedPaymentsBody": "No active schedules or debt minimums fall in this window.",
   "debtMinimumSource": "Debt minimum",
-  "editScheduledPayment": "Edit scheduled payment"
+  "editScheduledPayment": "Edit scheduled payment",
+  "searchTransactions": "Search transactions",
+  "noMatchingTransactions": "No matching transactions",
+  "noMatchingTransactionsBody": "Try another description, category, or amount.",
+  "clearSearch": "Clear search"
 }

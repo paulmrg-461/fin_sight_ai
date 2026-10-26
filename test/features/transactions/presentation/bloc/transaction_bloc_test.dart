@@ -280,6 +280,104 @@ void main() {
     );
 
     blocTest<TransactionBloc, TransactionState>(
+      'filters the loaded period by description, category, or amount',
+      setUp: () {
+        when(() => getTransactions(any())).thenAnswer(
+          (_) async => Right([
+            transaction,
+            TransactionEntity(
+              id: 'tx-2',
+              amount: 12.5,
+              type: TransactionType.income,
+              category: 'Salary',
+              description: 'Freelance invoice',
+              date: DateTime.utc(2026, 10, 21),
+            ),
+          ]),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) async {
+        bloc.add(const LoadTransactions());
+        await pumpEventQueue();
+        bloc.add(const SearchTransactions('salary'));
+      },
+      expect: () => [
+        const TransactionLoading(),
+        isA<TransactionLoaded>().having(
+          (state) => state.transactions,
+          'transactions',
+          hasLength(2),
+        ),
+        isA<TransactionLoaded>()
+            .having((state) => state.transactions, 'transactions', hasLength(1))
+            .having((state) => state.query, 'query', 'salary'),
+      ],
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'searches within the active date range',
+      setUp: () {
+        when(() => getByDateRange(any()))
+            .thenAnswer((_) async => Right([transaction]));
+      },
+      build: buildBloc,
+      act: (bloc) async {
+        bloc.add(
+          FilterByDateRange(
+            start: DateTime.utc(2026, 10, 1),
+            end: DateTime.utc(2026, 10, 31),
+          ),
+        );
+        await pumpEventQueue();
+        bloc.add(const SearchTransactions('coffee'));
+      },
+      expect: () => [
+        const TransactionLoading(),
+        TransactionLoaded(
+          transactions: [transaction],
+          start: DateTime.utc(2026, 10, 1),
+          end: DateTime.utc(2026, 10, 31),
+        ),
+        TransactionLoaded(
+          transactions: [transaction],
+          start: DateTime.utc(2026, 10, 1),
+          end: DateTime.utc(2026, 10, 31),
+          query: 'coffee',
+        ),
+      ],
+      verify: (_) {
+        verify(() => getByDateRange(any())).called(1);
+      },
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
+      'emits an empty search state and restores on clear',
+      setUp: () {
+        when(() => getTransactions(any()))
+            .thenAnswer((_) async => Right([transaction]));
+      },
+      build: buildBloc,
+      act: (bloc) async {
+        bloc.add(const LoadTransactions());
+        await pumpEventQueue();
+        bloc.add(const SearchTransactions('missing'));
+        await pumpEventQueue();
+        bloc.add(const SearchTransactions(''));
+      },
+      expect: () => [
+        const TransactionLoading(),
+        TransactionLoaded(transactions: [transaction]),
+        const TransactionEmpty(query: 'missing'),
+        TransactionLoaded(transactions: [transaction]),
+      ],
+      verify: (_) {
+        // Search only reads the cached period once.
+        verify(() => getTransactions(any())).called(1);
+      },
+    );
+
+    blocTest<TransactionBloc, TransactionState>(
       'rejects a reversed date range',
       build: buildBloc,
       act: (bloc) => bloc.add(

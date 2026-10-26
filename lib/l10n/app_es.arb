@@ -392,5 +392,9 @@
   "noCommittedPayments": "Sin compromisos aún",
   "noCommittedPaymentsBody": "No hay pagos programados ni mínimos de deuda en este periodo.",
   "debtMinimumSource": "Mínimo de deuda",
-  "editScheduledPayment": "Editar pago programado"
+  "editScheduledPayment": "Editar pago programado",
+  "searchTransactions": "Buscar transacciones",
+  "noMatchingTransactions": "Sin transacciones coincidentes",
+  "noMatchingTransactionsBody": "Prueba con otra descripción, categoría o monto.",
+  "clearSearch": "Limpiar búsqueda"
 }

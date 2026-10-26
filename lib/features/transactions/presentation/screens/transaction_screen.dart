@@ -13,9 +13,55 @@ import '../bloc/transaction_state.dart';
 import '../widgets/transaction_form.dart';
 import '../widgets/transaction_list.dart';
 
-/// Main transactions screen: add, list, filter, and delete.
-class TransactionScreen extends StatelessWidget {
+/// Main transactions screen: add, search, filter, list, and delete.
+class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
+
+  @override
+  State<TransactionScreen> createState() => _TransactionScreenState();
+}
+
+class _TransactionScreenState extends State<TransactionScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_refreshSearchHint);
+    final state = context.read<TransactionBloc>().state;
+    final query = switch (state) {
+      TransactionLoaded(:final query) => query,
+      TransactionEmpty(:final query) => query,
+      _ => '',
+    };
+    if (query.isNotEmpty) {
+      _searchController.text = query;
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController
+      ..removeListener(_refreshSearchHint)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _refreshSearchHint() => setState(() {});
+
+  void _search(String query) {
+    context.read<TransactionBloc>().add(SearchTransactions(query));
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _search('');
+  }
+
+  void _clearFilters() {
+    _searchController.clear();
+    context.read<TransactionBloc>().add(const LoadTransactions());
+  }
 
   Future<void> _openForm(BuildContext context, {TransactionEntity? initial}) {
     final bloc = context.read<TransactionBloc>();
@@ -125,50 +171,88 @@ class TransactionScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
         child: BlocBuilder<TransactionBloc, TransactionState>(
           builder: (context, state) {
-            return switch (state) {
-              TransactionInitial() ||
-              TransactionLoading() => const _LoadingView(),
-              TransactionFailure(:final message) => AppErrorState(
-                message: message,
-                onRetry: () => context.read<TransactionBloc>().add(
-                  const LoadTransactions(),
-                ),
-              ),
-              TransactionEmpty(:final start, :final end) => _EmptyView(
-                hasDateFilter: start != null && end != null,
-                onAdd: () => _openForm(context),
-                onClearFilter: () => context.read<TransactionBloc>().add(
-                  const LoadTransactions(),
-                ),
-              ),
-              TransactionLoaded(
-                :final transactions,
-                :final start,
-                :final end,
-              ) =>
-                Column(
-                  children: [
-                    if (start != null && end != null)
-                      _DateFilterBanner(
-                        start: start,
-                        end: end,
-                        onClear: () => context.read<TransactionBloc>().add(
-                          const LoadTransactions(),
-                        ),
-                      ),
-                    Expanded(
-                      child: TransactionList(
-                        transactions: transactions,
-                        onDelete: (transaction) =>
-                            _confirmDelete(context, transaction),
-                        onEdit: (transaction) =>
-                            _openForm(context, initial: transaction),
+            final showSearch =
+                state is TransactionLoaded || state is TransactionEmpty;
+            return Column(
+              children: [
+                if (showSearch) _searchField(context, state),
+                Expanded(
+                  child: switch (state) {
+                    TransactionInitial() ||
+                    TransactionLoading() => const _LoadingView(),
+                    TransactionFailure(:final message) => AppErrorState(
+                      message: message,
+                      onRetry: () => context.read<TransactionBloc>().add(
+                        const LoadTransactions(),
                       ),
                     ),
-                  ],
+                    TransactionEmpty(:final start, :final end, :final query) =>
+                      _EmptyView(
+                        hasDateFilter: start != null && end != null,
+                        hasQuery: query.trim().isNotEmpty,
+                        onAdd: () => _openForm(context),
+                        onClearFilter: _clearFilters,
+                        onClearSearch: _clearSearch,
+                      ),
+                    TransactionLoaded(
+                      :final transactions,
+                      :final start,
+                      :final end,
+                    ) =>
+                      Column(
+                        children: [
+                          if (start != null && end != null)
+                            _DateFilterBanner(
+                              start: start,
+                              end: end,
+                              onClear: _clearFilters,
+                            ),
+                          Expanded(
+                            child: TransactionList(
+                              transactions: transactions,
+                              onDelete: (transaction) =>
+                                  _confirmDelete(context, transaction),
+                              onEdit: (transaction) =>
+                                  _openForm(context, initial: transaction),
+                            ),
+                          ),
+                        ],
+                      ),
+                  },
                 ),
-            };
+              ],
+            );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _searchField(BuildContext context, TransactionState state) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: TextField(
+        controller: _searchController,
+        textInputAction: TextInputAction.search,
+        onChanged: _search,
+        decoration: InputDecoration(
+          hintText: context.l10n.searchTransactions,
+          prefixIcon: const Icon(Icons.search_rounded),
+          isDense: true,
+          filled: true,
+          fillColor: theme.colorScheme.surfaceContainerLow,
+          suffixIcon: _searchController.text.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: _clearSearch,
+                  tooltip: context.l10n.clearSearch,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
     );
@@ -191,13 +275,17 @@ class _LoadingView extends StatelessWidget {
 class _EmptyView extends StatelessWidget {
   const _EmptyView({
     required this.hasDateFilter,
+    required this.hasQuery,
     required this.onAdd,
     required this.onClearFilter,
+    required this.onClearSearch,
   });
 
   final bool hasDateFilter;
+  final bool hasQuery;
   final VoidCallback onAdd;
   final VoidCallback onClearFilter;
+  final VoidCallback onClearSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -206,19 +294,31 @@ class _EmptyView extends StatelessWidget {
         maxWidth: 620,
         child: AppEmptyState(
           icon: Icons.receipt_long_rounded,
-          title: hasDateFilter
+          title: hasQuery
+              ? context.l10n.noMatchingTransactions
+              : hasDateFilter
               ? context.l10n.noTransactionsInRange
               : context.l10n.noTransactionsYet,
-          message: hasDateFilter
+          message: hasQuery
+              ? context.l10n.noMatchingTransactionsBody
+              : hasDateFilter
               ? context.l10n.noTransactionsRangeBody
               : context.l10n.noTransactionsBody,
-          actionLabel: hasDateFilter
+          actionLabel: hasQuery
+              ? context.l10n.clearSearch
+              : hasDateFilter
               ? context.l10n.clearFilter
               : context.l10n.addTransaction,
-          actionIcon: hasDateFilter
+          actionIcon: hasQuery
+              ? Icons.search_off_rounded
+              : hasDateFilter
               ? Icons.filter_alt_off_rounded
               : Icons.add_rounded,
-          onAction: hasDateFilter ? onClearFilter : onAdd,
+          onAction: hasQuery
+              ? onClearSearch
+              : hasDateFilter
+              ? onClearFilter
+              : onAdd,
         ),
       ),
     );
