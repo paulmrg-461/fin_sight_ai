@@ -53,3 +53,7 @@ flutter analyze
 flutter test --coverage
 flutter test -d linux integration_test/app_flow_test.dart
 ```
+
+## Month navigation
+
+`/budgets` selects one month at a time (current month by default). Previous/next controls dispatch `ChangeBudgetMonth`, which normalizes the month and reloads only that month. `AddBudget` targets the selected month; editing preserves the budget's stored month. `BudgetLoaded` and `BudgetEmpty` expose `month` so the selector stays in sync.

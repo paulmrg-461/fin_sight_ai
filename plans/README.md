@@ -23,6 +23,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 013 | Edit scheduled payments in place | P2 | M | 008, 012 | DONE (938 unit, 24 integration) |
 | 014 | Search transactions by text | P2 | S | 008 | DONE (941 unit, 25 integration) |
 | 015 | Copy transactions as CSV | P3 | S | 008, 014 | DONE (944 unit, 26 integration) |
+| 016 | Navigate budget months | P2 | S | 003, 008 | DONE (945 unit, 27 integration) |
+
+- 016 added localized previous/next month navigation to budgets; new budgets target the selected month.
 
 - 015 added clipboard CSV export for the visible ledger (pure Dart, RFC-4180 escaping, pluralized confirmation).
 

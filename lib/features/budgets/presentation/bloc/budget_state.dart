@@ -19,22 +19,32 @@ final class BudgetLoading extends BudgetState {
 }
 
 final class BudgetLoaded extends BudgetState {
-  const BudgetLoaded({required this.progress, required this.categories});
+  const BudgetLoaded({
+    required this.progress,
+    required this.categories,
+    this.month,
+  });
 
   final List<BudgetProgress> progress;
   final List<String> categories;
 
+  /// Selected month, or `null` when a test emits a state directly.
+  final DateTime? month;
+
   @override
-  List<Object?> get props => [progress, categories];
+  List<Object?> get props => [progress, categories, month];
 }
 
 final class BudgetEmpty extends BudgetState {
-  const BudgetEmpty({required this.categories});
+  const BudgetEmpty({required this.categories, this.month});
 
   final List<String> categories;
 
+  /// Selected month, or `null` when a test emits a state directly.
+  final DateTime? month;
+
   @override
-  List<Object?> get props => [categories];
+  List<Object?> get props => [categories, month];
 }
 
 final class BudgetFailure extends BudgetState {

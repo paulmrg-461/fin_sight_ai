@@ -2053,6 +2053,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Copied 1 transaction to the clipboard.} other{Copied {count} transactions to the clipboard.}}'**
   String csvCopied(int count);
+
+  /// No description provided for @previousMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous month'**
+  String get previousMonth;
+
+  /// No description provided for @nextMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Next month'**
+  String get nextMonth;
 }
 
 class _AppLocalizationsDelegate

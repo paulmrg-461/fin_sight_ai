@@ -23,8 +23,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 944 unit/widget tests, coverage gate green, 26 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 945 unit/widget tests, coverage gate green, 27 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Budget month navigation (plan 016)
+
+- `BudgetBloc` keeps `_selectedMonth` (current month by default); `ChangeBudgetMonth` normalizes it and reloads only that month.
+- `AddBudget` targets the selected month, while edits preserve each budget's stored month.
+- `BudgetLoaded`/`BudgetEmpty` expose `month`; `/budgets` renders a localized previous/next selector above the hero or empty state.
+- Tests: BLoC verifies the requested month is queried; integration creates a budget, visits the previous month, and returns.
 
 ## CSV export (plan 015)
 

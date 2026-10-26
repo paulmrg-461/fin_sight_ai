@@ -122,40 +122,50 @@ class BudgetScreen extends StatelessWidget {
               onRetry: () =>
                   context.read<BudgetBloc>().add(const LoadBudgets()),
             ),
-            BudgetEmpty(:final categories) => AppContent(
+            BudgetEmpty(:final categories, :final month) => AppContent(
               maxWidth: 720,
-              child: Center(
-                child: AppEmptyState(
-                  icon: Icons.pie_chart_rounded,
-                  title: context.l10n.noBudgetsYet,
-                  message: context.l10n.noBudgetsBody,
-                  actionLabel: context.l10n.addBudget,
-                  onAction: () => _addBudget(context, categories),
-                ),
-              ),
-            ),
-            BudgetLoaded(:final progress, :final categories) => AppContent(
-              padding: EdgeInsets.zero,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              child: Column(
                 children: [
-                  _BudgetHero(progress: progress),
-                  const SizedBox(height: 16),
-                  for (final item in progress)
-                    _BudgetCard(
-                      progress: item,
-                      onTap: () => _editBudget(context, item, categories),
-                      onDelete: () => _deleteBudget(context, item),
+                  _MonthSelector(month: month ?? DateTime.now()),
+                  Expanded(
+                    child: Center(
+                      child: AppEmptyState(
+                        icon: Icons.pie_chart_rounded,
+                        title: context.l10n.noBudgetsYet,
+                        message: context.l10n.noBudgetsBody,
+                        actionLabel: context.l10n.addBudget,
+                        onAction: () => _addBudget(context, categories),
+                      ),
                     ),
-                  const SizedBox(height: 4),
-                  OutlinedButton.icon(
-                    onPressed: () => _addBudget(context, categories),
-                    icon: const Icon(Icons.add_rounded),
-                    label: Text(context.l10n.addAnotherBudget),
                   ),
                 ],
               ),
             ),
+            BudgetLoaded(:final progress, :final categories, :final month) =>
+              AppContent(
+                padding: EdgeInsets.zero,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                  children: [
+                    _MonthSelector(month: month ?? DateTime.now()),
+                    const SizedBox(height: 8),
+                    _BudgetHero(progress: progress),
+                    const SizedBox(height: 16),
+                    for (final item in progress)
+                      _BudgetCard(
+                        progress: item,
+                        onTap: () => _editBudget(context, item, categories),
+                        onDelete: () => _deleteBudget(context, item),
+                      ),
+                    const SizedBox(height: 4),
+                    OutlinedButton.icon(
+                      onPressed: () => _addBudget(context, categories),
+                      icon: const Icon(Icons.add_rounded),
+                      label: Text(context.l10n.addAnotherBudget),
+                    ),
+                  ],
+                ),
+              ),
           };
         },
       ),
@@ -172,6 +182,48 @@ class BudgetScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: Text(context.l10n.addBudget),
       ),
+    );
+  }
+}
+
+class _MonthSelector extends StatelessWidget {
+  const _MonthSelector({required this.month});
+
+  final DateTime month;
+
+  void _change(BuildContext context, int offset) {
+    context.read<BudgetBloc>().add(
+      ChangeBudgetMonth(DateTime(month.year, month.month + offset)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final label = MaterialLocalizations.of(context)
+        .formatMonthYear(DateTime(month.year, month.month));
+    return Row(
+      children: [
+        IconButton(
+          onPressed: () => _change(context, -1),
+          tooltip: context.l10n.previousMonth,
+          icon: const Icon(Icons.chevron_left_rounded),
+        ),
+        Expanded(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        IconButton(
+          onPressed: () => _change(context, 1),
+          tooltip: context.l10n.nextMonth,
+          icon: const Icon(Icons.chevron_right_rounded),
+        ),
+      ],
     );
   }
 }

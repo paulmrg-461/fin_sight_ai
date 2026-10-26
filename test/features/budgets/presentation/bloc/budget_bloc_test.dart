@@ -67,6 +67,11 @@ void main() {
         .thenAnswer((_) async => const Right(['Food']));
   });
 
+  DateTime monthStart() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month);
+  }
+
   BudgetBloc buildBloc() => BudgetBloc(
     addBudget,
     updateBudget,
@@ -86,8 +91,30 @@ void main() {
       act: (bloc) => bloc.add(const LoadBudgets()),
       expect: () => [
         const BudgetLoading(),
-        BudgetLoaded(progress: [progress], categories: const ['Food']),
+        BudgetLoaded(
+          progress: [progress],
+          categories: const ['Food'],
+          month: monthStart(),
+        ),
       ],
+    );
+
+    blocTest<BudgetBloc, BudgetState>(
+      'changes month and reloads its progress',
+      build: buildBloc,
+      act: (bloc) => bloc.add(ChangeBudgetMonth(DateTime(2026, 1, 17))),
+      expect: () => [
+        const BudgetLoading(),
+        BudgetLoaded(
+          progress: [progress],
+          categories: const ['Food'],
+          month: DateTime(2026),
+        ),
+      ],
+      verify: (_) {
+        verify(() => getProgress(DateTime(2026))).called(1);
+        verifyNever(() => getProgress(monthStart()));
+      },
     );
 
     blocTest<BudgetBloc, BudgetState>(
@@ -99,7 +126,7 @@ void main() {
       act: (bloc) => bloc.add(const LoadBudgets()),
       expect: () => [
         const BudgetLoading(),
-        const BudgetEmpty(categories: ['Food']),
+        BudgetEmpty(categories: const ['Food'], month: monthStart()),
       ],
     );
 
@@ -124,7 +151,11 @@ void main() {
           bloc.add(const AddBudget(category: 'Food', monthlyLimit: 100)),
       expect: () => [
         const BudgetLoading(),
-        BudgetLoaded(progress: [progress], categories: const ['Food']),
+        BudgetLoaded(
+          progress: [progress],
+          categories: const ['Food'],
+          month: monthStart(),
+        ),
       ],
       verify: (_) {
         final params =
@@ -168,7 +199,11 @@ void main() {
       ),
       expect: () => [
         const BudgetLoading(),
-        BudgetLoaded(progress: [progress], categories: const ['Food']),
+        BudgetLoaded(
+          progress: [progress],
+          categories: const ['Food'],
+          month: monthStart(),
+        ),
       ],
       verify: (_) {
         verify(() => updateBudget(any())).called(1);
@@ -186,7 +221,7 @@ void main() {
       act: (bloc) => bloc.add(const DeleteBudget('budget-1')),
       expect: () => [
         const BudgetLoading(),
-        const BudgetEmpty(categories: ['Food']),
+        BudgetEmpty(categories: const ['Food'], month: monthStart()),
       ],
       verify: (_) {
         verify(() => deleteBudget('budget-1')).called(1);

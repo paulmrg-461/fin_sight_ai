@@ -405,5 +405,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "previousMonth": "Mes anterior",
+  "nextMonth": "Mes siguiente"
 }

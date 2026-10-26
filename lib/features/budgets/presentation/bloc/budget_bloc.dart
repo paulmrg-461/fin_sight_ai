@@ -17,6 +17,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     this._getCategories,
   ) : super(const BudgetInitial()) {
     on<LoadBudgets>(_onLoad);
+    on<ChangeBudgetMonth>(_onChangeMonth);
     on<AddBudget>(_onAdd);
     on<UpdateBudget>(_onUpdate);
     on<DeleteBudget>(_onDelete);
@@ -28,9 +29,21 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   final GetBudgetProgressUseCase _getProgress;
   final GetCategoriesUseCase _getCategories;
 
-  DateTime get _month {
+  late DateTime _selectedMonth = _currentMonth;
+
+  DateTime get _month => _selectedMonth;
+
+  DateTime get _currentMonth {
     final now = DateTime.now();
     return DateTime(now.year, now.month);
+  }
+
+  Future<void> _onChangeMonth(
+    ChangeBudgetMonth event,
+    Emitter<BudgetState> emit,
+  ) async {
+    _selectedMonth = DateTime(event.month.year, event.month.month);
+    await _reload(emit);
   }
 
   Future<void> _onLoad(LoadBudgets event, Emitter<BudgetState> emit) =>
@@ -102,9 +115,11 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     final progress = progressResult.getOrElse((_) => const []);
     final categories = categoriesResult.getOrElse((_) => const []);
     if (progress.isEmpty) {
-      emit(BudgetEmpty(categories: categories));
+      emit(BudgetEmpty(categories: categories, month: _month));
     } else {
-      emit(BudgetLoaded(progress: progress, categories: categories));
+      emit(
+        BudgetLoaded(progress: progress, categories: categories, month: _month),
+      );
     }
   }
 }

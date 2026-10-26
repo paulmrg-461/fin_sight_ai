@@ -1085,4 +1085,10 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get previousMonth => 'Mes anterior';
+
+  @override
+  String get nextMonth => 'Mes siguiente';
 }

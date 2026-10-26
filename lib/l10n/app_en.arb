@@ -454,5 +454,7 @@
         "type": "int"
       }
     }
-  }
+  },
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month"
 }

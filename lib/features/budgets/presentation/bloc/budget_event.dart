@@ -12,6 +12,16 @@ final class LoadBudgets extends BudgetEvent {
   const LoadBudgets();
 }
 
+/// Selects another budget month and reloads its progress.
+final class ChangeBudgetMonth extends BudgetEvent {
+  const ChangeBudgetMonth(this.month);
+
+  final DateTime month;
+
+  @override
+  List<Object?> get props => [month];
+}
+
 final class AddBudget extends BudgetEvent {
   const AddBudget({required this.category, required this.monthlyLimit});
 
