@@ -10,15 +10,30 @@ sealed class AiCoachEvent extends Equatable {
 
 /// Loads a fresh set of personalized insights.
 final class LoadInsights extends AiCoachEvent {
-  const LoadInsights();
+  const LoadInsights({this.languageCode = 'en'});
+
+  final String languageCode;
+
+  @override
+  List<Object?> get props => [languageCode];
 }
 
 /// Requests a spending analysis.
 final class AnalyzeSpending extends AiCoachEvent {
-  const AnalyzeSpending();
+  const AnalyzeSpending({this.languageCode = 'en'});
+
+  final String languageCode;
+
+  @override
+  List<Object?> get props => [languageCode];
 }
 
 /// Requests savings suggestions.
 final class GetSuggestions extends AiCoachEvent {
-  const GetSuggestions();
+  const GetSuggestions({this.languageCode = 'en'});
+
+  final String languageCode;
+
+  @override
+  List<Object?> get props => [languageCode];
 }

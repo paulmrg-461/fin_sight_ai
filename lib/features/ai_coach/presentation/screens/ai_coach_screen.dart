@@ -12,6 +12,9 @@ import '../widgets/insight_card.dart';
 class AiCoachScreen extends StatelessWidget {
   const AiCoachScreen({super.key});
 
+  String _languageCode(BuildContext context) =>
+      Localizations.localeOf(context).languageCode;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,14 +23,16 @@ class AiCoachScreen extends StatelessWidget {
         builder: (context, state) {
           return switch (state) {
             AiCoachInitial() || AiCoachEmpty() => _CoachEmpty(
-              onStart: () =>
-                  context.read<AiCoachBloc>().add(const LoadInsights()),
+              onStart: () => context.read<AiCoachBloc>().add(
+                LoadInsights(languageCode: _languageCode(context)),
+              ),
             ),
             AiCoachLoading() => const _CoachLoading(),
             AiCoachFailure(:final message) => _CoachError(
               message: context.failureText(message),
-              onRetry: () =>
-                  context.read<AiCoachBloc>().add(const LoadInsights()),
+              onRetry: () => context.read<AiCoachBloc>().add(
+                LoadInsights(languageCode: _languageCode(context)),
+              ),
             ),
             AiCoachLoaded(:final insights) => ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -57,20 +62,23 @@ class AiCoachScreen extends StatelessWidget {
             runSpacing: 8,
             children: [
               FilledButton.icon(
-                onPressed: () =>
-                    context.read<AiCoachBloc>().add(const AnalyzeSpending()),
+                onPressed: () => context.read<AiCoachBloc>().add(
+                  AnalyzeSpending(languageCode: _languageCode(context)),
+                ),
                 icon: const Icon(Icons.insights_outlined),
                 label: Text(context.l10n.analyzeSpending),
               ),
               OutlinedButton.icon(
-                onPressed: () =>
-                    context.read<AiCoachBloc>().add(const GetSuggestions()),
+                onPressed: () => context.read<AiCoachBloc>().add(
+                  GetSuggestions(languageCode: _languageCode(context)),
+                ),
                 icon: const Icon(Icons.savings_outlined),
                 label: Text(context.l10n.savingsTips),
               ),
               TextButton.icon(
-                onPressed: () =>
-                    context.read<AiCoachBloc>().add(const LoadInsights()),
+                onPressed: () => context.read<AiCoachBloc>().add(
+                  LoadInsights(languageCode: _languageCode(context)),
+                ),
                 icon: const Icon(Icons.refresh),
                 label: Text(context.l10n.refresh),
               ),

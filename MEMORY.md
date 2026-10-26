@@ -23,8 +23,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 949 unit/widget tests, coverage gate green, 28 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 950 unit/widget tests, coverage gate green, 28 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## AI Coach language (plan 019)
+
+- `LoadInsights`, `AnalyzeSpending`, and `GetSuggestions` carry a `languageCode`; the AI Coach screen passes `Localizations.localeOf(context).languageCode`.
+- `AiCoachBloc` appends “Write the response in Spanish/English.” to the context, including the empty-ledger context.
+- Prompts and the repository stay language-agnostic; tests assert the Spanish instruction reaches the use case and English remains the default.
+- Insights are regenerated per tap, so cached-language handling is not needed yet.
 
 ## Localized failures (plan 018)
 
@@ -244,7 +251,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 
 ## Known gaps / next
 
-1. Localize AI-generated insight content (domain failures are now translated at the UI boundary).
+1. Cache AI insights for offline use and remember the language they were generated in.
 2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.

@@ -103,6 +103,25 @@ void main() {
     );
 
     blocTest<AiCoachBloc, AiCoachState>(
+      'asks the model to answer in the active language',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => Right([suggestion]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights(languageCode: 'es')),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion]),
+      ],
+      verify: (_) {
+        final context =
+            verify(() => getInsights(captureAny())).captured.single as String;
+        expect(context, contains('Write the response in Spanish.'));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
       'handles an empty transaction history',
       setUp: () {
         when(() => getTransactions(any()))

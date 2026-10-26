@@ -35,7 +35,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     Emitter<AiCoachState> emit,
   ) async {
     emit(const AiCoachLoading());
-    final context = await _buildContext();
+    final context = await _buildContext(event.languageCode);
     final result = await _getInsights(context);
     result.fold(
       (failure) => emit(AiCoachFailure(failure.message)),
@@ -51,7 +51,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   ) async {
     final previous = _currentInsights;
     emit(const AiCoachLoading());
-    final context = await _buildContext();
+    final context = await _buildContext(event.languageCode);
     final result = await _analyzeSpending(context);
     result.fold(
       (failure) => emit(AiCoachFailure(failure.message)),
@@ -65,7 +65,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   ) async {
     final previous = _currentInsights;
     emit(const AiCoachLoading());
-    final context = await _buildContext();
+    final context = await _buildContext(event.languageCode);
     final result = await _getSuggestions(context);
     result.fold(
       (failure) => emit(AiCoachFailure(failure.message)),
@@ -78,11 +78,14 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     return current is AiCoachLoaded ? current.insights : const [];
   }
 
-  Future<String> _buildContext() async {
+  Future<String> _buildContext(String languageCode) async {
+    final language = languageCode.toLowerCase().startsWith('es')
+        ? 'Spanish'
+        : 'English';
     final result = await _getTransactions(const NoParams());
     final transactions = result.getOrElse((_) => const <TransactionEntity>[]);
     if (transactions.isEmpty) {
-      return 'No transactions recorded yet.';
+      return 'No transactions recorded yet. Write the response in $language.';
     }
 
     var income = 0.0;
@@ -114,6 +117,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
         'Expenses: \$${expenses.toStringAsFixed(2)}. '
         'Balance: \$${(income - expenses).toStringAsFixed(2)}. '
         'Top expense categories: '
-        '${categorySummary.isEmpty ? 'none' : categorySummary}.';
+        '${categorySummary.isEmpty ? 'none' : categorySummary}. '
+        'Write the response in $language.';
   }
 }

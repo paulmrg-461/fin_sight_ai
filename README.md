@@ -19,7 +19,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
 - **Languages** — English and Spanish UI (including validation, storage, auth, and sync errors) with a persisted System/English/Español selector and ARB-based localization.
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
-- **AI Coach** — Groq-powered insights generated from real transaction context, with deterministic JSON prompts and graceful failure handling.
+- **AI Coach** — Groq-powered insights generated from real transaction context in the active language (EN/ES), with deterministic JSON prompts and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
 - **Sync** — authenticated Supabase PostgREST push/pull for categories, scheduled payments, wallets, transfers, transactions, debts, budgets, and receivables, with offline queue, per-operation failure isolation, paginated pulls, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
