@@ -23,8 +23,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 945 unit/widget tests, coverage gate green, 27 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 946 unit/widget tests, coverage gate green, 28 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Copy previous budgets (plan 017)
+
+- Empty months read the previous month and expose `previousBudgetCount`; the UI only offers **Copy previous month** when that count is positive.
+- `CopyPreviousBudgets` recreates each previous limit for the selected month through `AddBudgetUseCase` (new ids), then reloads; the source month is untouched.
+- Tests: BLoC captures one add per limit with the selected month; integration creates a previous-month budget, moves forward, copies it, and verifies the limit.
 
 ## Budget month navigation (plan 016)
 

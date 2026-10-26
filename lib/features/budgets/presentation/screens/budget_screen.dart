@@ -122,25 +122,45 @@ class BudgetScreen extends StatelessWidget {
               onRetry: () =>
                   context.read<BudgetBloc>().add(const LoadBudgets()),
             ),
-            BudgetEmpty(:final categories, :final month) => AppContent(
-              maxWidth: 720,
-              child: Column(
-                children: [
-                  _MonthSelector(month: month ?? DateTime.now()),
-                  Expanded(
-                    child: Center(
-                      child: AppEmptyState(
-                        icon: Icons.pie_chart_rounded,
-                        title: context.l10n.noBudgetsYet,
-                        message: context.l10n.noBudgetsBody,
-                        actionLabel: context.l10n.addBudget,
-                        onAction: () => _addBudget(context, categories),
+            BudgetEmpty(
+              :final categories,
+              :final month,
+              :final previousBudgetCount,
+            ) =>
+              AppContent(
+                maxWidth: 720,
+                child: Column(
+                  children: [
+                    _MonthSelector(month: month ?? DateTime.now()),
+                    Expanded(
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            AppEmptyState(
+                              icon: Icons.pie_chart_rounded,
+                              title: context.l10n.noBudgetsYet,
+                              message: context.l10n.noBudgetsBody,
+                              actionLabel: context.l10n.addBudget,
+                              onAction: () => _addBudget(context, categories),
+                            ),
+                            if (previousBudgetCount > 0) ...[
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: () => context.read<BudgetBloc>().add(
+                                  const CopyPreviousBudgets(),
+                                ),
+                                icon: const Icon(Icons.copy_all_rounded),
+                                label: Text(context.l10n.copyPreviousBudgets),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             BudgetLoaded(:final progress, :final categories, :final month) =>
               AppContent(
                 padding: EdgeInsets.zero,

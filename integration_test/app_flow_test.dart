@@ -496,6 +496,32 @@ void main() {
     expect(find.text('Food'), findsOneWidget);
   });
 
+  testWidgets('copies the previous month budgets into the selected month', (
+    tester,
+  ) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.budgetsName);
+    await pumpUntil(tester, find.text('Add budget'));
+
+    await tester.tap(find.byTooltip('Previous month'));
+    await pumpUntil(tester, find.text('No budgets yet'));
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await pumpUntil(tester, find.text('New budget'));
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Food');
+    await tester.enterText(fields.at(1), '100');
+    await tester.tap(find.text('Save budget'));
+    await pumpUntilGone(tester, find.text('New budget'));
+    await pumpUntil(tester, find.text(money(100)));
+
+    await tester.tap(find.byTooltip('Next month'));
+    await pumpUntil(tester, find.text('Copy previous month'));
+    await tester.tap(find.text('Copy previous month'));
+    await pumpUntil(tester, find.text(money(100)));
+    expect(find.text('Food'), findsOneWidget);
+  });
+
   testWidgets('signs in and out from the dashboard', (tester) async {
     await harness.pumpApp(tester);
     await pumpUntil(tester, find.byIcon(Icons.person_outline));

@@ -2065,6 +2065,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next month'**
   String get nextMonth;
+
+  /// No description provided for @copyPreviousBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy previous month'**
+  String get copyPreviousBudgets;
 }
 
 class _AppLocalizationsDelegate

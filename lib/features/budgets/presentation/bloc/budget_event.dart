@@ -22,6 +22,11 @@ final class ChangeBudgetMonth extends BudgetEvent {
   List<Object?> get props => [month];
 }
 
+/// Copies last month's limits into the selected month.
+final class CopyPreviousBudgets extends BudgetEvent {
+  const CopyPreviousBudgets();
+}
+
 final class AddBudget extends BudgetEvent {
   const AddBudget({required this.category, required this.monthlyLimit});
 

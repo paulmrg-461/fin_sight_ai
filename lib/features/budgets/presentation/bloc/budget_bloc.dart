@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecase/usecase.dart';
+import '../../domain/entities/budget_entity.dart';
 import '../../domain/usecases/budget_usecases.dart';
 import 'budget_event.dart';
 import 'budget_state.dart';
@@ -18,6 +19,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   ) : super(const BudgetInitial()) {
     on<LoadBudgets>(_onLoad);
     on<ChangeBudgetMonth>(_onChangeMonth);
+    on<CopyPreviousBudgets>(_onCopyPrevious);
     on<AddBudget>(_onAdd);
     on<UpdateBudget>(_onUpdate);
     on<DeleteBudget>(_onDelete);
@@ -30,8 +32,12 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   final GetCategoriesUseCase _getCategories;
 
   late DateTime _selectedMonth = _currentMonth;
+  List<BudgetProgress> _previousBudgets = const [];
 
   DateTime get _month => _selectedMonth;
+
+  DateTime get _previousMonth =>
+      DateTime(_selectedMonth.year, _selectedMonth.month - 1);
 
   DateTime get _currentMonth {
     final now = DateTime.now();
@@ -48,6 +54,33 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
 
   Future<void> _onLoad(LoadBudgets event, Emitter<BudgetState> emit) =>
       _reload(emit);
+
+  Future<void> _onCopyPrevious(
+    CopyPreviousBudgets event,
+    Emitter<BudgetState> emit,
+  ) async {
+    emit(const BudgetLoading());
+    if (_previousBudgets.isEmpty) {
+      await _reload(emit);
+      return;
+    }
+
+    for (final item in _previousBudgets) {
+      final result = await _addBudget(
+        AddBudgetParams(
+          category: item.budget.category,
+          monthlyLimit: item.budget.monthlyLimit,
+          month: _month,
+        ),
+      );
+      final failure = result.getLeft().toNullable();
+      if (failure != null) {
+        emit(BudgetFailure(failure.message));
+        return;
+      }
+    }
+    await _reload(emit);
+  }
 
   Future<void> _onAdd(AddBudget event, Emitter<BudgetState> emit) async {
     emit(const BudgetLoading());
@@ -115,8 +148,17 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     final progress = progressResult.getOrElse((_) => const []);
     final categories = categoriesResult.getOrElse((_) => const []);
     if (progress.isEmpty) {
-      emit(BudgetEmpty(categories: categories, month: _month));
+      final previous = await _getProgress(_previousMonth);
+      _previousBudgets = previous.getOrElse((_) => const []);
+      emit(
+        BudgetEmpty(
+          categories: categories,
+          month: _month,
+          previousBudgetCount: _previousBudgets.length,
+        ),
+      );
     } else {
+      _previousBudgets = const [];
       emit(
         BudgetLoaded(progress: progress, categories: categories, month: _month),
       );

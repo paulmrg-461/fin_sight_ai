@@ -1091,4 +1091,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get nextMonth => 'Mes siguiente';
+
+  @override
+  String get copyPreviousBudgets => 'Copiar mes anterior';
 }

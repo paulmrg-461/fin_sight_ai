@@ -1090,4 +1090,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nextMonth => 'Next month';
+
+  @override
+  String get copyPreviousBudgets => 'Copy previous month';
 }

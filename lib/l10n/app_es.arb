@@ -407,5 +407,6 @@
     }
   },
   "previousMonth": "Mes anterior",
-  "nextMonth": "Mes siguiente"
+  "nextMonth": "Mes siguiente",
+  "copyPreviousBudgets": "Copiar mes anterior"
 }

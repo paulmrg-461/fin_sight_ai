@@ -36,15 +36,22 @@ final class BudgetLoaded extends BudgetState {
 }
 
 final class BudgetEmpty extends BudgetState {
-  const BudgetEmpty({required this.categories, this.month});
+  const BudgetEmpty({
+    required this.categories,
+    this.month,
+    this.previousBudgetCount = 0,
+  });
 
   final List<String> categories;
 
   /// Selected month, or `null` when a test emits a state directly.
   final DateTime? month;
 
+  /// Limits available in the previous month, used by "Copy previous month".
+  final int previousBudgetCount;
+
   @override
-  List<Object?> get props => [categories, month];
+  List<Object?> get props => [categories, month, previousBudgetCount];
 }
 
 final class BudgetFailure extends BudgetState {

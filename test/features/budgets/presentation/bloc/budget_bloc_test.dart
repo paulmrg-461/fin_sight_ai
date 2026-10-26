@@ -131,6 +131,53 @@ void main() {
     );
 
     blocTest<BudgetBloc, BudgetState>(
+      'copies the previous month into the selected month',
+      setUp: () {
+        final previous = DateTime(monthStart().year, monthStart().month - 1);
+        var copied = false;
+        when(() => getProgress(any())).thenAnswer((invocation) async {
+          final month = invocation.positionalArguments.first as DateTime;
+          if (month == previous) {
+            return Right([progress]);
+          }
+          return Right(copied ? [progress] : const <BudgetProgress>[]);
+        });
+        when(() => addBudget(any())).thenAnswer((_) async {
+          copied = true;
+          return Right(budget);
+        });
+      },
+      build: buildBloc,
+      act: (bloc) async {
+        bloc.add(const LoadBudgets());
+        await pumpEventQueue();
+        bloc.add(const CopyPreviousBudgets());
+      },
+      expect: () => [
+        const BudgetLoading(),
+        BudgetEmpty(
+          categories: const ['Food'],
+          month: monthStart(),
+          previousBudgetCount: 1,
+        ),
+        const BudgetLoading(),
+        BudgetLoaded(
+          progress: [progress],
+          categories: const ['Food'],
+          month: monthStart(),
+        ),
+      ],
+      verify: (_) {
+        final params =
+            verify(() => addBudget(captureAny())).captured.single
+                as AddBudgetParams;
+        expect(params.category, 'Food');
+        expect(params.monthlyLimit, 100);
+        expect(params.month, monthStart());
+      },
+    );
+
+    blocTest<BudgetBloc, BudgetState>(
       'emits failure when progress fails',
       setUp: () {
         when(() => getProgress(any()))

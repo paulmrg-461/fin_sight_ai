@@ -456,5 +456,6 @@
     }
   },
   "previousMonth": "Previous month",
-  "nextMonth": "Next month"
+  "nextMonth": "Next month",
+  "copyPreviousBudgets": "Copy previous month"
 }
