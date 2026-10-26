@@ -30,10 +30,12 @@ import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecas
     as categories;
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_state.dart';
+import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/calculate_payoff_usecase.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/delete_debt_usecase.dart';
@@ -154,11 +156,7 @@ class MockAnalyzeSpending extends Mock implements AnalyzeSpendingUseCase {}
 
 class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
 
-class MockGetSummary extends Mock implements GetDashboardSummaryUseCase {}
-
-class MockGetBreakdown extends Mock implements GetCategoryBreakdownUseCase {}
-
-class MockGetComparison extends Mock implements GetMonthlyComparisonUseCase {}
+class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
 class MockSyncNow extends Mock implements SyncNowUseCase {}
 
@@ -232,6 +230,12 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const NoParams());
+    registerFallbackValue(
+      DashboardRangeParams(
+        start: DateTime.utc(2026, 10, 1),
+        end: DateTime.utc(2026, 10, 31),
+      ),
+    );
   });
 
   setUp(() {
@@ -281,12 +285,32 @@ void main() {
       MockGetSavings(),
       getTransactions,
     );
-    dashboardBloc = DashboardBloc(
-      MockGetSummary(),
-      MockGetBreakdown(),
-      MockGetComparison(),
-      MockGetByDateRange(),
+    final getDashboard = MockGetDashboardData();
+    when(() => getDashboard(any())).thenAnswer(
+      (_) async => Right(
+        DashboardData(
+          summary: const DashboardSummaryEntity(
+            totalIncome: 0,
+            totalExpenses: 0,
+            balance: 0,
+            savingsRate: 0,
+            monthOverMonthChange: 0,
+          ),
+          breakdown: const <CategoryBreakdown>[],
+          comparison: const MonthlyComparisonEntity(
+            currentIncome: 0,
+            currentExpenses: 0,
+            previousIncome: 0,
+            previousExpenses: 0,
+            expenseChangePercentage: 0,
+          ),
+          recentTransactions: const <TransactionEntity>[],
+          start: DateTime.utc(2026, 10),
+          end: DateTime.utc(2026, 10, 31),
+        ),
+      ),
     );
+    dashboardBloc = DashboardBloc(getDashboard);
     syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
     authBloc = AuthBloc(
       MockSignIn(),

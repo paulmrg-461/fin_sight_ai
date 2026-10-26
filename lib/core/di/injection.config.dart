@@ -473,14 +473,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i913.UpdateTransactionUseCase>(
       () => _i913.UpdateTransactionUseCase(gh<_i544.TransactionRepository>()),
     );
-    gh.lazySingleton<_i905.GetDashboardSummaryUseCase>(
-      () => _i905.GetDashboardSummaryUseCase(gh<_i864.DashboardRepository>()),
-    );
-    gh.lazySingleton<_i905.GetCategoryBreakdownUseCase>(
-      () => _i905.GetCategoryBreakdownUseCase(gh<_i864.DashboardRepository>()),
-    );
-    gh.lazySingleton<_i905.GetMonthlyComparisonUseCase>(
-      () => _i905.GetMonthlyComparisonUseCase(gh<_i864.DashboardRepository>()),
+    gh.lazySingleton<_i905.GetDashboardDataUseCase>(
+      () => _i905.GetDashboardDataUseCase(gh<_i864.DashboardRepository>()),
     );
     gh.lazySingleton<_i361.AddTransactionUseCase>(
       () => _i361.AddTransactionUseCase(
@@ -501,6 +495,9 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
       ),
+    );
+    gh.factory<_i850.DashboardBloc>(
+      () => _i850.DashboardBloc(gh<_i905.GetDashboardDataUseCase>()),
     );
     gh.lazySingleton<_i734.AddReceivableUseCase>(
       () => _i734.AddReceivableUseCase(
@@ -565,14 +562,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i69.DeleteTransactionUseCase>(),
         gh<_i271.GetTransactionsByDateRangeUseCase>(),
         gh<_i913.UpdateTransactionUseCase>(),
-      ),
-    );
-    gh.factory<_i850.DashboardBloc>(
-      () => _i850.DashboardBloc(
-        gh<_i905.GetDashboardSummaryUseCase>(),
-        gh<_i905.GetCategoryBreakdownUseCase>(),
-        gh<_i905.GetMonthlyComparisonUseCase>(),
-        gh<_i271.GetTransactionsByDateRangeUseCase>(),
       ),
     );
     gh.lazySingleton<_i144.AddDebtUseCase>(

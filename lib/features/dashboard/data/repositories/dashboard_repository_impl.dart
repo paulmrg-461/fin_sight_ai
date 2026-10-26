@@ -13,10 +13,13 @@ import '../../domain/services/dashboard_calculator.dart';
 class DashboardRepositoryImpl implements DashboardRepository {
   const DashboardRepositoryImpl(this._transactions);
 
+  /// Recent activity cards shown under the charts.
+  static const int recentActivityLimit = 5;
+
   final TransactionRepository _transactions;
 
   @override
-  ResultFuture<DashboardSummaryEntity> getDashboardSummary({
+  ResultFuture<DashboardData> getDashboardData({
     required DateTime start,
     required DateTime end,
   }) async {
@@ -25,6 +28,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     if (failure != null) {
       return Left(failure);
     }
+    final current = currentResult.getOrElse((_) => const <TransactionEntity>[]);
 
     final previousRange = _previousMonth(start);
     final previousResult = await _fetch(previousRange.start, previousRange.end);
@@ -32,55 +36,26 @@ class DashboardRepositoryImpl implements DashboardRepository {
     if (previousFailure != null) {
       return Left(previousFailure);
     }
-
-    return Right(
-      DashboardCalculator.summary(
-        current: currentResult.getOrElse((_) => const <TransactionEntity>[]),
-        previous: previousResult.getOrElse((_) => const <TransactionEntity>[]),
-      ),
+    final previous = previousResult.getOrElse(
+      (_) => const <TransactionEntity>[],
     );
-  }
-
-  @override
-  ResultFuture<List<CategoryBreakdown>> getCategoryBreakdown({
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    final currentResult = await _fetch(start, end);
-    final failure = currentResult.getLeft().toNullable();
-    if (failure != null) {
-      return Left(failure);
-    }
 
     return Right(
-      DashboardCalculator.categoryBreakdown(
-        currentResult.getOrElse((_) => const <TransactionEntity>[]),
-      ),
-    );
-  }
-
-  @override
-  ResultFuture<MonthlyComparisonEntity> getMonthlyComparison({
-    required DateTime start,
-    required DateTime end,
-  }) async {
-    final currentResult = await _fetch(start, end);
-    final failure = currentResult.getLeft().toNullable();
-    if (failure != null) {
-      return Left(failure);
-    }
-
-    final previousRange = _previousMonth(start);
-    final previousResult = await _fetch(previousRange.start, previousRange.end);
-    final previousFailure = previousResult.getLeft().toNullable();
-    if (previousFailure != null) {
-      return Left(previousFailure);
-    }
-
-    return Right(
-      DashboardCalculator.monthlyComparison(
-        current: currentResult.getOrElse((_) => const <TransactionEntity>[]),
-        previous: previousResult.getOrElse((_) => const <TransactionEntity>[]),
+      DashboardData(
+        summary: DashboardCalculator.summary(
+          current: current,
+          previous: previous,
+        ),
+        breakdown: DashboardCalculator.categoryBreakdown(current),
+        comparison: DashboardCalculator.monthlyComparison(
+          current: current,
+          previous: previous,
+        ),
+        recentTransactions: List<TransactionEntity>.unmodifiable(
+          current.take(recentActivityLimit),
+        ),
+        start: start,
+        end: end,
       ),
     );
   }

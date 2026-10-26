@@ -23,6 +23,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
 - **Sync** — authenticated Supabase PostgREST push/pull for transactions, debts, budgets, and receivables, with offline queue, per-operation failure isolation, paginated pulls, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
+- **Performance** — the dashboard derives every section from two range reads per refresh; the integration benchmark seeds 300 transactions across three months to keep regressions visible.
 
 ## Architecture
 

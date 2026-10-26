@@ -3,17 +3,8 @@ import '../entities/dashboard_entities.dart';
 
 /// Domain contract for dashboard analytics.
 abstract interface class DashboardRepository {
-  ResultFuture<DashboardSummaryEntity> getDashboardSummary({
-    required DateTime start,
-    required DateTime end,
-  });
-
-  ResultFuture<List<CategoryBreakdown>> getCategoryBreakdown({
-    required DateTime start,
-    required DateTime end,
-  });
-
-  ResultFuture<MonthlyComparisonEntity> getMonthlyComparison({
+  /// Builds every dashboard output from one current and one previous read.
+  ResultFuture<DashboardData> getDashboardData({
     required DateTime start,
     required DateTime end,
   });

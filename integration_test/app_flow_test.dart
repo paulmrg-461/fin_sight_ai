@@ -2,6 +2,7 @@ import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
 import 'package:fin_sight_ai/core/utils/date_formatters.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
@@ -1031,12 +1032,36 @@ void main() {
   });
 
   testWidgets('benchmarks launch and screen render times', (tester) async {
+    // Seed three months of ledger history so the benchmark measures a real
+    // dashboard instead of the empty state.
+    final now = DateTime.now();
+    for (var index = 0; index < 300; index++) {
+      final monthsBack = index % 3;
+      final month = DateTime(now.year, now.month - monthsBack);
+      final day = (index % 27) + 1;
+      await harness.addTransaction(
+        AddTransactionParams(
+          amount: (index % 50) + 1,
+          type: index % 30 == 0
+              ? TransactionType.income
+              : TransactionType.expense,
+          category: index % 2 == 0 ? 'Groceries' : 'Dining',
+          description: 'Benchmark entry $index',
+          date: DateTime(month.year, month.month, day, 12),
+        ),
+      );
+    }
+    final count = await harness.transactionRepository.getTransactions();
+    expect(count.getOrElse((_) => const <TransactionEntity>[]), hasLength(300));
+
     final launch = Stopwatch()..start();
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.text('No transactions yet'));
+    await pumpUntil(tester, find.text('Balance'));
+    expect(harness.dashboardBloc.state, isA<DashboardLoaded>());
     launch.stop();
     debugPrint(
-      'BENCHMARK app_launch_and_dashboard=${launch.elapsedMilliseconds}ms',
+      'BENCHMARK app_launch_and_dashboard=${launch.elapsedMilliseconds}ms '
+      '(seeded=300)',
     );
     expect(launch.elapsedMilliseconds, lessThan(5000));
 
@@ -1044,7 +1069,10 @@ void main() {
     harness.router.goNamed(AppRoutes.transactionsName);
     await pumpUntil(tester, find.text('Add'));
     render.stop();
-    debugPrint('BENCHMARK transactions_render=${render.elapsedMilliseconds}ms');
+    debugPrint(
+      'BENCHMARK transactions_render=${render.elapsedMilliseconds}ms '
+      '(seeded=300)',
+    );
     expect(render.elapsedMilliseconds, lessThan(3000));
   });
 }

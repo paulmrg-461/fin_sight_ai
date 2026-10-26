@@ -23,8 +23,16 @@ _Last updated: 2026-10-24. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 886 unit/widget tests, coverage gate green, 23 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 885 unit/widget tests, coverage gate green, 23 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Dashboard performance (plan 010)
+
+- `DashboardRepository.getDashboardData` performs exactly two range reads (current and previous month) and derives summary, breakdown, comparison, and recent activity (top 5) from those lists.
+- `DashboardData` is the single bundle consumed by `DashboardBloc`; the separate summary/breakdown/comparison use cases and repository methods were removed.
+- Seeded benchmark (300 transactions, 3 months): dashboard launch 199 ms and transactions render 180 ms inside the full suite; the benchmark run alone in a fresh process measures 1018–1128 ms launch and ~294–305 ms render, which points at cold-start warmup.
+- Startup work is still eager: `main.dart` awaits due-schedule processing and loads every bloc before the first frame. `plans/012-startup-lazy-loading.md` (PERF-02) starts with per-load instrumentation in cold and warm processes before deferring non-critical loads; target is 600 ms.
+- Tests assert the two-read contract, previous-month values, empty periods, list content equality, and failure propagation.
 
 ## Editing, confirmation, and undo (plan 008)
 
@@ -184,6 +192,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 6. Money as integer minor units instead of `double`.
 7. Golden/screenshot tests in CI.
 8. Rotate the Groq key and Supabase DB password shared during setup.
+9. Defer non-critical startup loads and due-schedule processing (PERF-02, plan 012).
 
 ## Conventions to keep
 

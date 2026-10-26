@@ -2,6 +2,7 @@ import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -28,6 +29,22 @@ void main() {
     previousExpenses: 300,
     expenseChangePercentage: 33.33,
   );
+  final recent = TransactionEntity(
+    id: 'tx-1',
+    amount: 400,
+    type: TransactionType.expense,
+    category: 'Food',
+    description: 'Groceries',
+    date: DateTime.utc(2026, 10, 20),
+  );
+  final data = DashboardData(
+    summary: summary,
+    breakdown: const [],
+    comparison: comparison,
+    recentTransactions: [recent],
+    start: start,
+    end: end,
+  );
 
   setUp(() {
     repository = MockDashboardRepository();
@@ -49,65 +66,27 @@ void main() {
       );
     });
 
-    test('GetDashboardSummaryUseCase delegates a valid range', () async {
-      when(() => repository.getDashboardSummary(start: start, end: end))
-          .thenAnswer((_) async => const Right(summary));
+    test('GetDashboardDataUseCase delegates a valid range', () async {
+      when(() => repository.getDashboardData(start: start, end: end))
+          .thenAnswer((_) async => Right(data));
 
-      final result = await GetDashboardSummaryUseCase(repository)(
+      final result = await GetDashboardDataUseCase(repository)(
         DashboardRangeParams(start: start, end: end),
       );
 
-      expect(result.getOrElse((_) => fail('Expected summary')), summary);
-    });
-
-    test('GetCategoryBreakdownUseCase returns breakdown data', () async {
-      const breakdown = [
-        CategoryBreakdown(category: 'Food', amount: 100, percentage: 100),
-      ];
-      when(() => repository.getCategoryBreakdown(start: start, end: end))
-          .thenAnswer((_) async => const Right(breakdown));
-
-      final result = await GetCategoryBreakdownUseCase(repository)(
-        DashboardRangeParams(start: start, end: end),
-      );
-
-      expect(result.getOrElse((_) => const <CategoryBreakdown>[]), breakdown);
-    });
-
-    test('GetMonthlyComparisonUseCase returns comparison data', () async {
-      when(() => repository.getMonthlyComparison(start: start, end: end))
-          .thenAnswer((_) async => const Right(comparison));
-
-      final result = await GetMonthlyComparisonUseCase(repository)(
-        DashboardRangeParams(start: start, end: end),
-      );
-
-      expect(result.getOrElse((_) => fail('Expected comparison')), comparison);
+      expect(result.getOrElse((_) => fail('Expected dashboard data')), data);
     });
 
     test('rejects a reversed range without querying the repository', () async {
-      final params = DashboardRangeParams(start: end, end: start);
-
-      final summaryResult = await GetDashboardSummaryUseCase(repository)(
-        params,
-      );
-      final breakdownResult = await GetCategoryBreakdownUseCase(repository)(
-        params,
-      );
-      final comparisonResult = await GetMonthlyComparisonUseCase(repository)(
-        params,
+      final result = await GetDashboardDataUseCase(repository)(
+        DashboardRangeParams(start: end, end: start),
       );
 
-      for (final failure in [
-        summaryResult.getLeft().toNullable(),
-        breakdownResult.getLeft().toNullable(),
-        comparisonResult.getLeft().toNullable(),
-      ]) {
-        expect(failure, isA<ValidationFailure>());
-        expect(failure?.code, 'invalid_date_range');
-      }
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<ValidationFailure>());
+      expect(failure?.code, 'invalid_date_range');
       verifyNever(
-        () => repository.getDashboardSummary(
+        () => repository.getDashboardData(
           start: any(named: 'start'),
           end: any(named: 'end'),
         ),
@@ -116,10 +95,10 @@ void main() {
 
     test('propagates repository failures', () async {
       const failure = CacheFailure('Store down.');
-      when(() => repository.getDashboardSummary(start: start, end: end))
+      when(() => repository.getDashboardData(start: start, end: end))
           .thenAnswer((_) async => const Left(failure));
 
-      final result = await GetDashboardSummaryUseCase(repository)(
+      final result = await GetDashboardDataUseCase(repository)(
         DashboardRangeParams(start: start, end: end),
       );
 

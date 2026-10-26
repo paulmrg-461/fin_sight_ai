@@ -7,25 +7,14 @@ import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_bloc
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
-import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockGetSummary extends Mock implements GetDashboardSummaryUseCase {}
-
-class MockGetBreakdown extends Mock implements GetCategoryBreakdownUseCase {}
-
-class MockGetComparison extends Mock implements GetMonthlyComparisonUseCase {}
-
-class MockGetByRange extends Mock
-    implements GetTransactionsByDateRangeUseCase {}
+class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
 void main() {
-  late MockGetSummary getSummary;
-  late MockGetBreakdown getBreakdown;
-  late MockGetComparison getComparison;
-  late MockGetByRange getByRange;
+  late MockGetDashboardData getDashboard;
 
   const summary = DashboardSummaryEntity(
     totalIncome: 1000,
@@ -74,6 +63,15 @@ void main() {
     return DateTime(now.year, now.month + 1, 0, 23, 59, 59, 999);
   }
 
+  DashboardData dataFor(DateTime start, DateTime end) => DashboardData(
+    summary: summary,
+    breakdown: breakdown,
+    comparison: comparison,
+    recentTransactions: transactions,
+    start: start,
+    end: end,
+  );
+
   setUpAll(() {
     registerFallbackValue(const NoParams());
     registerFallbackValue(
@@ -82,30 +80,19 @@ void main() {
         end: DateTime.utc(2026, 10, 31),
       ),
     );
-    registerFallbackValue(
-      DateRangeParams(
-        start: DateTime.utc(2026, 10, 1),
-        end: DateTime.utc(2026, 10, 31),
-      ),
-    );
   });
 
   setUp(() {
-    getSummary = MockGetSummary();
-    getBreakdown = MockGetBreakdown();
-    getComparison = MockGetComparison();
-    getByRange = MockGetByRange();
+    getDashboard = MockGetDashboardData();
 
-    when(() => getSummary(any())).thenAnswer((_) async => const Right(summary));
-    when(() => getBreakdown(any()))
-        .thenAnswer((_) async => const Right(breakdown));
-    when(() => getComparison(any()))
-        .thenAnswer((_) async => const Right(comparison));
-    when(() => getByRange(any())).thenAnswer((_) async => Right(transactions));
+    when(() => getDashboard(any())).thenAnswer((invocation) async {
+      final params =
+          invocation.positionalArguments.first as DashboardRangeParams;
+      return Right(dataFor(params.start, params.end));
+    });
   });
 
-  DashboardBloc buildBloc() =>
-      DashboardBloc(getSummary, getBreakdown, getComparison, getByRange);
+  DashboardBloc buildBloc() => DashboardBloc(getDashboard);
 
   group('DashboardBloc', () {
     test('initial state is DashboardInitial', () {
@@ -113,7 +100,7 @@ void main() {
     });
 
     blocTest<DashboardBloc, DashboardState>(
-      'loads the current month dashboard',
+      'loads the current month dashboard in one aggregation',
       build: buildBloc,
       act: (bloc) => bloc.add(const LoadDashboard()),
       expect: () => [
@@ -127,12 +114,38 @@ void main() {
           end: monthEnd(),
         ),
       ],
+      verify: (_) {
+        verify(() => getDashboard(any())).called(1);
+      },
     );
 
     blocTest<DashboardBloc, DashboardState>(
       'emits empty when the period has no transactions',
       setUp: () {
-        when(() => getByRange(any())).thenAnswer((_) async => const Right([]));
+        when(() => getDashboard(any())).thenAnswer(
+          (_) async => Right(
+            DashboardData(
+              summary: const DashboardSummaryEntity(
+                totalIncome: 0,
+                totalExpenses: 0,
+                balance: 0,
+                savingsRate: 0,
+                monthOverMonthChange: 0,
+              ),
+              breakdown: const [],
+              comparison: const MonthlyComparisonEntity(
+                currentIncome: 0,
+                currentExpenses: 0,
+                previousIncome: 0,
+                previousExpenses: 0,
+                expenseChangePercentage: 0,
+              ),
+              recentTransactions: const [],
+              start: monthStart(),
+              end: monthEnd(),
+            ),
+          ),
+        );
       },
       build: buildBloc,
       act: (bloc) => bloc.add(const LoadDashboard()),
@@ -143,9 +156,9 @@ void main() {
     );
 
     blocTest<DashboardBloc, DashboardState>(
-      'emits failure when the summary query fails',
+      'emits failure when the aggregation fails',
       setUp: () {
-        when(() => getSummary(any()))
+        when(() => getDashboard(any()))
             .thenAnswer((_) async => const Left(CacheFailure('Store down.')));
       },
       build: buildBloc,
@@ -153,20 +166,6 @@ void main() {
       expect: () => [
         const DashboardLoading(),
         const DashboardFailure('Store down.'),
-      ],
-    );
-
-    blocTest<DashboardBloc, DashboardState>(
-      'emits failure when the breakdown query fails',
-      setUp: () {
-        when(() => getBreakdown(any()))
-            .thenAnswer((_) async => const Left(CacheFailure('No data.')));
-      },
-      build: buildBloc,
-      act: (bloc) => bloc.add(const LoadDashboard()),
-      expect: () => [
-        const DashboardLoading(),
-        const DashboardFailure('No data.'),
       ],
     );
 
@@ -192,7 +191,7 @@ void main() {
       ],
       verify: (_) {
         verify(
-          () => getSummary(
+          () => getDashboard(
             DashboardRangeParams(
               start: DateTime.utc(2026, 1, 1),
               end: DateTime.utc(2026, 1, 31),
@@ -215,7 +214,7 @@ void main() {
         const DashboardFailure('The start date must be before the end date.'),
       ],
       verify: (_) {
-        verifyNever(() => getSummary(any()));
+        verifyNever(() => getDashboard(any()));
       },
     );
 
@@ -237,7 +236,7 @@ void main() {
     );
 
     blocTest<DashboardBloc, DashboardState>(
-      'limits recent activity to five transactions',
+      'passes the recent activity from the bundle through untouched',
       setUp: () {
         final many = List.generate(
           6,
@@ -250,14 +249,27 @@ void main() {
             date: DateTime.utc(2026, 10, index + 1),
           ),
         );
-        when(() => getByRange(any())).thenAnswer((_) async => Right(many));
+        when(() => getDashboard(any())).thenAnswer((invocation) async {
+          final params =
+              invocation.positionalArguments.first as DashboardRangeParams;
+          return Right(
+            DashboardData(
+              summary: summary,
+              breakdown: breakdown,
+              comparison: comparison,
+              recentTransactions: many,
+              start: params.start,
+              end: params.end,
+            ),
+          );
+        });
       },
       build: buildBloc,
       act: (bloc) => bloc.add(const LoadDashboard()),
       verify: (bloc) {
         final state = bloc.state;
         expect(state, isA<DashboardLoaded>());
-        expect((state as DashboardLoaded).recentTransactions, hasLength(5));
+        expect((state as DashboardLoaded).recentTransactions, hasLength(6));
       },
     );
   });

@@ -1,3 +1,65 @@
+import '../../../transactions/domain/entities/transaction_entity.dart';
+
+/// Everything the dashboard needs for one period, built from two reads.
+class DashboardData {
+  const DashboardData({
+    required this.summary,
+    required this.breakdown,
+    required this.comparison,
+    required this.recentTransactions,
+    required this.start,
+    required this.end,
+  });
+
+  final DashboardSummaryEntity summary;
+  final List<CategoryBreakdown> breakdown;
+  final MonthlyComparisonEntity comparison;
+  final List<TransactionEntity> recentTransactions;
+  final DateTime start;
+  final DateTime end;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DashboardData &&
+          other.summary == summary &&
+          _sameList(other.breakdown, breakdown) &&
+          other.comparison == comparison &&
+          _sameList(other.recentTransactions, recentTransactions) &&
+          other.start == start &&
+          other.end == end;
+
+  @override
+  int get hashCode => Object.hash(
+    summary,
+    Object.hashAll(breakdown),
+    comparison,
+    Object.hashAll(recentTransactions),
+    start,
+    end,
+  );
+
+  @override
+  String toString() =>
+      'DashboardData(${summary.totalIncome}, ${summary.totalExpenses}, '
+      '${recentTransactions.length} recent)';
+}
+
+bool _sameList<T>(List<T> a, List<T> b) {
+  if (identical(a, b)) {
+    return true;
+  }
+  if (a.length != b.length) {
+    return false;
+  }
+  for (var index = 0; index < a.length; index++) {
+    if (a[index] != b[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /// Aggregated financial summary for a selected period.
 class DashboardSummaryEntity {
   const DashboardSummaryEntity({

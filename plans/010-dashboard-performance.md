@@ -14,6 +14,7 @@
 - **Depends on**: 003
 - **Category**: perf
 - **Planned at**: commit `4e42297`, 2026-10-23
+- **Status**: DONE (two range reads per refresh; benchmark seeds 300 transactions). Seeded launch logs 199 ms inside the full suite and 1018–1128 ms when run alone (cold first-run warmup), so PERF-02 is filed as `plans/012-startup-lazy-loading.md` with instrumentation as its first step.
 
 ## Why this matters
 
@@ -151,12 +152,12 @@ PERF-02 (startup lazy loading) as a follow-up rather than expanding this plan.
 
 ## Done criteria
 
-- [ ] One dashboard refresh performs exactly two range reads.
-- [ ] All dashboard states still render correctly.
-- [ ] Benchmark seeds data and logs a non-empty-dashboard number.
-- [ ] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
-- [ ] Old use cases removed or explicitly deprecated with no production callers.
-- [ ] `plans/README.md` updated.
+- [x] One dashboard refresh performs exactly two range reads.
+- [x] All dashboard states still render correctly.
+- [x] Benchmark seeds data and logs a non-empty-dashboard number.
+- [x] `flutter analyze`, unit coverage, coverage gate, Linux integration pass.
+- [x] Old use cases removed (single `GetDashboardDataUseCase`).
+- [x] `plans/README.md` updated.
 
 ## STOP conditions
 

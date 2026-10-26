@@ -17,8 +17,11 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 007 | Sync categories, schedules, wallets, and transfers | P2 | L | 001, 002, 005, 006 | TODO |
 | 008 | Add transaction/budget editing, confirmation, and undo | P2 | M | 003 | DONE (886 unit, 23 integration) |
 | 009 | Add due-date reminders and a committed-cashflow projection | P3 | L | 003 | TODO |
-| 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | TODO |
+| 010 | Cut dashboard/startup ledger scans | P2 | M | 003 | DONE (2 reads per refresh; 885 unit, 23 integration) |
 | 011 | Add a bottom navigation bar and hamburger drawer | P2 | M | 002, 004 | DONE (worktree `navigation-shell`, commit `62b1ede`) |
+| 012 | Defer non-critical startup loads (PERF-02) | P2 | M | 010 | TODO |
+
+- 010 collapsed dashboard refreshes from six transaction-box scans to two and derived summary, breakdown, comparison, and recent activity from the same lists. The seeded benchmark exposed startup work beyond the dashboard: `plans/012-startup-lazy-loading.md` tracks deferring non-critical loads and due-schedule processing after the first frame.
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale).
 

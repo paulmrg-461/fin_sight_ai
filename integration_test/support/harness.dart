@@ -264,9 +264,7 @@ class IntegrationHarness {
     final getSavings = GetSavingsSuggestionsUseCase(aiCoachRepository);
 
     final dashboardRepository = DashboardRepositoryImpl(transactionRepository);
-    final getSummary = GetDashboardSummaryUseCase(dashboardRepository);
-    final getBreakdown = GetCategoryBreakdownUseCase(dashboardRepository);
-    final getComparison = GetMonthlyComparisonUseCase(dashboardRepository);
+    final getDashboard = GetDashboardDataUseCase(dashboardRepository);
 
     transactionBloc = TransactionBloc(
       getTransactions,
@@ -302,12 +300,7 @@ class IntegrationHarness {
       getSavings,
       getTransactions,
     );
-    dashboardBloc = DashboardBloc(
-      getSummary,
-      getBreakdown,
-      getComparison,
-      getTransactionsByDateRange,
-    );
+    dashboardBloc = DashboardBloc(getDashboard);
 
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
     authRepository = AuthRepositoryImpl(

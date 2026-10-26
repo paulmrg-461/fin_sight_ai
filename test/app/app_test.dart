@@ -3,7 +3,6 @@ import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_state.dart';
-import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_state.dart';
@@ -56,7 +55,6 @@ import 'package:fin_sight_ai/features/ocr/presentation/bloc/ocr_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart';
-import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
@@ -148,11 +146,7 @@ class MockAnalyzeSpending extends Mock implements AnalyzeSpendingUseCase {}
 
 class MockGetSavings extends Mock implements GetSavingsSuggestionsUseCase {}
 
-class MockGetSummary extends Mock implements GetDashboardSummaryUseCase {}
-
-class MockGetBreakdown extends Mock implements GetCategoryBreakdownUseCase {}
-
-class MockGetComparison extends Mock implements GetMonthlyComparisonUseCase {}
+class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
 class MockSyncNow extends Mock implements SyncNowUseCase {}
 
@@ -282,25 +276,21 @@ void main() {
       getTransactions,
     );
 
-    final getSummary = MockGetSummary();
-    final getBreakdown = MockGetBreakdown();
-    final getComparison = MockGetComparison();
-    when(() => getSummary(any()))
-        .thenAnswer((_) async => const Right(_zeroSummary));
-    when(() => getBreakdown(any()))
-        .thenAnswer((_) async => const Right(<CategoryBreakdown>[]));
-    when(() => getComparison(any()))
-        .thenAnswer((_) async => const Right(_zeroComparison));
-    when(() => getByRange(any())).thenAnswer(
-      (_) async => const Right<Failure, List<TransactionEntity>>([]),
+    final getDashboard = MockGetDashboardData();
+    when(() => getDashboard(any())).thenAnswer(
+      (_) async => Right(
+        DashboardData(
+          summary: _zeroSummary,
+          breakdown: const [],
+          comparison: _zeroComparison,
+          recentTransactions: const [],
+          start: _zeroStart,
+          end: _zeroEnd,
+        ),
+      ),
     );
 
-    dashboardBloc = DashboardBloc(
-      getSummary,
-      getBreakdown,
-      getComparison,
-      getByRange,
-    );
+    dashboardBloc = DashboardBloc(getDashboard);
 
     syncBloc = SyncBloc(MockSyncNow(), MockGetSyncStatus());
     authBloc = AuthBloc(
@@ -573,6 +563,9 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Iniciar sesión'), findsOneWidget);
   });
 }
+
+final _zeroStart = DateTime.utc(2026, 10);
+final _zeroEnd = DateTime.utc(2026, 10, 31);
 
 const _zeroSummary = DashboardSummaryEntity(
   totalIncome: 0,

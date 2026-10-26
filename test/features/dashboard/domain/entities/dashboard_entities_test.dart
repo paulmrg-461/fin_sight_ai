@@ -1,4 +1,5 @@
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
+import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const summary = DashboardSummaryEntity(
@@ -23,7 +24,98 @@ const comparison = MonthlyComparisonEntity(
   expenseChangePercentage: 33.33,
 );
 
+final start = DateTime.utc(2026, 10);
+final end = DateTime.utc(2026, 10, 31);
+final recent = TransactionEntity(
+  id: 'tx-1',
+  amount: 400,
+  type: TransactionType.expense,
+  category: 'Food',
+  description: 'Groceries',
+  date: DateTime.utc(2026, 10, 20),
+);
+
+DashboardData buildData({
+  List<CategoryBreakdown>? breakdownList,
+  List<TransactionEntity>? recentList,
+  DateTime? rangeStart,
+}) {
+  return DashboardData(
+    summary: summary,
+    breakdown: breakdownList ?? const [breakdown],
+    comparison: comparison,
+    recentTransactions: recentList ?? [recent],
+    start: rangeStart ?? start,
+    end: end,
+  );
+}
+
 void main() {
+  group('DashboardData', () {
+    test('uses value equality across all sections', () {
+      final data = buildData();
+
+      expect(data, buildData());
+      expect(data.hashCode, buildData().hashCode);
+      expect(data, isNot(buildData(breakdownList: const [])));
+      expect(data, isNot(buildData(recentList: const [])));
+      expect(data, isNot(buildData(rangeStart: DateTime.utc(2026, 9))));
+      expect(data, isNot(Object()));
+    });
+
+    test('compares list contents, not only their length', () {
+      final data = buildData();
+
+      expect(
+        data,
+        isNot(
+          buildData(
+            recentList: [
+              TransactionEntity(
+                id: 'tx-2',
+                amount: 1,
+                type: TransactionType.expense,
+                category: 'Food',
+                description: '',
+                date: DateTime.utc(2026, 10, 21),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+
+    test('accepts the same list instance', () {
+      final recentList = [recent];
+      final data = DashboardData(
+        summary: summary,
+        breakdown: const [breakdown],
+        comparison: comparison,
+        recentTransactions: recentList,
+        start: start,
+        end: end,
+      );
+
+      final sameInstance = DashboardData(
+        summary: summary,
+        breakdown: const [breakdown],
+        comparison: comparison,
+        recentTransactions: recentList,
+        start: start,
+        end: end,
+      );
+
+      expect(data, sameInstance);
+    });
+
+    test('toString exposes totals and recent count', () {
+      final text = buildData().toString();
+
+      expect(text, contains('1000.0'));
+      expect(text, contains('400.0'));
+      expect(text, contains('1 recent'));
+    });
+  });
   group('DashboardSummaryEntity', () {
     test('uses value equality', () {
       expect(

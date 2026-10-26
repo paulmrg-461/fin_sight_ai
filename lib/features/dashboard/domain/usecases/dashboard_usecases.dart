@@ -22,66 +22,26 @@ class DashboardRangeParams {
   int get hashCode => Object.hash(start, end);
 }
 
+/// Loads every dashboard section from a single two-range aggregation.
 @lazySingleton
-class GetDashboardSummaryUseCase
-    implements UseCase<DashboardSummaryEntity, DashboardRangeParams> {
-  const GetDashboardSummaryUseCase(this._repository);
+class GetDashboardDataUseCase
+    implements UseCase<DashboardData, DashboardRangeParams> {
+  const GetDashboardDataUseCase(this._repository);
 
   final DashboardRepository _repository;
 
   @override
-  Future<Result<DashboardSummaryEntity>> call(DashboardRangeParams params) {
+  Future<Result<DashboardData>> call(DashboardRangeParams params) {
     if (params.start.isAfter(params.end)) {
-      return Future.value(_invalidRange());
+      return Future.value(
+        const Left(
+          ValidationFailure(
+            'The start date must be before the end date.',
+            code: 'invalid_date_range',
+          ),
+        ),
+      );
     }
-    return _repository.getDashboardSummary(
-      start: params.start,
-      end: params.end,
-    );
+    return _repository.getDashboardData(start: params.start, end: params.end);
   }
 }
-
-@lazySingleton
-class GetCategoryBreakdownUseCase
-    implements UseCase<List<CategoryBreakdown>, DashboardRangeParams> {
-  const GetCategoryBreakdownUseCase(this._repository);
-
-  final DashboardRepository _repository;
-
-  @override
-  Future<Result<List<CategoryBreakdown>>> call(DashboardRangeParams params) {
-    if (params.start.isAfter(params.end)) {
-      return Future.value(_invalidRange());
-    }
-    return _repository.getCategoryBreakdown(
-      start: params.start,
-      end: params.end,
-    );
-  }
-}
-
-@lazySingleton
-class GetMonthlyComparisonUseCase
-    implements UseCase<MonthlyComparisonEntity, DashboardRangeParams> {
-  const GetMonthlyComparisonUseCase(this._repository);
-
-  final DashboardRepository _repository;
-
-  @override
-  Future<Result<MonthlyComparisonEntity>> call(DashboardRangeParams params) {
-    if (params.start.isAfter(params.end)) {
-      return Future.value(_invalidRange());
-    }
-    return _repository.getMonthlyComparison(
-      start: params.start,
-      end: params.end,
-    );
-  }
-}
-
-Left<Failure, T> _invalidRange<T>() => const Left(
-  ValidationFailure(
-    'The start date must be before the end date.',
-    code: 'invalid_date_range',
-  ),
-);
