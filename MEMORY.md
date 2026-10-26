@@ -23,8 +23,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Latest feature commits: `feat(receivables): sync with Supabase`, `feat(receivables): edit money lent in place`, `feat(receivables): track money lent and payments received`, `94686e7` feat(planning) categories + scheduled payments, `a738bb8` feat(i18n).
 - Previous feature commits: `e214877` (money + COP/USD), `3aba81b` (env/CI security), `d971165` (specs layout).
 - Branch: `develop` for active work; every completed feature is committed, pushed, and fast-forwarded into `main`.
-- Gates at this checkpoint: `flutter analyze` clean, 957 unit/widget tests, coverage gate green, 29 Linux integration tests.
+- Gates at this checkpoint: `flutter analyze` clean, 957 unit/widget tests, coverage gate green, 30 Linux integration tests.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
+
+## Duplicate transaction (plan 022)
+
+- The edit form exposes **Save as copy**: it dispatches `AddTransaction` with the current fields, today's date, and no id.
+- The original row and receipt path are untouched; the copy gets a fresh id and a normal sync upsert.
+- Integration covers the copy path and asserts distinct ids with equal amounts.
 
 ## Dashboard committed card (plan 021)
 

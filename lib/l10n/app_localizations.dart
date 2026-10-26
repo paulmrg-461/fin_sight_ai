@@ -2425,6 +2425,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Committed next 30 days'**
   String get committedNext30Days;
+
+  /// No description provided for @saveAsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Save as copy'**
+  String get saveAsCopy;
 }
 
 class _AppLocalizationsDelegate

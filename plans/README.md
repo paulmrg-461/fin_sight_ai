@@ -29,6 +29,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 019 | Answer AI coaching in the active language | P3 | S | 004 | DONE (950 unit, 28 integration) |
 | 020 | Cache AI insights for offline use | P3 | M | 019 | DONE (955 unit, 28 integration) |
 | 021 | Show committed cashflow on the dashboard | P2 | S | 009, 012, 016 | DONE (957 unit, 29 integration) |
+| 022 | Duplicate a transaction | P3 | S | 008 | DONE (957 unit, 30 integration) |
+
+- 022 added **Save as copy** to the transaction edit form, creating a new id dated today.
 
 - 021 surfaced the 30-day committed projection on the dashboard and refreshes it when the tab is selected.
 

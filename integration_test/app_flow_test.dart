@@ -445,6 +445,39 @@ void main() {
     );
   });
 
+  testWidgets('duplicates a transaction as a new record', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 20,
+        type: TransactionType.expense,
+        category: 'Food',
+        description: 'Lunch',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.transactionsName);
+    await pumpUntil(tester, find.text('Lunch'));
+
+    await tester.tap(find.byTooltip('Edit transaction'));
+    await pumpUntil(tester, find.text('Edit transaction'));
+    final copy = find.text('Save as copy');
+    await tester.ensureVisible(copy);
+    await tester.pumpAndSettle();
+    await tester.tap(copy);
+    await pumpUntilGone(tester, find.text('Save as copy'));
+    await pumpUntil(tester, find.text('Lunch'));
+
+    final stored = await harness.transactionRepository.getTransactions();
+    final transactions = stored.getOrElse(
+      (_) => throw TestFailure('Expected transactions'),
+    );
+    expect(transactions, hasLength(2));
+    expect(transactions.map((item) => item.id).toSet(), hasLength(2));
+    expect(transactions.map((item) => item.amount), everyElement(20));
+  });
+
   testWidgets('edits and deletes a budget with confirmation', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

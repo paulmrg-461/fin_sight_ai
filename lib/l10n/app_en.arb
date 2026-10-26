@@ -516,5 +516,6 @@
   "errTransfer": "Unable to transfer money.",
   "errGeneric": "Something went wrong. Please try again.",
   "savedInsights": "Showing saved insights. Reconnect to refresh.",
-  "committedNext30Days": "Committed next 30 days"
+  "committedNext30Days": "Committed next 30 days",
+  "saveAsCopy": "Save as copy"
 }

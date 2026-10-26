@@ -83,7 +83,7 @@ class _TransactionFormState extends State<TransactionForm> {
     super.dispose();
   }
 
-  void _submit() {
+  void _submit({bool asCopy = false}) {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
@@ -95,7 +95,19 @@ class _TransactionFormState extends State<TransactionForm> {
         ? null
         : _receiptController.text.trim();
 
-    if (widget.isEditing) {
+    if (asCopy) {
+      bloc.add(
+        AddTransaction(
+          amount: amount,
+          type: _type,
+          category: _category ?? '',
+          description: _descriptionController.text,
+          date: DateTime.now(),
+          walletId: _walletId,
+          receiptImagePath: receiptImagePath,
+        ),
+      );
+    } else if (widget.isEditing) {
       bloc.add(
         UpdateTransaction(
           id: widget.initial!.id,
@@ -265,6 +277,14 @@ class _TransactionFormState extends State<TransactionForm> {
                       : context.l10n.saveTransaction,
                 ),
               ),
+              if (widget.isEditing) ...[
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  onPressed: () => _submit(asCopy: true),
+                  icon: const Icon(Icons.copy_all_rounded),
+                  label: Text(context.l10n.saveAsCopy),
+                ),
+              ],
             ],
           ),
         ),

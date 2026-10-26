@@ -1280,4 +1280,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get committedNext30Days => 'Committed next 30 days';
+
+  @override
+  String get saveAsCopy => 'Save as copy';
 }

@@ -467,5 +467,6 @@
   "errTransfer": "No se pudo transferir el dinero.",
   "errGeneric": "Algo salió mal. Inténtalo de nuevo.",
   "savedInsights": "Mostrando ideas guardadas. Reconéctate para actualizar.",
-  "committedNext30Days": "Comprometido próximos 30 días"
+  "committedNext30Days": "Comprometido próximos 30 días",
+  "saveAsCopy": "Guardar como copia"
 }
