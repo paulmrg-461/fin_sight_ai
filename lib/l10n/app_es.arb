@@ -559,5 +559,14 @@
   "reportShareFailed": "No se pudo compartir el reporte.",
   "noReportData": "Sin movimientos este mes",
   "noReportDataBody": "Elige otro mes o agrega transacciones para ver un reporte.",
-  "monthComparison": "vs mes anterior"
+  "monthComparison": "vs mes anterior",
+  "budgetAlerts": "Alertas de presupuesto",
+  "budgetAlertPercent": "{percent}% usado",
+  "@budgetAlertPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  }
 }

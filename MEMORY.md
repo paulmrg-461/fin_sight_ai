@@ -63,6 +63,11 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## Budget alerts (plan 033)
+
+- Dashboard `BudgetAlertsCard` lists categories at 80%+ of their monthly limit from `BudgetBloc` (top 3, sorted), with percentage, red over-limit bars, and spent/limit amounts; opens `/budgets`.
+- Hidden when nothing is close to the limit; no new storage reads or notifications.
+
 ## Monthly reports + sharing (plan 032)
 
 - `/reports` navigates months, reads current + previous ranges, and reuses `DashboardCalculator` for summary/comparison/breakdown.

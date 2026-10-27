@@ -2851,6 +2851,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'vs previous month'**
   String get monthComparison;
+
+  /// No description provided for @budgetAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget alerts'**
+  String get budgetAlerts;
+
+  /// No description provided for @budgetAlertPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% used'**
+  String budgetAlertPercent(int percent);
 }
 
 class _AppLocalizationsDelegate

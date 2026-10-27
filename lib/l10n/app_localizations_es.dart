@@ -1525,4 +1525,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get monthComparison => 'vs mes anterior';
+
+  @override
+  String get budgetAlerts => 'Alertas de presupuesto';
+
+  @override
+  String budgetAlertPercent(int percent) {
+    return '$percent% usado';
+  }
 }

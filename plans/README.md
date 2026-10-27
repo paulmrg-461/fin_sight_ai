@@ -40,6 +40,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 030 | Edit savings goals and show monthly pace | P2 | S/M | 026 | DONE (1037 unit, 32 integration) |
 | 031 | Global search across local finance data | P2 | S | 014, 026 | DONE (1037 unit, 33 integration) |
 | 032 | Monthly reports with native CSV sharing | P2 | M | 010, 015 | DONE (1048 unit, 34 integration) |
+| 033 | Surface budget alerts on the dashboard | P2 | S | 017, 021 | DONE (1050 unit, 34 integration) |
+
+- 033 added a dashboard card for categories at 80%+ of their monthly budget.
 
 - 032 added monthly reports with summary, category breakdown, month navigation, and native CSV sharing.
 
