@@ -79,6 +79,9 @@ abstract class StorageModule {
         AppConstants.scheduledPaymentsBoxName,
       ),
       aiInsights: await Hive.openBox<dynamic>(AppConstants.aiInsightsBoxName),
+      savingsGoals: await Hive.openBox<dynamic>(
+        AppConstants.savingsGoalsBoxName,
+      ),
     );
   }
 }

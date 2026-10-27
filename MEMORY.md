@@ -56,6 +56,15 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `MainShell` refreshes the dashboard when its bottom-navigation tab is selected, so schedules/debts added in other branches appear immediately without extra startup reads.
 - Tests: BLoC projection, widget preview/tap, and an integration flow where a debt minimum appears on the dashboard.
 
+## Savings goals (plan 026)
+
+- Hive `savings_goals` box (cleared via `LocalDataScope`) with `SavingsGoalEntity` + `SavingsContribution` (saved/remaining/progress/completion).
+- Use cases validate goal name/target and contributions; amounts are rounded to 2 decimals.
+- `/savings` (drawer entry): total-saved hero, goal cards with progress/target date, create and add-money dialogs, confirmed delete.
+- Dashboard shows a savings summary (saved/target, count, next target date) from `SavingsBloc`; the AI context includes goal totals for insights and chat.
+- Savings goals are **local-only**; syncing them needs a migration + queue/remote mapping plan.
+- Tests: domain/data/BLoC, AI context, and an integration create+contribute flow.
+
 ## Free-form coach chat (plan 025)
 
 - `/ai-coach/chat` uses `CoachChatBloc` + `AskCoachUseCase`; answers are plain text from the same Groq datasource.
@@ -317,6 +326,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 ## Known gaps / next
 
 1. Poblar `categoryId` canónico en transacciones y presupuestos.
+2. Sync savings goals (migration + queue/remote/pull).
 2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
 3. Populate canonical `category_id` on transactions and budgets.
 4. Sync receipt metadata; streaming AI responses.

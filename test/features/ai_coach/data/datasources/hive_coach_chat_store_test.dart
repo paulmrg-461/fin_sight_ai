@@ -32,6 +32,7 @@ void main() {
       categories: box,
       scheduledPayments: box,
       aiInsights: box,
+      savingsGoals: box,
     );
     store = HiveCoachChatStore(boxes);
   });

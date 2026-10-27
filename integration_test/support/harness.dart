@@ -42,6 +42,12 @@ import 'package:fin_sight_ai/features/categories/domain/repositories/category_re
 import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecases.dart';
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart';
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_event.dart';
+import 'package:fin_sight_ai/features/savings/data/datasources/hive_savings_local_data_source.dart';
+import 'package:fin_sight_ai/features/savings/data/repositories/savings_repository_impl.dart';
+import 'package:fin_sight_ai/features/savings/domain/repositories/savings_repository.dart';
+import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
+import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
+import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_event.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/repositories/scheduled_payment_repository.dart';
@@ -139,6 +145,7 @@ class IntegrationHarness {
   late Box<dynamic> _categoriesBox;
   late Box<dynamic> _scheduledPaymentsBox;
   late Box<dynamic> _aiInsightsBox;
+  late Box<dynamic> _savingsGoalsBox;
 
   late LocalDataScope localDataScope;
   late AuthRepository authRepository;
@@ -162,6 +169,8 @@ class IntegrationHarness {
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
   late CoachChatBloc coachChatBloc;
+  late SavingsRepository savingsRepository;
+  late SavingsBloc savingsBloc;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
@@ -199,6 +208,7 @@ class IntegrationHarness {
     _categoriesBox = await Hive.openBox<dynamic>('categories');
     _scheduledPaymentsBox = await Hive.openBox<dynamic>('scheduled_payments');
     _aiInsightsBox = await Hive.openBox<dynamic>('ai_insights');
+    _savingsGoalsBox = await Hive.openBox<dynamic>('savings_goals');
   }
 
   void _wire() {
@@ -216,6 +226,7 @@ class IntegrationHarness {
       categories: _categoriesBox,
       scheduledPayments: _scheduledPaymentsBox,
       aiInsights: _aiInsightsBox,
+      savingsGoals: _savingsGoalsBox,
     );
     localDataScope = HiveLocalDataScope(boxes);
     final syncLocal = HiveSyncLocalDataSource(_syncQueueBox, _syncMetaBox);
@@ -307,12 +318,16 @@ class IntegrationHarness {
       addTransaction,
       const _FakeReceiptImageStore(),
     );
+    savingsRepository = SavingsRepositoryImpl(
+      HiveSavingsLocalDataSource(_savingsGoalsBox),
+    );
     aiCoachBloc = AiCoachBloc(
       getInsights,
       analyzeSpending,
       getSavings,
       getTransactions,
       getDebts,
+      GetSavingsGoalsUseCase(savingsRepository),
       HiveInsightCache(boxes),
     );
     dashboardBloc = DashboardBloc(
@@ -320,10 +335,18 @@ class IntegrationHarness {
       GetCommittedCashflowUseCase(scheduledPaymentRepository, debtRepository),
     );
 
+    savingsBloc = SavingsBloc(
+      GetSavingsGoalsUseCase(savingsRepository),
+      CreateSavingsGoalUseCase(savingsRepository),
+      AddSavingsContributionUseCase(savingsRepository),
+      DeleteSavingsGoalUseCase(savingsRepository),
+    );
+
     coachChatBloc = CoachChatBloc(
       AskCoachUseCase(aiCoachRepository),
       getTransactions,
       getDebts,
+      GetSavingsGoalsUseCase(savingsRepository),
       HiveCoachChatStore(boxes),
     );
 
@@ -426,6 +449,7 @@ class IntegrationHarness {
         budgetBloc.add(const LoadBudgets());
         walletBloc.add(const LoadWallets());
         categoryBloc.add(const LoadCategories());
+        savingsBloc.add(const LoadSavingsGoals());
         scheduledPaymentBloc.add(const LoadScheduledPayments());
       }
     });
@@ -446,6 +470,7 @@ class IntegrationHarness {
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       coachChatBloc: coachChatBloc,
+      savingsBloc: savingsBloc,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,
@@ -512,6 +537,7 @@ class IntegrationHarness {
     await _categoriesBox.close();
     await _scheduledPaymentsBox.close();
     await _aiInsightsBox.close();
+    await _savingsGoalsBox.close();
     await Hive.close();
     await _openStorage();
     _wire();
@@ -589,6 +615,9 @@ class IntegrationHarness {
     }
     if (_aiInsightsBox.isOpen) {
       await _aiInsightsBox.close();
+    }
+    if (_savingsGoalsBox.isOpen) {
+      await _savingsGoalsBox.close();
     }
     await Hive.close();
     if (await directory.exists()) {

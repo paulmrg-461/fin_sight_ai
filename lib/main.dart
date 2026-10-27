@@ -32,6 +32,8 @@ import 'features/categories/presentation/bloc/category_bloc.dart';
 import 'features/categories/presentation/bloc/category_event.dart';
 import 'features/scheduled_payments/domain/usecases/scheduled_payment_usecases.dart';
 import 'features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
+import 'features/savings/presentation/bloc/savings_bloc.dart';
+import 'features/savings/presentation/bloc/savings_event.dart';
 import 'features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
@@ -75,6 +77,7 @@ Future<void> main() async {
   final localeBloc = getIt<LocaleBloc>()..add(const LoadLocale());
   final categoryBloc = getIt<CategoryBloc>();
   final scheduledPaymentBloc = getIt<ScheduledPaymentBloc>();
+  final savingsBloc = getIt<SavingsBloc>();
   final authBloc = getIt<AuthBloc>()..add(const RestoreAuthSession());
   authBloc.stream.listen((state) {
     if (state is AuthAuthenticated) {
@@ -91,6 +94,7 @@ Future<void> main() async {
       budgetBloc.add(const LoadBudgets());
       walletBloc.add(const LoadWallets());
       categoryBloc.add(const LoadCategories());
+      savingsBloc.add(const LoadSavingsGoals());
       scheduledPaymentBloc.add(const LoadScheduledPayments());
     }
   });
@@ -113,6 +117,7 @@ Future<void> main() async {
       localeBloc: localeBloc,
       categoryBloc: categoryBloc,
       scheduledPaymentBloc: scheduledPaymentBloc,
+      savingsBloc: savingsBloc,
     ),
   );
 

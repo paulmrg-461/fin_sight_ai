@@ -8,12 +8,13 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 
 ## Features
 
-- **Dashboard** — balance hero, cash/card balances, receivables summary, income/expense/savings KPIs, category donut, monthly comparison, a 30-day committed-cashflow card, a current-debts overview, recent activity, date-range filtering, and pull-to-refresh.
+- **Dashboard** — balance hero, cash/card balances, receivables summary, income/expense/savings KPIs, category donut, monthly comparison, a 30-day committed-cashflow card, a current-debts overview, savings-goal progress, recent activity, date-range filtering, and pull-to-refresh.
 - **Transactions** — income/expense tracking with date-range and category filters, receipt paths, in-place editing (same id, one sync update), duplicate-as-copy, text search over the active period, clipboard CSV export, delete confirmation with undo, and soft-delete tombstones.
 - **Debts** — balances, progress bars, payment history, a compounded-interest payoff calculator, and a monthly amortization plan with interest/principal/remaining per installment; the dashboard shows current debt totals and the next due account.
 - **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, payment history, in-place editing, and Supabase sync.
 - **Budgets** — monthly category limits with month navigation and previous-month copying, spending progress, over-budget highlighting, category suggestions, in-place editing from the budget card, delete confirmation, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
+- **Savings goals** — named targets with contribution history, progress, optional target dates, a dashboard summary, and goal totals shared with the AI coach. Local-only for now.
 - **Categories** — shared category catalog with localized defaults, manual create/rename (cascading to transactions, budgets, and schedules), and archive/restore.
 - **Scheduled payments & salary** — monthly or yearly recurring expenses (rent, credits, subscriptions, phone plan) or income (salary) that is recorded automatically when due, with in-app notice, pause/resume, pay-now, delete, and an expected-monthly-income summary.
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.

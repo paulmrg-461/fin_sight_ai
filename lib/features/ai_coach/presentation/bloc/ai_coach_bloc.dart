@@ -5,6 +5,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../../../debts/domain/entities/debt_entity.dart';
 import '../../../debts/domain/usecases/get_debts_usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../savings/domain/entities/savings_goal_entity.dart';
+import '../../../savings/domain/usecases/savings_usecases.dart';
 import '../../../transactions/domain/usecases/get_transactions_usecase.dart';
 import '../../domain/entities/financial_insight_entity.dart';
 import '../../domain/entities/insight_history_entry.dart';
@@ -25,6 +27,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     this._getSuggestions,
     this._getTransactions,
     this._getDebts,
+    this._getSavings,
     this._cache,
   ) : super(const AiCoachInitial()) {
     on<LoadInsights>(_onLoadInsights);
@@ -37,6 +40,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   final GetSavingsSuggestionsUseCase _getSuggestions;
   final GetTransactionsUseCase _getTransactions;
   final GetDebtsUseCase _getDebts;
+  final GetSavingsGoalsUseCase _getSavings;
   final InsightCache _cache;
 
   Future<void> _onLoadInsights(
@@ -147,11 +151,13 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   Future<String> _buildContext(String languageCode) async {
     final transactionsResult = await _getTransactions(const NoParams());
     final debtsResult = await _getDebts(const NoParams());
+    final savingsResult = await _getSavings(const NoParams());
     return CoachContextBuilder.build(
       transactions: transactionsResult.getOrElse(
         (_) => const <TransactionEntity>[],
       ),
       debts: debtsResult.getOrElse((_) => const <DebtEntity>[]),
+      savingsGoals: savingsResult.getOrElse((_) => const <SavingsGoalEntity>[]),
       languageCode: languageCode,
     );
   }

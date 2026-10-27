@@ -33,6 +33,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 023 | Debt payment plan + dashboard debt overview | P2 | M | 008, 021 | DONE (976 unit, 30 integration) |
 | 024 | AI debt context + insight history | P2 | M | 019, 020, 023 | DONE (982 unit, 30 integration) |
 | 025 | Free-form coaching chat with persisted conversation | P2 | M | 019, 020, 024 | DONE (998 unit, 31 integration) |
+| 026 | Savings goals with dashboard and AI context | P2 | L | 016, 020, 023 | DONE (1021 unit, 32 integration) |
+
+- 026 added local savings goals with contributions, a dashboard summary, and goal totals in the AI context.
 
 - 025 added a persisted free-form coach chat that uses the same transaction + debt context as the insights.
 

@@ -1366,4 +1366,84 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get coachThinking => 'Pensando…';
+
+  @override
+  String get savingsGoals => 'Metas de ahorro';
+
+  @override
+  String get savingsGoalsDescription =>
+      'Define una meta, agrega dinero con el tiempo y mira tu progreso.';
+
+  @override
+  String get newSavingsGoal => 'Nueva meta de ahorro';
+
+  @override
+  String get goalName => 'Nombre de la meta';
+
+  @override
+  String get goalNameRequired => 'Escribe un nombre para la meta.';
+
+  @override
+  String get targetAmount => 'Monto objetivo';
+
+  @override
+  String get targetAmountInvalid => 'Ingresa un objetivo mayor que cero.';
+
+  @override
+  String get targetDateOptional => 'Fecha objetivo (opcional)';
+
+  @override
+  String get createGoal => 'Crear meta';
+
+  @override
+  String get addMoney => 'Agregar dinero';
+
+  @override
+  String get contributionAmount => 'Monto del aporte';
+
+  @override
+  String get contributionInvalid => 'Ingresa un monto mayor que cero.';
+
+  @override
+  String get totalSaved => 'Total ahorrado';
+
+  @override
+  String get ofTarget => 'del objetivo';
+
+  @override
+  String get goalCompleted => 'Completada';
+
+  @override
+  String get noSavingsGoals => 'Aún no hay metas de ahorro';
+
+  @override
+  String get noSavingsGoalsBody =>
+      'Crea una meta para un viaje, un fondo de emergencia o cualquier cosa que quieras ahorrar.';
+
+  @override
+  String get addFirstGoal => 'Crea tu primera meta';
+
+  @override
+  String get deleteSavingsGoalQuestion => '¿Eliminar esta meta de ahorro?';
+
+  @override
+  String get deleteSavingsGoalBody =>
+      'La meta y su historial de aportes se eliminarán de este dispositivo.';
+
+  @override
+  String get goalTargetDate => 'Meta';
+
+  @override
+  String get savedLabel => 'Ahorrado';
+
+  @override
+  String savingsGoalsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count metas',
+      one: '1 meta',
+    );
+    return '$_temp0';
+  }
 }

@@ -161,6 +161,17 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receiva
     as _i642;
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart'
     as _i9;
+import 'package:fin_sight_ai/features/savings/data/datasources/savings_local_data_source.dart'
+    as _i703;
+import 'package:fin_sight_ai/features/savings/data/repositories/savings_repository_impl.dart'
+    as _i552;
+import 'package:fin_sight_ai/features/savings/data/savings_module.dart' as _i58;
+import 'package:fin_sight_ai/features/savings/domain/repositories/savings_repository.dart'
+    as _i361;
+import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart'
+    as _i119;
+import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart'
+    as _i851;
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart'
     as _i462;
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart'
@@ -197,7 +208,7 @@ import 'package:fin_sight_ai/features/transactions/data/repositories/transaction
 import 'package:fin_sight_ai/features/transactions/domain/repositories/transaction_repository.dart'
     as _i544;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart'
-    as _i361;
+    as _i362;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/delete_transaction_usecase.dart'
     as _i69;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_by_date_range_usecase.dart'
@@ -245,6 +256,7 @@ extension GetItInjectableX on _i174.GetIt {
     final budgetsModule = _$BudgetsModule();
     final categoriesModule = _$CategoriesModule();
     final ocrModule = _$OcrModule();
+    final savingsModule = _$SavingsModule();
     final scheduledPaymentsModule = _$ScheduledPaymentsModule();
     final syncModule = _$SyncModule();
     final walletsModule = _$WalletsModule();
@@ -316,6 +328,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i783.ReceiptLocalDataSource>(
       () => ocrModule.provideReceiptLocalDataSource(gh<_i422.AppBoxes>()),
     );
+    gh.lazySingleton<_i703.SavingsLocalDataSource>(
+      () => savingsModule.provideSavingsLocalDataSource(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i462.ScheduledPaymentLocalDataSource>(
       () => scheduledPaymentsModule.provideScheduledPaymentLocalDataSource(
         gh<_i422.AppBoxes>(),
@@ -357,6 +372,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
       () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
+    );
+    gh.lazySingleton<_i361.SavingsRepository>(
+      () => _i552.SavingsRepositoryImpl(gh<_i703.SavingsLocalDataSource>()),
     );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
@@ -402,6 +420,12 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.lazySingleton<_i119.GetSavingsGoalsUseCase>(
+      () => _i119.GetSavingsGoalsUseCase(gh<_i361.SavingsRepository>()),
+    );
+    gh.lazySingleton<_i119.DeleteSavingsGoalUseCase>(
+      () => _i119.DeleteSavingsGoalUseCase(gh<_i361.SavingsRepository>()),
+    );
     gh.lazySingleton<_i588.SyncQueue>(
       () => syncModule.provideSyncQueue(gh<_i921.SyncLocalDataSource>()),
     );
@@ -416,6 +440,20 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i41.GetCategoriesUseCase>(
       () => _i41.GetCategoriesUseCase(gh<_i575.BudgetRepository>()),
+    );
+    gh.lazySingleton<_i119.CreateSavingsGoalUseCase>(
+      () => _i119.CreateSavingsGoalUseCase(
+        gh<_i361.SavingsRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.lazySingleton<_i119.AddSavingsContributionUseCase>(
+      () => _i119.AddSavingsContributionUseCase(
+        gh<_i361.SavingsRepository>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
     );
     gh.lazySingleton<_i1013.GetWalletBalancesUseCase>(
       () => _i1013.GetWalletBalancesUseCase(gh<_i305.WalletRepository>()),
@@ -481,8 +519,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i905.GetDashboardDataUseCase>(
       () => _i905.GetDashboardDataUseCase(gh<_i864.DashboardRepository>()),
     );
-    gh.lazySingleton<_i361.AddTransactionUseCase>(
-      () => _i361.AddTransactionUseCase(
+    gh.lazySingleton<_i362.AddTransactionUseCase>(
+      () => _i362.AddTransactionUseCase(
         gh<_i544.TransactionRepository>(),
         uuid: gh<_i706.Uuid>(),
       ),
@@ -492,6 +530,14 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i315.ReceivableLocalDataSource>(),
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i851.SavingsBloc>(
+      () => _i851.SavingsBloc(
+        gh<_i119.GetSavingsGoalsUseCase>(),
+        gh<_i119.CreateSavingsGoalUseCase>(),
+        gh<_i119.AddSavingsContributionUseCase>(),
+        gh<_i119.DeleteSavingsGoalUseCase>(),
       ),
     );
     gh.lazySingleton<_i978.MakePaymentUseCase>(
@@ -569,7 +615,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i820.TransactionBloc>(
       () => _i820.TransactionBloc(
         gh<_i1051.GetTransactionsUseCase>(),
-        gh<_i361.AddTransactionUseCase>(),
+        gh<_i362.AddTransactionUseCase>(),
         gh<_i69.DeleteTransactionUseCase>(),
         gh<_i271.GetTransactionsByDateRangeUseCase>(),
         gh<_i913.UpdateTransactionUseCase>(),
@@ -693,16 +739,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i998.RestoreSessionUseCase>(),
       ),
     );
-    gh.factory<_i872.AiCoachBloc>(
-      () => _i872.AiCoachBloc(
-        gh<_i811.GetInsightsUseCase>(),
-        gh<_i177.AnalyzeSpendingUseCase>(),
-        gh<_i363.GetSavingsSuggestionsUseCase>(),
-        gh<_i1051.GetTransactionsUseCase>(),
-        gh<_i243.GetDebtsUseCase>(),
-        gh<_i802.InsightCache>(),
-      ),
-    );
     gh.factory<_i1009.DebtBloc>(
       () => _i1009.DebtBloc(
         gh<_i243.GetDebtsUseCase>(),
@@ -725,6 +761,16 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
+    gh.factory<_i739.CoachChatBloc>(
+      () => _i739.CoachChatBloc(
+        gh<_i205.AskCoachUseCase>(),
+        gh<_i1051.GetTransactionsUseCase>(),
+        gh<_i243.GetDebtsUseCase>(),
+        gh<_i119.GetSavingsGoalsUseCase>(),
+        gh<_i766.CoachChatStore>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
     gh.factory<_i968.CategoryBloc>(
       () => _i968.CategoryBloc(
         gh<_i195.GetCategoryCatalogUseCase>(),
@@ -739,13 +785,15 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
       ),
     );
-    gh.factory<_i739.CoachChatBloc>(
-      () => _i739.CoachChatBloc(
-        gh<_i205.AskCoachUseCase>(),
+    gh.factory<_i872.AiCoachBloc>(
+      () => _i872.AiCoachBloc(
+        gh<_i811.GetInsightsUseCase>(),
+        gh<_i177.AnalyzeSpendingUseCase>(),
+        gh<_i363.GetSavingsSuggestionsUseCase>(),
         gh<_i1051.GetTransactionsUseCase>(),
         gh<_i243.GetDebtsUseCase>(),
-        gh<_i766.CoachChatStore>(),
-        uuid: gh<_i706.Uuid>(),
+        gh<_i119.GetSavingsGoalsUseCase>(),
+        gh<_i802.InsightCache>(),
       ),
     );
     gh.factory<_i9.ReceivableBloc>(
@@ -781,7 +829,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i826.ScanReceiptUseCase>(),
         gh<_i292.SaveReceiptUseCase>(),
         gh<_i937.GetReceiptsUseCase>(),
-        gh<_i361.AddTransactionUseCase>(),
+        gh<_i362.AddTransactionUseCase>(),
         gh<_i666.ReceiptImageStore>(),
       ),
     );
@@ -812,6 +860,8 @@ class _$BudgetsModule extends _i950.BudgetsModule {}
 class _$CategoriesModule extends _i873.CategoriesModule {}
 
 class _$OcrModule extends _i600.OcrModule {}
+
+class _$SavingsModule extends _i58.SavingsModule {}
 
 class _$ScheduledPaymentsModule extends _i942.ScheduledPaymentsModule {}
 

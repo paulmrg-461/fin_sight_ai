@@ -32,6 +32,7 @@ void main() {
         'scope_scheduled_payments',
       ),
       aiInsights: await Hive.openBox<dynamic>('scope_ai_insights'),
+      savingsGoals: await Hive.openBox<dynamic>('scope_savings_goals'),
     );
     scope = HiveLocalDataScope(boxes);
   });

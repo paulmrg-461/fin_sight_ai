@@ -608,6 +608,38 @@ void main() {
     expect(find.text('Food'), findsOneWidget);
   });
 
+  testWidgets('creates a savings goal and adds money', (tester) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.savingsName);
+    await pumpUntil(tester, find.text('No savings goals yet'));
+
+    await tester.tap(
+      find.widgetWithText(FloatingActionButton, 'New savings goal'),
+    );
+    await pumpUntil(tester, find.text('Create goal'));
+
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Trip');
+    await tester.enterText(fields.at(1), '1000');
+    await tester.tap(find.text('Create goal'));
+    await pumpUntilGone(tester, find.text('Create goal'));
+    await pumpUntil(tester, find.text('Trip'));
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Add money'));
+    await pumpUntil(tester, find.text('Contribution amount'));
+    await tester.enterText(find.byType(TextFormField).first, '400');
+    await tester.tap(find.widgetWithText(FilledButton, 'Add money').last);
+    await pumpUntil(tester, find.text(money(400)));
+
+    final stored = await harness.savingsRepository.getGoals();
+    final goals = stored.getOrElse(
+      (_) => throw TestFailure('Expected savings goals'),
+    );
+    expect(goals, hasLength(1));
+    expect(goals.single.name, 'Trip');
+    expect(goals.single.savedAmount, 400);
+  });
+
   testWidgets('signs in and out from the dashboard', (tester) async {
     await harness.pumpApp(tester);
     await pumpUntil(tester, find.byIcon(Icons.person_outline));

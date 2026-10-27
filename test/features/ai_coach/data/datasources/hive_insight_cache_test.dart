@@ -33,6 +33,7 @@ void main() {
       categories: box,
       scheduledPayments: box,
       aiInsights: box,
+      savingsGoals: box,
     );
     cache = HiveInsightCache(boxes);
   });

@@ -8,6 +8,7 @@ import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_bloc
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_event.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_state.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.dart';
+import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
@@ -18,6 +19,8 @@ class MockAskCoach extends Mock implements AskCoachUseCase {}
 class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
 
 class MockGetDebts extends Mock implements GetDebtsUseCase {}
+
+class MockGetSavingsGoals extends Mock implements GetSavingsGoalsUseCase {}
 
 class InMemoryChatStore implements CoachChatStore {
   final List<CoachMessage> messages = [];
@@ -37,6 +40,7 @@ void main() {
   late MockAskCoach askCoach;
   late MockGetTransactions getTransactions;
   late MockGetDebts getDebts;
+  late MockGetSavingsGoals getSavingsGoals;
   late InMemoryChatStore store;
 
   setUpAll(() {
@@ -48,13 +52,20 @@ void main() {
     askCoach = MockAskCoach();
     getTransactions = MockGetTransactions();
     getDebts = MockGetDebts();
+    getSavingsGoals = MockGetSavingsGoals();
+    when(() => getSavingsGoals(any())).thenAnswer((_) async => const Right([]));
     store = InMemoryChatStore();
     when(() => getTransactions(any())).thenAnswer((_) async => const Right([]));
     when(() => getDebts(any())).thenAnswer((_) async => const Right([]));
   });
 
-  CoachChatBloc buildBloc() =>
-      CoachChatBloc(askCoach, getTransactions, getDebts, store);
+  CoachChatBloc buildBloc() => CoachChatBloc(
+    askCoach,
+    getTransactions,
+    getDebts,
+    getSavingsGoals,
+    store,
+  );
 
   group('CoachChatBloc', () {
     test('initial state is CoachChatInitial', () {

@@ -554,5 +554,35 @@
   "coachSuggestionOne": "How can I pay off my debt faster?",
   "coachSuggestionTwo": "Where am I overspending?",
   "coachSuggestionThree": "How much could I save this month?",
-  "coachThinking": "Thinking…"
+  "coachThinking": "Thinking…",
+  "savingsGoals": "Savings goals",
+  "savingsGoalsDescription": "Set a target, add money over time, and watch your progress.",
+  "newSavingsGoal": "New savings goal",
+  "goalName": "Goal name",
+  "goalNameRequired": "Enter a goal name.",
+  "targetAmount": "Target amount",
+  "targetAmountInvalid": "Enter a target greater than zero.",
+  "targetDateOptional": "Target date (optional)",
+  "createGoal": "Create goal",
+  "addMoney": "Add money",
+  "contributionAmount": "Contribution amount",
+  "contributionInvalid": "Enter an amount greater than zero.",
+  "totalSaved": "Total saved",
+  "ofTarget": "of target",
+  "goalCompleted": "Completed",
+  "noSavingsGoals": "No savings goals yet",
+  "noSavingsGoalsBody": "Create a goal for a trip, an emergency fund, or anything you are saving for.",
+  "addFirstGoal": "Create your first goal",
+  "deleteSavingsGoalQuestion": "Delete this savings goal?",
+  "deleteSavingsGoalBody": "The goal and its contribution history will be removed from this device.",
+  "goalTargetDate": "Target",
+  "savedLabel": "Saved",
+  "savingsGoalsCount": "{count, plural, =1{1 goal} other{{count} goals}}",
+  "@savingsGoalsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

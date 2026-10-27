@@ -2569,6 +2569,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Thinking…'**
   String get coachThinking;
+
+  /// No description provided for @savingsGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings goals'**
+  String get savingsGoals;
+
+  /// No description provided for @savingsGoalsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a target, add money over time, and watch your progress.'**
+  String get savingsGoalsDescription;
+
+  /// No description provided for @newSavingsGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'New savings goal'**
+  String get newSavingsGoal;
+
+  /// No description provided for @goalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal name'**
+  String get goalName;
+
+  /// No description provided for @goalNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a goal name.'**
+  String get goalNameRequired;
+
+  /// No description provided for @targetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Target amount'**
+  String get targetAmount;
+
+  /// No description provided for @targetAmountInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a target greater than zero.'**
+  String get targetAmountInvalid;
+
+  /// No description provided for @targetDateOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Target date (optional)'**
+  String get targetDateOptional;
+
+  /// No description provided for @createGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Create goal'**
+  String get createGoal;
+
+  /// No description provided for @addMoney.
+  ///
+  /// In en, this message translates to:
+  /// **'Add money'**
+  String get addMoney;
+
+  /// No description provided for @contributionAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Contribution amount'**
+  String get contributionAmount;
+
+  /// No description provided for @contributionInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an amount greater than zero.'**
+  String get contributionInvalid;
+
+  /// No description provided for @totalSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Total saved'**
+  String get totalSaved;
+
+  /// No description provided for @ofTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'of target'**
+  String get ofTarget;
+
+  /// No description provided for @goalCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get goalCompleted;
+
+  /// No description provided for @noSavingsGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'No savings goals yet'**
+  String get noSavingsGoals;
+
+  /// No description provided for @noSavingsGoalsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a goal for a trip, an emergency fund, or anything you are saving for.'**
+  String get noSavingsGoalsBody;
+
+  /// No description provided for @addFirstGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first goal'**
+  String get addFirstGoal;
+
+  /// No description provided for @deleteSavingsGoalQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this savings goal?'**
+  String get deleteSavingsGoalQuestion;
+
+  /// No description provided for @deleteSavingsGoalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The goal and its contribution history will be removed from this device.'**
+  String get deleteSavingsGoalBody;
+
+  /// No description provided for @goalTargetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get goalTargetDate;
+
+  /// No description provided for @savedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedLabel;
+
+  /// No description provided for @savingsGoalsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 goal} other{{count} goals}}'**
+  String savingsGoalsCount(int count);
 }
 
 class _AppLocalizationsDelegate

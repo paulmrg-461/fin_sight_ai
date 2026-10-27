@@ -67,6 +67,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/sched
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
+import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_state.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
@@ -107,6 +109,15 @@ class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
 
 class MockGetDebts extends Mock implements GetDebtsUseCase {}
+
+class MockGetSavingsGoals extends Mock implements GetSavingsGoalsUseCase {}
+
+class MockCreateSavingsGoal extends Mock implements CreateSavingsGoalUseCase {}
+
+class MockAddSavingsContribution extends Mock
+    implements AddSavingsContributionUseCase {}
+
+class MockDeleteSavingsGoal extends Mock implements DeleteSavingsGoalUseCase {}
 
 class MockAddDebt extends Mock implements AddDebtUseCase {}
 
@@ -307,6 +318,7 @@ void main() {
       MockGetSavings(),
       getTransactions,
       MockGetDebts(),
+      MockGetSavingsGoals(),
       MockInsightCache(),
     );
     final getDashboard = MockGetDashboardData();
@@ -389,10 +401,17 @@ void main() {
       receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
+      savingsBloc: SavingsBloc(
+        MockGetSavingsGoals(),
+        MockCreateSavingsGoal(),
+        MockAddSavingsContribution(),
+        MockDeleteSavingsGoal(),
+      ),
       coachChatBloc: CoachChatBloc(
         MockAskCoach(),
         MockGetTransactions(),
         MockGetDebts(),
+        MockGetSavingsGoals(),
         MockCoachChatStore(),
       ),
       dashboardBloc: dashboardBloc,

@@ -505,5 +505,35 @@
   "coachSuggestionOne": "¿Cómo puedo pagar mi deuda más rápido?",
   "coachSuggestionTwo": "¿En qué estoy gastando de más?",
   "coachSuggestionThree": "¿Cuánto podría ahorrar este mes?",
-  "coachThinking": "Pensando…"
+  "coachThinking": "Pensando…",
+  "savingsGoals": "Metas de ahorro",
+  "savingsGoalsDescription": "Define una meta, agrega dinero con el tiempo y mira tu progreso.",
+  "newSavingsGoal": "Nueva meta de ahorro",
+  "goalName": "Nombre de la meta",
+  "goalNameRequired": "Escribe un nombre para la meta.",
+  "targetAmount": "Monto objetivo",
+  "targetAmountInvalid": "Ingresa un objetivo mayor que cero.",
+  "targetDateOptional": "Fecha objetivo (opcional)",
+  "createGoal": "Crear meta",
+  "addMoney": "Agregar dinero",
+  "contributionAmount": "Monto del aporte",
+  "contributionInvalid": "Ingresa un monto mayor que cero.",
+  "totalSaved": "Total ahorrado",
+  "ofTarget": "del objetivo",
+  "goalCompleted": "Completada",
+  "noSavingsGoals": "Aún no hay metas de ahorro",
+  "noSavingsGoalsBody": "Crea una meta para un viaje, un fondo de emergencia o cualquier cosa que quieras ahorrar.",
+  "addFirstGoal": "Crea tu primera meta",
+  "deleteSavingsGoalQuestion": "¿Eliminar esta meta de ahorro?",
+  "deleteSavingsGoalBody": "La meta y su historial de aportes se eliminarán de este dispositivo.",
+  "goalTargetDate": "Meta",
+  "savedLabel": "Ahorrado",
+  "savingsGoalsCount": "{count, plural, =1{1 meta} other{{count} metas}}",
+  "@savingsGoalsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

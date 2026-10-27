@@ -1357,4 +1357,84 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get coachThinking => 'Thinking…';
+
+  @override
+  String get savingsGoals => 'Savings goals';
+
+  @override
+  String get savingsGoalsDescription =>
+      'Set a target, add money over time, and watch your progress.';
+
+  @override
+  String get newSavingsGoal => 'New savings goal';
+
+  @override
+  String get goalName => 'Goal name';
+
+  @override
+  String get goalNameRequired => 'Enter a goal name.';
+
+  @override
+  String get targetAmount => 'Target amount';
+
+  @override
+  String get targetAmountInvalid => 'Enter a target greater than zero.';
+
+  @override
+  String get targetDateOptional => 'Target date (optional)';
+
+  @override
+  String get createGoal => 'Create goal';
+
+  @override
+  String get addMoney => 'Add money';
+
+  @override
+  String get contributionAmount => 'Contribution amount';
+
+  @override
+  String get contributionInvalid => 'Enter an amount greater than zero.';
+
+  @override
+  String get totalSaved => 'Total saved';
+
+  @override
+  String get ofTarget => 'of target';
+
+  @override
+  String get goalCompleted => 'Completed';
+
+  @override
+  String get noSavingsGoals => 'No savings goals yet';
+
+  @override
+  String get noSavingsGoalsBody =>
+      'Create a goal for a trip, an emergency fund, or anything you are saving for.';
+
+  @override
+  String get addFirstGoal => 'Create your first goal';
+
+  @override
+  String get deleteSavingsGoalQuestion => 'Delete this savings goal?';
+
+  @override
+  String get deleteSavingsGoalBody =>
+      'The goal and its contribution history will be removed from this device.';
+
+  @override
+  String get goalTargetDate => 'Target';
+
+  @override
+  String get savedLabel => 'Saved';
+
+  @override
+  String savingsGoalsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count goals',
+      one: '1 goal',
+    );
+    return '$_temp0';
+  }
 }

@@ -6,6 +6,8 @@ import '../../../../core/usecase/usecase.dart';
 import '../../../debts/domain/entities/debt_entity.dart';
 import '../../../debts/domain/usecases/get_debts_usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
+import '../../../savings/domain/entities/savings_goal_entity.dart';
+import '../../../savings/domain/usecases/savings_usecases.dart';
 import '../../../transactions/domain/usecases/get_transactions_usecase.dart';
 import '../../domain/entities/coach_message.dart';
 import '../../domain/repositories/coach_chat_store.dart';
@@ -21,6 +23,7 @@ class CoachChatBloc extends Bloc<CoachChatEvent, CoachChatState> {
     this._askCoach,
     this._getTransactions,
     this._getDebts,
+    this._getSavings,
     this._store, {
     this.uuid = const Uuid(),
   }) : super(const CoachChatInitial()) {
@@ -32,6 +35,7 @@ class CoachChatBloc extends Bloc<CoachChatEvent, CoachChatState> {
   final AskCoachUseCase _askCoach;
   final GetTransactionsUseCase _getTransactions;
   final GetDebtsUseCase _getDebts;
+  final GetSavingsGoalsUseCase _getSavings;
   final CoachChatStore _store;
   final Uuid uuid;
 
@@ -116,11 +120,13 @@ class CoachChatBloc extends Bloc<CoachChatEvent, CoachChatState> {
   Future<String> _buildContext(String languageCode) async {
     final transactionsResult = await _getTransactions(const NoParams());
     final debtsResult = await _getDebts(const NoParams());
+    final savingsResult = await _getSavings(const NoParams());
     return CoachContextBuilder.build(
       transactions: transactionsResult.getOrElse(
         (_) => const <TransactionEntity>[],
       ),
       debts: debtsResult.getOrElse((_) => const <DebtEntity>[]),
+      savingsGoals: savingsResult.getOrElse((_) => const <SavingsGoalEntity>[]),
       languageCode: languageCode,
     );
   }

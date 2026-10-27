@@ -7,6 +7,7 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../core/currency/presentation/screens/settings_screen.dart';
 import '../../features/budgets/presentation/screens/budget_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
+import '../../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../../features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import '../../features/wallets/presentation/screens/wallet_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -114,6 +115,11 @@ GoRouter buildRouter({
         path: AppRoutes.settingsPath,
         name: AppRoutes.settingsName,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.savingsPath,
+        name: AppRoutes.savingsName,
+        builder: (context, state) => const SavingsGoalsScreen(),
       ),
       GoRoute(
         path: AppRoutes.categoriesPath,

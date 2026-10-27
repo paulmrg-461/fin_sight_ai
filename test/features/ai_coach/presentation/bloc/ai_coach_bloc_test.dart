@@ -8,6 +8,8 @@ import 'package:fin_sight_ai/features/ai_coach/domain/entities/insight_history_e
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart';
 import 'package:fin_sight_ai/features/debts/domain/entities/debt_entity.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/get_debts_usecase.dart';
+import 'package:fin_sight_ai/features/savings/domain/entities/savings_goal_entity.dart';
+import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_event.dart';
@@ -30,6 +32,8 @@ class MockInsightCache extends Mock implements InsightCache {}
 
 class MockGetDebts extends Mock implements GetDebtsUseCase {}
 
+class MockGetSavingsGoals extends Mock implements GetSavingsGoalsUseCase {}
+
 void main() {
   late MockGetInsights getInsights;
   late MockAnalyzeSpending analyzeSpending;
@@ -37,6 +41,7 @@ void main() {
   late MockGetTransactions getTransactions;
   late MockInsightCache cache;
   late MockGetDebts getDebts;
+  late MockGetSavingsGoals getSavingsGoals;
 
   final suggestion = FinancialInsightEntity(
     id: 'i-1',
@@ -82,6 +87,8 @@ void main() {
     getSavings = MockGetSavings();
     getTransactions = MockGetTransactions();
     getDebts = MockGetDebts();
+    getSavingsGoals = MockGetSavingsGoals();
+    when(() => getSavingsGoals(any())).thenAnswer((_) async => const Right([]));
     cache = MockInsightCache();
     when(() => getDebts(any())).thenAnswer((_) async => const Right([]));
     when(() => cache.read(any())).thenAnswer((_) async => null);
@@ -104,6 +111,7 @@ void main() {
     getSavings,
     getTransactions,
     getDebts,
+    getSavingsGoals,
     cache,
   );
 
@@ -225,6 +233,43 @@ void main() {
         expect(context, contains('Debts: 1'));
         expect(context, contains('Total remaining: \$600.00'));
         expect(context, contains('Highest rate: 24.00%'));
+      },
+    );
+
+    blocTest<AiCoachBloc, AiCoachState>(
+      'includes savings goals in the financial context',
+      setUp: () {
+        when(() => getInsights(any()))
+            .thenAnswer((_) async => Right([suggestion]));
+        when(() => getSavingsGoals(any())).thenAnswer(
+          (_) async => Right([
+            SavingsGoalEntity(
+              id: 'g-1',
+              name: 'Trip',
+              targetAmount: 1000,
+              createdAt: DateTime.utc(2026, 10, 1),
+              contributions: [
+                SavingsContribution(
+                  id: 'c-1',
+                  amount: 400,
+                  date: DateTime.utc(2026, 10, 2),
+                ),
+              ],
+            ),
+          ]),
+        );
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(const LoadInsights()),
+      expect: () => [
+        const AiCoachLoading(),
+        AiCoachLoaded([suggestion]),
+      ],
+      verify: (_) {
+        final context =
+            verify(() => getInsights(captureAny())).captured.single as String;
+        expect(context, contains('Savings goals: 1'));
+        expect(context, contains('Saved: \$400.00 of \$1000.00'));
       },
     );
 

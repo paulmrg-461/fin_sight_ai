@@ -1,4 +1,5 @@
 import '../../../debts/domain/entities/debt_entity.dart';
+import '../../../savings/domain/entities/savings_goal_entity.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 
 /// Builds the financial context shared by insights, analysis, and chat.
@@ -6,14 +7,18 @@ abstract final class CoachContextBuilder {
   static String build({
     required List<TransactionEntity> transactions,
     required List<DebtEntity> debts,
+    List<SavingsGoalEntity> savingsGoals = const [],
     required String languageCode,
   }) {
     final language = languageCode.toLowerCase().startsWith('es')
         ? 'Spanish'
         : 'English';
     final debtSummary = _debtSummary(debts);
+    final savingsSummary = _savingsSummary(savingsGoals);
     if (transactions.isEmpty) {
-      return 'No transactions recorded yet.${debtSummary.isEmpty ? '' : ' $debtSummary'} '
+      return 'No transactions recorded yet.'
+          '${debtSummary.isEmpty ? '' : ' $debtSummary'}'
+          '${savingsSummary.isEmpty ? '' : ' $savingsSummary'} '
           'Write the response in $language.';
     }
 
@@ -47,7 +52,21 @@ abstract final class CoachContextBuilder {
         'Top expense categories: '
         '${categorySummary.isEmpty ? 'none' : categorySummary}. '
         '${debtSummary.isEmpty ? '' : '$debtSummary '}'
+        '${savingsSummary.isEmpty ? '' : '$savingsSummary '}'
         'Write the response in $language.';
+  }
+
+  static String _savingsSummary(List<SavingsGoalEntity> goals) {
+    if (goals.isEmpty) {
+      return '';
+    }
+    final saved = goals.fold<double>(0, (sum, goal) => sum + goal.savedAmount);
+    final target = goals.fold<double>(
+      0,
+      (sum, goal) => sum + goal.targetAmount,
+    );
+    return 'Savings goals: ${goals.length}. Saved: '
+        '\$${saved.toStringAsFixed(2)} of \$${target.toStringAsFixed(2)}.';
   }
 
   static String _debtSummary(List<DebtEntity> debts) {
