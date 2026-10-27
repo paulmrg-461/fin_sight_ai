@@ -18,6 +18,7 @@ psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0003_budgets.s
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0004_wallet_ids.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0005_receivables.sql
 psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0006_definitions_sync.sql
+psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/0007_savings_goals.sql
 ```
 
 For local development, disable **Confirm email** in
@@ -31,7 +32,7 @@ devices. `0003_budgets.sql` adds budgets, `0004_wallet_ids.sql` adds wallet
 references, `0005_receivables.sql` adds money lent, and
 `0006_definitions_sync.sql` adds synced categories, scheduled payments,
 wallets, and transfers (plus a reserved `category_id` column on transactions
-and budgets).
+and budgets). `0007_savings_goals.sql` adds synced savings goals.
 
 ## Authentication
 

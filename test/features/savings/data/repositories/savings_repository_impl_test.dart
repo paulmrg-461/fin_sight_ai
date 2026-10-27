@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
+import 'package:fin_sight_ai/core/utils/clock.dart';
 import 'package:fin_sight_ai/features/savings/data/datasources/hive_savings_local_data_source.dart';
 import 'package:fin_sight_ai/features/savings/data/datasources/savings_local_data_source.dart';
 import 'package:fin_sight_ai/features/savings/data/models/savings_goal_model.dart';
@@ -13,6 +15,15 @@ import 'package:mocktail/mocktail.dart';
 class MockSavingsLocalDataSource extends Mock
     implements SavingsLocalDataSource {}
 
+class MockSyncQueue extends Mock implements SyncQueue {}
+
+class FixedClock extends Clock {
+  FixedClock(this.value);
+  final DateTime value;
+  @override
+  DateTime now() => value;
+}
+
 void main() {
   late Directory directory;
   late Box<dynamic> box;
@@ -23,6 +34,14 @@ void main() {
   setUpAll(() async {
     directory = await Directory.systemTemp.createTemp('finsight_savings_');
     Hive.init(directory.path);
+    registerFallbackValue(
+      SyncOperation.upsert(
+        entityType: SyncEntityType.savingsGoal,
+        entityId: 'fallback',
+        payload: const {},
+        queuedAt: DateTime.utc(2026),
+      ),
+    );
     registerFallbackValue(
       SavingsGoalModel(
         id: 'fallback',
@@ -78,6 +97,47 @@ void main() {
     expect((await repository.getGoals()).getOrElse((_) => const []), isEmpty);
   });
 
+  test('enqueues upserts and a tombstone for sync', () async {
+    final queue = MockSyncQueue();
+    when(() => queue.enqueue(any())).thenAnswer((_) async {});
+    final now = DateTime.utc(2026, 10, 27, 12);
+    final synced = SavingsRepositoryImpl(
+      dataSource,
+      syncQueue: queue,
+      clock: FixedClock(now),
+    );
+
+    await synced.addGoal(goal());
+    await synced.addContribution(
+      'g-1',
+      SavingsContribution(id: 'c-1', amount: 100, date: now),
+    );
+    await synced.deleteGoal('g-1');
+
+    final operations = verify(() => queue.enqueue(captureAny())).captured
+        .cast<SyncOperation>();
+    expect(operations, hasLength(3));
+    expect(
+      operations.map((operation) => operation.entityType),
+      everyElement(SyncEntityType.savingsGoal),
+    );
+    expect(operations.last.payload['deletedAt'], isNotNull);
+    expect((await dataSource.getAllGoals()).single.isDeleted, isTrue);
+  });
+
+  test('purges old savings tombstones', () async {
+    await repository.deleteGoal('missing');
+    await repository.addGoal(goal());
+    await repository.deleteGoal('g-1');
+
+    expect(
+      await repository.getGoals().then((r) => r.getOrElse((_) => [])),
+      isEmpty,
+    );
+    expect(await dataSource.purgeTombstones(DateTime.utc(2027)), 1);
+    expect(await dataSource.getAllGoals(), isEmpty);
+  });
+
   test('reports missing goals when contributing', () async {
     final result = await repository.addContribution(
       'missing',
@@ -106,11 +166,18 @@ void main() {
     final save = await failing.addGoal(goal());
     expect(save.getLeft().toNullable()?.code, 'savings_write_failed');
 
-    when(
-      () => local.deleteGoal(any()),
-    ).thenThrow(const CacheException('Broken.', code: 'savings_delete_failed'));
+    when(() => local.getGoals()).thenAnswer(
+      (_) async => [
+        SavingsGoalModel(
+          id: 'g-1',
+          name: 'Trip',
+          targetAmount: 1000,
+          createdAt: DateTime.utc(2026, 10, 1),
+        ),
+      ],
+    );
     final delete = await failing.deleteGoal('g-1');
-    expect(delete.getLeft().toNullable()?.code, 'savings_delete_failed');
+    expect(delete.getLeft().toNullable()?.code, 'savings_write_failed');
   });
 
   test('maps addContribution storage failures', () async {

@@ -122,6 +122,19 @@ Map<String, dynamic> transferRow() => {
   'deleted_at': null,
 };
 
+Map<String, dynamic> savingsGoalRow() => {
+  'id': 'goal-1',
+  'name': 'Trip',
+  'target_amount': 1000,
+  'target_date': '2027-01-01T00:00:00.000Z',
+  'contributions': [
+    {'id': 'c-1', 'amount': 400, 'date': '2026-10-02T00:00:00.000Z'},
+  ],
+  'created_at': '2026-10-01T00:00:00.000Z',
+  'updated_at': '2026-10-22T12:05:00.000Z',
+  'deleted_at': null,
+};
+
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 void main() {
@@ -688,6 +701,41 @@ void main() {
       final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
       expect(body['from_wallet_id'], 'wallet-bank');
       expect(body['to_wallet_id'], 'wallet-cash');
+    });
+
+    test('maps savings goal rows in both directions', () async {
+      final requests = <http.Request>[];
+      final client = MockClient((request) async {
+        requests.add(request);
+        if (request.method == 'GET') {
+          return http.Response(jsonEncode([savingsGoalRow()]), 200);
+        }
+        return http.Response('', 204);
+      });
+      final dataSource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final rows = await dataSource.fetchSavingsGoals();
+      expect(rows.single['targetAmount'], 1000);
+      expect((rows.single['contributions'] as List), hasLength(1));
+
+      await dataSource.upsertSavingsGoal({
+        'id': 'goal-1',
+        'name': 'Trip',
+        'targetAmount': 1000,
+        'targetDate': '2027-01-01T00:00:00.000Z',
+        'contributions': const [],
+        'createdAt': '2026-10-01T00:00:00.000Z',
+        'updatedAt': '2026-10-22T12:05:00.000Z',
+      });
+
+      expect(requests.last.url.path, '/rest/v1/savings_goals');
+      final body = jsonDecode(requests.last.body) as Map<String, dynamic>;
+      expect(body['target_amount'], 1000);
+      expect(body['deleted_at'], isNull);
     });
   });
 }

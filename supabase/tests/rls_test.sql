@@ -196,5 +196,45 @@ begin
   end if;
 end $$;
 
+-- Savings goals: owner isolation.
+reset role;
+set local role authenticated;
+set local request.jwt.claims =
+  '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+insert into public.savings_goals
+  (id, name, target_amount, contributions, created_at, updated_at)
+values
+  ('rls-savings-a', 'Trip', 1000, '[]'::jsonb, now(), now());
+
+do $$
+begin
+  if (select count(*) from public.savings_goals where id = 'rls-savings-a') <> 1 then
+    raise exception 'RLS failure: owner cannot read their own savings goal';
+  end if;
+end $$;
+
+reset role;
+set local role authenticated;
+set local request.jwt.claims =
+  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+do $$
+begin
+  if (select count(*) from public.savings_goals where id = 'rls-savings-a') <> 0 then
+    raise exception 'RLS failure: user B can read user A savings goals';
+  end if;
+end $$;
+
+update public.savings_goals set target_amount = 0 where id = 'rls-savings-a';
+delete from public.savings_goals where id = 'rls-savings-a';
+
+do $$
+begin
+  if (select count(*) from public.savings_goals where id = 'rls-savings-a') <> 0 then
+    raise exception 'RLS failure: user B can update/delete user A savings goals';
+  end if;
+end $$;
+
 reset role;
 rollback;

@@ -14,7 +14,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Receivables (“Me deben”)** — money you lend, partial payments, remaining balance, progress, due dates, payment history, in-place editing, and Supabase sync.
 - **Budgets** — monthly category limits with month navigation and previous-month copying, spending progress, over-budget highlighting, category suggestions, in-place editing from the budget card, delete confirmation, and offline-first sync.
 - **Money** — total available split between bank account and cash, actual-balance reconciliation, and account→cash transfers.
-- **Savings goals** — named targets with contribution history, progress, optional target dates, a dashboard summary, and goal totals shared with the AI coach. Local-only for now.
+- **Savings goals** — named targets with contribution history, progress, optional target dates, a dashboard summary, goal totals shared with the AI coach, and Supabase sync.
 - **Categories** — shared category catalog with localized defaults, manual create/rename (cascading to transactions, budgets, and schedules), and archive/restore.
 - **Scheduled payments & salary** — monthly or yearly recurring expenses (rent, credits, subscriptions, phone plan) or income (salary) that is recorded automatically when due, with in-app notice, pause/resume, pay-now, delete, and an expected-monthly-income summary.
 - **Currency** — COP by default with a persistent COP/USD switch and locale-aware formatting across the app.
@@ -22,7 +22,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **OCR** — receipt scanning with ML Kit, tolerant text extraction, editable preview, persistent image storage, and automatic expense creation.
 - **AI Coach** — Groq-powered insights generated from real transaction context in the active language (EN/ES), with deterministic JSON prompts, active-debt context, per-language offline caching, a capped generation history, a persisted free-form chat, and graceful failure handling.
 - **Auth** — Supabase email/password sign-in/up, secure session storage, token refresh, and dashboard account control.
-- **Sync** — authenticated Supabase PostgREST push/pull for categories, scheduled payments, wallets, transfers, transactions, debts, budgets, and receivables, with offline queue, per-operation failure isolation, paginated pulls, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
+- **Sync** — authenticated Supabase PostgREST push/pull for categories, scheduled payments, wallets, transfers, savings goals, transactions, debts, budgets, and receivables, with offline queue, per-operation failure isolation, paginated pulls, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
 - **Performance** — the dashboard derives every section from two range reads per refresh and paints before feature blocs, sync, and due-schedule processing load (`StartupLoader`); the integration benchmark seeds 300 transactions across three months to keep regressions visible.
 

@@ -4,6 +4,7 @@ enum SyncEntityType {
   scheduledPayment,
   wallet,
   walletTransfer,
+  savingsGoal,
   transaction,
   debt,
   budget,

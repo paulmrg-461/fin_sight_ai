@@ -6,7 +6,7 @@ Keep the local Hive store as the source of truth while asynchronously pushing qu
 
 ## Scope
 
-- Synced entities: **categories**, **scheduled payments**, **wallets**, **wallet transfers**, **transactions**, **debts**, **budgets**, and **receivables**, including soft-delete tombstones.
+- Synced entities: **categories**, **scheduled payments**, **wallets**, **wallet transfers**, **savings goals**, **transactions**, **debts**, **budgets**, and **receivables**, including soft-delete tombstones.
 - Category defaults stay device-local until the user edits one; the catalog converges on first mutation. Ledger rows keep the stored category name, so a missing definition never blocks rendering.
 - Receipts stay local-only for now (metadata/path, not uploaded).
 - Deletions create `deletedAt` tombstones that are pushed and pulled; UI queries hide them.
@@ -16,7 +16,7 @@ Keep the local Hive store as the source of truth while asynchronously pushing qu
 
 `lib/core/sync/sync_operation.dart`
 
-- `SyncEntityType`: `category`, `scheduledPayment`, `wallet`, `walletTransfer`, `transaction`, `debt`, `budget`, `receivable`.
+- `SyncEntityType`: `category`, `scheduledPayment`, `wallet`, `walletTransfer`, `savingsGoal`, `transaction`, `debt`, `budget`, `receivable`.
 - `SyncOperationType`: `upsert`, `delete`.
 - `SyncOperation` fields: `id` (`<entityType>:<entityId>`), `entityType`, `entityId`, `operationType`, `queuedAt`, `payload`, `attempts`.
 - `SyncQueue.enqueue` is the write-side port used by feature repositories.
@@ -36,7 +36,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 `SyncRemoteDataSource` → `SupabaseRestSyncDataSource`:
 
 - PostgREST over `http.Client` with `apikey` (anon key) and `Authorization: Bearer <access token>` from Supabase Auth.
-- Categories: `/rest/v1/categories`; schedules: `/rest/v1/scheduled_payments`; wallets: `/rest/v1/wallets`; transfers: `/rest/v1/wallet_transfers`; transactions: `/rest/v1/transactions`; debts: `/rest/v1/debts`; budgets: `/rest/v1/budgets`; receivables: `/rest/v1/receivables`.
+- Categories: `/rest/v1/categories`; schedules: `/rest/v1/scheduled_payments`; wallets: `/rest/v1/wallets`; transfers: `/rest/v1/wallet_transfers`; savings goals: `/rest/v1/savings_goals`; transactions: `/rest/v1/transactions`; debts: `/rest/v1/debts`; budgets: `/rest/v1/budgets`; receivables: `/rest/v1/receivables`.
 - Upserts use `on_conflict=id` and `Prefer: resolution=merge-duplicates,return=minimal`.
 - Pulls use `updated_at=gt.<lastSyncedAt>&order=updated_at.asc`.
 - Snake_case columns are mapped to the camelCase model JSON in both directions.
@@ -53,7 +53,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
    - Delete → remote delete, remove from queue.
    - Upsert → fetch remote row. If remote `updatedAt` is newer, write remote locally (conflict), remove from queue. Otherwise upsert and mark the local record `isSynced = true`.
    - On remote failure, increment `attempts`, set `nextAttemptAt` with exponential backoff (1s, 2s, 4s… capped at 1h), keep the operation, and return `ServerFailure`.
-4. Pull definitions first (categories → scheduled payments → wallets → transfers), then the ledger (transactions → debts → budgets → receivables), merging only newer remote rows (including tombstones).
+4. Pull definitions first (categories → scheduled payments → wallets → transfers → savings goals), then the ledger (transactions → debts → budgets → receivables), merging only newer remote rows (including tombstones).
 5. Persist `lastSyncedAt`.
 6. Purge local tombstones older than 30 days (best effort).
 
@@ -66,7 +66,7 @@ Storage: Hive boxes `sync_queue` and `sync_meta` (`lastSyncedAt`).
 
 ## Schema
 
-`0001_init.sql` creates `transactions` and `debts`; `0002_tombstones.sql` adds `deleted_at`; `0003_budgets.sql` adds synced budgets; `0004_wallet_ids.sql` adds wallet references; `0005_receivables.sql` adds synced receivables; `0006_definitions_sync.sql` adds categories, scheduled payments, wallets, and transfers, plus a reserved nullable `category_id` on transactions and budgets. All tables use `user_id default auth.uid()`, RLS, and owner-only policies. `category_id` is not populated yet: the app still stores category names.
+`0001_init.sql` creates `transactions` and `debts`; `0002_tombstones.sql` adds `deleted_at`; `0003_budgets.sql` adds synced budgets; `0004_wallet_ids.sql` adds wallet references; `0005_receivables.sql` adds synced receivables; `0006_definitions_sync.sql` adds categories, scheduled payments, wallets, and transfers, plus a reserved nullable `category_id` on transactions and budgets; `0007_savings_goals.sql` adds synced savings goals. All tables use `user_id default auth.uid()`, RLS, and owner-only policies. `category_id` is not populated yet: the app still stores category names.
 
 **Auth is a prerequisite for real sync.** Without a session, sync returns an offline report and keeps the queue; local data is never lost. RLS verification lives in `supabase/tests/rls_test.sql` and `supabase/verify_rls.sh`.
 

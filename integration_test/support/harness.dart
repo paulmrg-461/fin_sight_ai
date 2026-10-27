@@ -367,6 +367,7 @@ class IntegrationHarness {
       HiveCategoryLocalDataSource(_categoriesBox),
       HiveScheduledPaymentLocalDataSource(_scheduledPaymentsBox),
       HiveWalletLocalDataSource(_walletsBox, _walletTransfersBox),
+      HiveSavingsLocalDataSource(_savingsGoalsBox),
       appEnv,
       authRepository,
     );

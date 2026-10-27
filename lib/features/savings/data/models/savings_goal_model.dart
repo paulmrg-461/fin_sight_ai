@@ -8,6 +8,9 @@ class SavingsGoalModel extends SavingsGoalEntity {
     required super.createdAt,
     super.targetDate,
     super.contributions,
+    super.updatedAt,
+    super.isSynced,
+    super.deletedAt,
   });
 
   factory SavingsGoalModel.fromEntity(SavingsGoalEntity goal) {
@@ -18,6 +21,9 @@ class SavingsGoalModel extends SavingsGoalEntity {
       createdAt: goal.createdAt,
       targetDate: goal.targetDate,
       contributions: goal.contributions,
+      updatedAt: goal.updatedAt,
+      isSynced: goal.isSynced,
+      deletedAt: goal.deletedAt,
     );
   }
 
@@ -58,6 +64,13 @@ class SavingsGoalModel extends SavingsGoalEntity {
           ? DateTime.tryParse(json['targetDate'] as String)
           : null,
       contributions: List<SavingsContribution>.unmodifiable(contributions),
+      updatedAt: json['updatedAt'] is String
+          ? DateTime.tryParse(json['updatedAt'] as String)
+          : null,
+      isSynced: json['isSynced'] is bool ? json['isSynced'] as bool : false,
+      deletedAt: json['deletedAt'] is String
+          ? DateTime.tryParse(json['deletedAt'] as String)
+          : null,
     );
   }
 
@@ -67,6 +80,9 @@ class SavingsGoalModel extends SavingsGoalEntity {
     'targetAmount': targetAmount,
     'createdAt': createdAt.toUtc().toIso8601String(),
     'targetDate': targetDate?.toUtc().toIso8601String(),
+    'updatedAt': updatedAt?.toUtc().toIso8601String(),
+    'isSynced': isSynced,
+    'deletedAt': deletedAt?.toUtc().toIso8601String(),
     'contributions': [
       for (final contribution in contributions)
         {
@@ -84,6 +100,9 @@ class SavingsGoalModel extends SavingsGoalEntity {
     createdAt: createdAt,
     targetDate: targetDate,
     contributions: contributions,
+    updatedAt: updatedAt,
+    isSynced: isSynced,
+    deletedAt: deletedAt,
   );
 
   static SavingsContribution? _contribution(Object? value) {

@@ -156,6 +156,33 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
   }
 
   @override
+  Future<Map<String, dynamic>?> fetchSavingsGoal(String id) async {
+    final rows = await _fetch('savings_goals', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _savingsGoalFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchSavingsGoals({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'savings_goals',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_savingsGoalFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertSavingsGoal(Map<String, dynamic> json) async {
+    await _upsert('savings_goals', _savingsGoalToRow(json));
+  }
+
+  @override
   Future<Map<String, dynamic>?> fetchTransaction(String id) async {
     final rows = await _fetch('transactions', {'id': 'eq.$id', 'select': '*'});
     if (rows.isEmpty) {
@@ -618,6 +645,33 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'amount': row['amount'],
       'date': row['date'],
       'note': row['note'] ?? '',
+      'createdAt': row['created_at'],
+      'updatedAt': row['updated_at'],
+      'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _savingsGoalToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'name': json['name'],
+      'target_amount': json['targetAmount'],
+      'target_date': json['targetDate'],
+      'contributions': json['contributions'] ?? const [],
+      'created_at': json['createdAt'],
+      'updated_at': json['updatedAt'] ?? json['createdAt'],
+      'deleted_at': json['deletedAt'],
+    };
+  }
+
+  Map<String, dynamic> _savingsGoalFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'name': row['name'],
+      'targetAmount': row['target_amount'],
+      'targetDate': row['target_date'],
+      'contributions': row['contributions'] ?? const [],
       'createdAt': row['created_at'],
       'updatedAt': row['updated_at'],
       'deletedAt': row['deleted_at'],

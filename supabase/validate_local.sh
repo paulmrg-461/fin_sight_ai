@@ -47,7 +47,8 @@ grant usage on schema auth to authenticated, anon;
 SQL
 
 for migration in 0001_init.sql 0002_tombstones.sql 0003_budgets.sql \
-  0004_wallet_ids.sql 0005_receivables.sql 0006_definitions_sync.sql; do
+  0004_wallet_ids.sql 0005_receivables.sql 0006_definitions_sync.sql \
+  0007_savings_goals.sql; do
   echo "Applying $migration"
   docker exec -i "$CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 \
     -f "/supabase/migrations/$migration" >/dev/null

@@ -373,9 +373,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i363.GetSavingsSuggestionsUseCase>(
       () => _i363.GetSavingsSuggestionsUseCase(gh<_i853.AiCoachRepository>()),
     );
-    gh.lazySingleton<_i361.SavingsRepository>(
-      () => _i552.SavingsRepositoryImpl(gh<_i703.SavingsLocalDataSource>()),
-    );
     gh.lazySingleton<_i544.TransactionRepository>(
       () => _i529.TransactionRepositoryImpl(
         gh<_i228.TransactionLocalDataSource>(),
@@ -404,6 +401,13 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
         syncQueue: gh<_i588.SyncQueue>(),
+      ),
+    );
+    gh.lazySingleton<_i361.SavingsRepository>(
+      () => _i552.SavingsRepositoryImpl(
+        gh<_i703.SavingsLocalDataSource>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        clock: gh<_i956.Clock>(),
       ),
     );
     gh.factory<_i282.LocaleBloc>(
@@ -645,22 +649,6 @@ extension GetItInjectableX on _i174.GetIt {
         clock: gh<_i956.Clock>(),
       ),
     );
-    gh.lazySingleton<_i272.SyncRepository>(
-      () => _i1020.SyncRepositoryImpl(
-        gh<_i921.SyncLocalDataSource>(),
-        gh<_i984.SyncRemoteDataSource>(),
-        gh<_i228.TransactionLocalDataSource>(),
-        gh<_i1035.DebtLocalDataSource>(),
-        gh<_i8.BudgetLocalDataSource>(),
-        gh<_i315.ReceivableLocalDataSource>(),
-        gh<_i65.CategoryLocalDataSource>(),
-        gh<_i462.ScheduledPaymentLocalDataSource>(),
-        gh<_i261.WalletLocalDataSource>(),
-        gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
     gh.factory<_i163.WalletBloc>(
       () => _i163.WalletBloc(
         gh<_i1013.GetWalletBalancesUseCase>(),
@@ -672,6 +660,23 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i387.GetCommittedCashflowUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
         gh<_i268.DebtRepository>(),
+      ),
+    );
+    gh.lazySingleton<_i272.SyncRepository>(
+      () => _i1020.SyncRepositoryImpl(
+        gh<_i921.SyncLocalDataSource>(),
+        gh<_i984.SyncRemoteDataSource>(),
+        gh<_i228.TransactionLocalDataSource>(),
+        gh<_i1035.DebtLocalDataSource>(),
+        gh<_i8.BudgetLocalDataSource>(),
+        gh<_i315.ReceivableLocalDataSource>(),
+        gh<_i65.CategoryLocalDataSource>(),
+        gh<_i462.ScheduledPaymentLocalDataSource>(),
+        gh<_i261.WalletLocalDataSource>(),
+        gh<_i703.SavingsLocalDataSource>(),
+        gh<_i1042.AppEnv>(),
+        gh<_i993.AuthRepository>(),
+        clock: gh<_i956.Clock>(),
       ),
     );
     gh.lazySingleton<_i642.UpdateReceivableUseCase>(

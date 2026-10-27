@@ -13,6 +13,9 @@ import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_sou
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
 import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
 import 'package:fin_sight_ai/features/receivables/data/models/receivable_model.dart';
+import 'package:fin_sight_ai/features/savings/data/datasources/savings_local_data_source.dart';
+import 'package:fin_sight_ai/features/savings/data/models/savings_goal_model.dart';
+import 'package:fin_sight_ai/features/savings/domain/entities/savings_goal_entity.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/scheduled_payment_local_data_source.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/models/scheduled_payment_model.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
@@ -50,6 +53,9 @@ class MockScheduledPaymentLocalDataSource extends Mock
     implements ScheduledPaymentLocalDataSource {}
 
 class MockWalletLocalDataSource extends Mock implements WalletLocalDataSource {}
+
+class MockSavingsLocalDataSource extends Mock
+    implements SavingsLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -171,6 +177,7 @@ void main() {
   late MockCategoryLocalDataSource categoryLocal;
   late MockScheduledPaymentLocalDataSource scheduledPaymentLocal;
   late MockWalletLocalDataSource walletLocal;
+  late MockSavingsLocalDataSource savingsLocal;
   late MockAuthRepository auth;
 
   SyncRepositoryImpl buildRepository({
@@ -191,6 +198,7 @@ void main() {
       categoryLocal,
       scheduledPaymentLocal,
       walletLocal,
+      savingsLocal,
       env,
       auth,
       clock: FixedClock(now),
@@ -217,6 +225,14 @@ void main() {
       ),
     );
     registerFallbackValue(DateTime.utc(2026));
+    registerFallbackValue(
+      SavingsGoalModel(
+        id: 'goal-fallback',
+        name: 'Fallback',
+        targetAmount: 1,
+        createdAt: DateTime.utc(2026),
+      ),
+    );
     registerFallbackValue(buildCategory());
     registerFallbackValue(buildSchedule());
     registerFallbackValue(
@@ -248,11 +264,15 @@ void main() {
     categoryLocal = MockCategoryLocalDataSource();
     scheduledPaymentLocal = MockScheduledPaymentLocalDataSource();
     walletLocal = MockWalletLocalDataSource();
+    savingsLocal = MockSavingsLocalDataSource();
 
     when(() => categoryLocal.getAllCategories()).thenAnswer((_) async => []);
     when(() => scheduledPaymentLocal.getAllPayments())
         .thenAnswer((_) async => []);
     when(() => walletLocal.getAllWallets()).thenAnswer((_) async => []);
+    when(() => savingsLocal.getAllGoals()).thenAnswer((_) async => []);
+    when(() => savingsLocal.saveGoal(any())).thenAnswer((_) async {});
+    when(() => savingsLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
     when(() => walletLocal.getAllTransfers()).thenAnswer((_) async => []);
     when(() => categoryLocal.purgeTombstones(any())).thenAnswer((_) async => 0);
     when(() => scheduledPaymentLocal.purgeTombstones(any()))
@@ -300,6 +320,15 @@ void main() {
         offset: any(named: 'offset'),
       ),
     ).thenAnswer((_) async => const []);
+    when(
+      () => remote.fetchSavingsGoals(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
+    when(() => remote.fetchSavingsGoal(any())).thenAnswer((_) async => null);
+    when(() => remote.upsertSavingsGoal(any())).thenAnswer((_) async {});
     auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
@@ -861,6 +890,102 @@ void main() {
           offset: 500,
         ),
       ).called(1);
+    });
+  });
+
+  group('savings goals sync', () {
+    SavingsGoalModel buildGoal({String id = 'goal-1'}) {
+      return SavingsGoalModel(
+        id: id,
+        name: 'Trip',
+        targetAmount: 1000,
+        createdAt: DateTime.utc(2026, 10, 1),
+        updatedAt: DateTime.utc(2026, 10, 20),
+        contributions: [
+          SavingsContribution(
+            id: 'c-1',
+            amount: 400,
+            date: DateTime.utc(2026, 10, 2),
+          ),
+        ],
+      );
+    }
+
+    test('pushes a savings goal upsert', () async {
+      final goal = buildGoal();
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.savingsGoal,
+            entityId: goal.id,
+            payload: goal.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pushed, 1);
+      verify(() => remote.upsertSavingsGoal(any())).called(1);
+      final saved =
+          verify(() => savingsLocal.saveGoal(captureAny())).captured.single
+              as SavingsGoalModel;
+      expect(saved.isSynced, isTrue);
+      expect(saved.savedAmount, 400);
+    });
+
+    test('lets a newer remote savings goal win', () async {
+      final goal = buildGoal();
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.savingsGoal,
+            entityId: goal.id,
+            payload: goal.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+      when(() => remote.fetchSavingsGoal(goal.id)).thenAnswer(
+        (_) async => SavingsGoalModel.fromEntity(
+          goal.copyWith(updatedAt: DateTime.utc(2026, 10, 21)),
+        ).toJson(),
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.conflictsResolved, 1);
+      verifyNever(() => remote.upsertSavingsGoal(any()));
+      verify(() => savingsLocal.saveGoal(any())).called(1);
+    });
+
+    test('pulls savings goal tombstones', () async {
+      final deleted = SavingsGoalModel.fromEntity(
+        buildGoal().copyWith(deletedAt: DateTime.utc(2026, 10, 21)),
+      );
+      when(
+        () => remote.fetchSavingsGoals(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [deleted.toJson()]);
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pulled, 1);
+      final saved =
+          verify(() => savingsLocal.saveGoal(captureAny())).captured.single
+              as SavingsGoalModel;
+      expect(saved.isDeleted, isTrue);
+      expect(saved.isSynced, isTrue);
     });
   });
 

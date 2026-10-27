@@ -19,6 +19,9 @@ void main() {
           date: DateTime.utc(2026, 10, 2),
         ),
       ],
+      updatedAt: DateTime.utc(2026, 10, 20),
+      isSynced: true,
+      deletedAt: DateTime.utc(2026, 10, 21),
     );
 
     final decoded = jsonDecode(jsonEncode(goal.toJson()));
@@ -26,6 +29,9 @@ void main() {
 
     expect(restored.toEntity(), goal.toEntity());
     expect(restored.savedAmount, 400);
+    expect(restored.isSynced, isTrue);
+    expect(restored.isDeleted, isTrue);
+    expect(restored.lastModified, DateTime.utc(2026, 10, 20));
   });
 
   test('skips corrupt contributions and rejects invalid goals', () {

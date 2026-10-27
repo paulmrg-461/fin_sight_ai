@@ -62,7 +62,7 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Use cases validate goal name/target and contributions; amounts are rounded to 2 decimals.
 - `/savings` (drawer entry): total-saved hero, goal cards with progress/target date, create and add-money dialogs, confirmed delete.
 - Dashboard shows a savings summary (saved/target, count, next target date) from `SavingsBloc`; the AI context includes goal totals for insights and chat.
-- Savings goals are **local-only**; syncing them needs a migration + queue/remote mapping plan.
+- Savings goals sync via `0007_savings_goals.sql`, `SyncEntityType.savingsGoal`, queue/tombstone upserts, and the standard LWW merge; tombstones purge after 30 days.
 - Tests: domain/data/BLoC, AI context, and an integration create+contribute flow.
 
 ## Free-form coach chat (plan 025)

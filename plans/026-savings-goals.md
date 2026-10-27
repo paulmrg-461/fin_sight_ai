@@ -36,7 +36,7 @@ being saved toward a goal, and the AI could not see that progress.
 
 ## Scope notes
 
-- Savings goals are **local-only** for now; sync is a separate migration/plan.
+- Savings goals are synced by plan 027 (`0007_savings_goals.sql`).
 - Contributions are deposits (no withdrawals); deleting a goal removes its
   history on device.
 

@@ -11,6 +11,14 @@ class HiveSavingsLocalDataSource implements SavingsLocalDataSource {
 
   @override
   Future<List<SavingsGoalModel>> getGoals() async {
+    final goals = await getAllGoals();
+    return List<SavingsGoalModel>.unmodifiable(
+      goals.where((goal) => !goal.isDeleted),
+    );
+  }
+
+  @override
+  Future<List<SavingsGoalModel>> getAllGoals() async {
     try {
       final goals = <SavingsGoalModel>[];
       for (final value in _box.values) {
@@ -55,6 +63,36 @@ class HiveSavingsLocalDataSource implements SavingsLocalDataSource {
       throw const CacheException(
         'Unable to delete the savings goal.',
         code: 'savings_delete_failed',
+      );
+    }
+  }
+
+  @override
+  Future<int> purgeTombstones(DateTime before) async {
+    try {
+      final keys = <dynamic>[];
+      for (final key in _box.keys) {
+        final value = _box.get(key);
+        if (value is! Map) {
+          continue;
+        }
+        final model = SavingsGoalModel.fromJson(
+          Map<String, dynamic>.from(value),
+        );
+        final deletedAt = model.deletedAt;
+        if (deletedAt != null && deletedAt.isBefore(before)) {
+          keys.add(key);
+        }
+      }
+      if (keys.isEmpty) {
+        return 0;
+      }
+      await _box.deleteAll(keys);
+      return keys.length;
+    } catch (_) {
+      throw const CacheException(
+        'Unable to purge savings goal tombstones.',
+        code: 'savings_purge_failed',
       );
     }
   }

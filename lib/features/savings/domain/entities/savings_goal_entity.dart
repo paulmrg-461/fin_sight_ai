@@ -36,6 +36,9 @@ class SavingsGoalEntity extends Entity {
     required this.createdAt,
     this.targetDate,
     this.contributions = const [],
+    this.updatedAt,
+    this.isSynced = false,
+    this.deletedAt,
   });
 
   @override
@@ -46,6 +49,17 @@ class SavingsGoalEntity extends Entity {
   final DateTime createdAt;
   final DateTime? targetDate;
   final List<SavingsContribution> contributions;
+  final DateTime? updatedAt;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  /// Soft-delete tombstone. Hidden from queries but kept for synchronization.
+  final DateTime? deletedAt;
+
+  bool get isDeleted => deletedAt != null;
+
+  DateTime get lastModified => updatedAt ?? createdAt;
 
   double get savedAmount =>
       contributions.fold<double>(0, (sum, item) => sum + item.amount);
@@ -66,6 +80,9 @@ class SavingsGoalEntity extends Entity {
     DateTime? createdAt,
     DateTime? targetDate,
     List<SavingsContribution>? contributions,
+    DateTime? updatedAt,
+    bool? isSynced,
+    DateTime? deletedAt,
   }) {
     return SavingsGoalEntity(
       id: id ?? this.id,
@@ -74,6 +91,9 @@ class SavingsGoalEntity extends Entity {
       createdAt: createdAt ?? this.createdAt,
       targetDate: targetDate ?? this.targetDate,
       contributions: contributions ?? this.contributions,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 
@@ -86,6 +106,9 @@ class SavingsGoalEntity extends Entity {
           other.targetAmount == targetAmount &&
           other.createdAt == createdAt &&
           other.targetDate == targetDate &&
+          other.updatedAt == updatedAt &&
+          other.isSynced == isSynced &&
+          other.deletedAt == deletedAt &&
           _sameContributions(other.contributions, contributions);
 
   @override
@@ -96,6 +119,9 @@ class SavingsGoalEntity extends Entity {
     createdAt,
     targetDate,
     Object.hashAll(contributions),
+    updatedAt,
+    isSynced,
+    deletedAt,
   );
 
   @override

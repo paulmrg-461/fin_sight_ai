@@ -43,6 +43,16 @@ abstract interface class SyncRemoteDataSource {
 
   Future<void> upsertWalletTransfer(Map<String, dynamic> json);
 
+  Future<Map<String, dynamic>?> fetchSavingsGoal(String id);
+
+  Future<List<Map<String, dynamic>>> fetchSavingsGoals({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertSavingsGoal(Map<String, dynamic> json);
+
   Future<Map<String, dynamic>?> fetchTransaction(String id);
 
   Future<List<Map<String, dynamic>>> fetchTransactions({
