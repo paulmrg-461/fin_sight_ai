@@ -35,6 +35,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 025 | Free-form coaching chat with persisted conversation | P2 | M | 019, 020, 024 | DONE (998 unit, 31 integration) |
 | 026 | Savings goals with dashboard and AI context | P2 | L | 016, 020, 023 | DONE (1021 unit, 32 integration) |
 | 027 | Sync savings goals with Supabase | P2 | M | 005, 026 | DONE (1027 unit, 32 integration) |
+| 028 | Isolate sync failures and show diagnostics | P1 | M | 005, 027 | DONE (1033 unit, 32 integration) |
+
+- 028 isolated per-entity pull failures, added `SyncReport.failures`, and made the sync chip explain failures with a retry dialog.
 
 - 027 extended sync to savings goals (migration 0007, queue/tombstones/LWW/RLS).
 

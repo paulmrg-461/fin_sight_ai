@@ -2725,6 +2725,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The cloud rejected this session. Sign in again and retry.'**
   String get errCloudSessionRejected;
+
+  /// No description provided for @syncPartialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Some changes did not sync'**
+  String get syncPartialTitle;
+
+  /// No description provided for @syncPartialBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest of your data was synchronized. These entities failed:'**
+  String get syncPartialBody;
 }
 
 class _AppLocalizationsDelegate

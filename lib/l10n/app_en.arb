@@ -587,5 +587,7 @@
   },
   "syncFailedTitle": "Synchronization failed",
   "errCloudSchemaOutdated": "The cloud schema is out of date. Apply the latest Supabase migrations and retry.",
-  "errCloudSessionRejected": "The cloud rejected this session. Sign in again and retry."
+  "errCloudSessionRejected": "The cloud rejected this session. Sign in again and retry.",
+  "syncPartialTitle": "Some changes did not sync",
+  "syncPartialBody": "The rest of your data was synchronized. These entities failed:"
 }

@@ -125,6 +125,7 @@ class SyncRepositoryImpl implements SyncRepository {
       var conflicts = 0;
       var failed = 0;
       var discarded = 0;
+      final failures = <SyncEntityFailure>[];
 
       for (final operation in pending) {
         try {
@@ -135,9 +136,16 @@ class SyncRepositoryImpl implements SyncRepository {
           } else {
             pushed++;
           }
-        } on ServerException {
+        } on ServerException catch (exception) {
           await _requeue(operation);
           failed++;
+          failures.add(
+            SyncEntityFailure(
+              entityType: operation.entityType,
+              code: exception.code ?? 'sync_push_failed',
+              message: exception.message,
+            ),
+          );
         } on FormatException {
           // Irrecoverable payload: remove it so it cannot poison every pass.
           await _localDataSource.remove(operation.id);
@@ -160,6 +168,7 @@ class SyncRepositoryImpl implements SyncRepository {
           pendingOperations: await _localDataSource.pendingCount(),
           failed: failed,
           discarded: discarded,
+          failures: [...failures, ...pull.failures],
           isConfigured: true,
           isAuthenticated: true,
           completedAt: clock.now(),
@@ -437,100 +446,133 @@ class SyncRepositoryImpl implements SyncRepository {
     final lastSyncedAt = await _localDataSource.lastSyncedAt();
     var pulled = 0;
     DateTime? watermark;
+    final failures = <SyncEntityFailure>[];
 
-    // Definitions first: ledger rows may reference categories, wallets, and
-    // schedules that arrive in the same pass.
-    final categories = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchCategories(
+    // Each entity is isolated: a missing table or bad payload must not stop the
+    // rest of the pass. Definitions still come before the ledger.
+    Future<void> pullEntity({
+      required SyncEntityType entityType,
+      required Future<List<Map<String, dynamic>>> Function(int, int) fetch,
+      required Future<int> Function(List<Map<String, dynamic>>) merge,
+    }) async {
+      try {
+        final rows = await _fetchAll(fetch);
+        pulled += await merge(rows);
+        watermark = _maxUpdatedAt(rows, watermark);
+      } on ServerException catch (exception) {
+        failures.add(
+          SyncEntityFailure(
+            entityType: entityType,
+            code: exception.code ?? 'sync_pull_failed',
+            message: exception.message,
+          ),
+        );
+      } on CacheException catch (exception) {
+        failures.add(
+          SyncEntityFailure(
+            entityType: entityType,
+            code: exception.code ?? 'cache_error',
+            message: exception.message,
+          ),
+        );
+      } on FormatException {
+        failures.add(
+          SyncEntityFailure(
+            entityType: entityType,
+            code: 'invalid_payload',
+            message: 'The server returned an invalid row.',
+          ),
+        );
+      }
+    }
+
+    await pullEntity(
+      entityType: SyncEntityType.category,
+      fetch: (limit, offset) => _remoteDataSource.fetchCategories(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeCategories,
     );
-    pulled += await _mergeCategories(categories);
-    watermark = _maxUpdatedAt(categories, watermark);
-
-    final schedules = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchScheduledPayments(
+    await pullEntity(
+      entityType: SyncEntityType.scheduledPayment,
+      fetch: (limit, offset) => _remoteDataSource.fetchScheduledPayments(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeScheduledPayments,
     );
-    pulled += await _mergeScheduledPayments(schedules);
-    watermark = _maxUpdatedAt(schedules, watermark);
-
-    final wallets = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchWallets(
+    await pullEntity(
+      entityType: SyncEntityType.wallet,
+      fetch: (limit, offset) => _remoteDataSource.fetchWallets(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeWallets,
     );
-    pulled += await _mergeWallets(wallets);
-    watermark = _maxUpdatedAt(wallets, watermark);
-
-    final transfers = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchWalletTransfers(
+    await pullEntity(
+      entityType: SyncEntityType.walletTransfer,
+      fetch: (limit, offset) => _remoteDataSource.fetchWalletTransfers(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeWalletTransfers,
     );
-    pulled += await _mergeWalletTransfers(transfers);
-    watermark = _maxUpdatedAt(transfers, watermark);
-
-    final savingsGoals = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchSavingsGoals(
+    await pullEntity(
+      entityType: SyncEntityType.savingsGoal,
+      fetch: (limit, offset) => _remoteDataSource.fetchSavingsGoals(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeSavingsGoals,
     );
-    pulled += await _mergeSavingsGoals(savingsGoals);
-    watermark = _maxUpdatedAt(savingsGoals, watermark);
-
-    final transactions = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchTransactions(
+    await pullEntity(
+      entityType: SyncEntityType.transaction,
+      fetch: (limit, offset) => _remoteDataSource.fetchTransactions(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeTransactions,
     );
-    pulled += await _mergeTransactions(transactions);
-    watermark = _maxUpdatedAt(transactions, watermark);
-
-    final debts = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchDebts(
+    await pullEntity(
+      entityType: SyncEntityType.debt,
+      fetch: (limit, offset) => _remoteDataSource.fetchDebts(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeDebts,
     );
-    pulled += await _mergeDebts(debts);
-    watermark = _maxUpdatedAt(debts, watermark);
-
-    final budgets = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchBudgets(
+    await pullEntity(
+      entityType: SyncEntityType.budget,
+      fetch: (limit, offset) => _remoteDataSource.fetchBudgets(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeBudgets,
     );
-    pulled += await _mergeBudgets(budgets);
-    watermark = _maxUpdatedAt(budgets, watermark);
-
-    final receivables = await _fetchAll(
-      (limit, offset) => _remoteDataSource.fetchReceivables(
+    await pullEntity(
+      entityType: SyncEntityType.receivable,
+      fetch: (limit, offset) => _remoteDataSource.fetchReceivables(
         updatedAfter: lastSyncedAt,
         limit: limit,
         offset: offset,
       ),
+      merge: _mergeReceivables,
     );
-    pulled += await _mergeReceivables(receivables);
-    watermark = _maxUpdatedAt(receivables, watermark);
 
-    return _PullResult(merged: pulled, watermark: watermark);
+    return _PullResult(
+      merged: pulled,
+      watermark: watermark,
+      failures: failures,
+    );
   }
 
   static const int _pageSize = 500;
@@ -828,8 +870,13 @@ class SyncRepositoryImpl implements SyncRepository {
 }
 
 class _PullResult {
-  const _PullResult({required this.merged, this.watermark});
+  const _PullResult({
+    required this.merged,
+    this.watermark,
+    this.failures = const [],
+  });
 
   final int merged;
   final DateTime? watermark;
+  final List<SyncEntityFailure> failures;
 }

@@ -59,6 +59,7 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 ## Sync 404 troubleshooting
 
 - The sync chip now opens a dialog with the actual failure and a Retry action; debug builds log `SYNC failed: <code>` and transport details.
+- Pulls are isolated per entity: `SyncReport.failures` lists `SyncEntityFailure(entity, code, message)`, and a missing table no longer aborts other entities. Partial passes report the failing entities for Retry.
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 

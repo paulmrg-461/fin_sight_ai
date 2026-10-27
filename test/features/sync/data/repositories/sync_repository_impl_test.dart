@@ -403,7 +403,80 @@ void main() {
   });
 
   group('SyncRepositoryImpl.syncNow', () {
-    test('explains a missing cloud schema on 404', () async {
+    test('isolates invalid rows without stopping other pulls', () async {
+      when(
+        () => remote.fetchCategories(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer(
+        (_) async => [
+          const {'id': ''},
+        ],
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected partial report'));
+
+      expect(
+        report.failures.map((failure) => failure.code),
+        contains('invalid_payload'),
+      );
+    });
+
+    test('isolates local merge failures per entity', () async {
+      when(
+        () => remote.fetchCategories(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [buildCategory().toJson()]);
+      when(() => categoryLocal.getAllCategories()).thenThrow(
+        const CacheException('Broken.', code: 'category_read_failed'),
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected partial report'));
+
+      expect(
+        report.failures.map((failure) => failure.code),
+        contains('category_read_failed'),
+      );
+    });
+
+    test('records push failure details in the report', () async {
+      final model = buildTransaction();
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.transaction,
+            entityId: model.id,
+            payload: model.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+      when(() => remote.fetchTransaction(model.id))
+          .thenAnswer((_) async => null);
+      when(() => remote.upsertTransaction(any()))
+          .thenThrow(const ServerException('Down.', code: 'supabase_http_500'));
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.failed, 1);
+      expect(
+        report.failures.map((failure) => failure.code),
+        contains('supabase_http_500'),
+      );
+    });
+
+    test('isolates a missing table and keeps syncing other entities', () async {
       when(
         () => remote.fetchCategories(
           updatedAfter: any(named: 'updatedAfter'),
@@ -413,12 +486,25 @@ void main() {
       ).thenThrow(
         const ServerException('Missing table.', code: 'supabase_http_404'),
       );
+      when(
+        () => remote.fetchTransactions(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [buildTransaction().toJson()]);
 
-      final result = await buildRepository(env: configuredEnv()).syncNow();
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected partial report'));
 
-      final failure = result.getLeft().toNullable();
-      expect(failure?.code, 'supabase_http_404');
-      expect(failure?.message, contains('Supabase migrations'));
+      expect(report.pulled, 1);
+      expect(
+        report.failures.map((failure) => failure.entityType),
+        contains(SyncEntityType.category),
+      );
+      expect(report.failures.single.code, 'supabase_http_404');
+      verify(() => transactionLocal.saveTransaction(any())).called(1);
     });
 
     test('returns an offline report when Supabase is not configured', () async {

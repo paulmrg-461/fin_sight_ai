@@ -1,3 +1,4 @@
+import 'package:fin_sight_ai/core/sync/sync_operation.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -13,6 +14,66 @@ void main() {
     isAuthenticated: true,
     completedAt: completedAt,
   );
+
+  group('SyncEntityFailure', () {
+    const failure = SyncEntityFailure(
+      entityType: SyncEntityType.category,
+      code: 'supabase_http_404',
+      message: 'Missing table.',
+    );
+
+    test('uses value equality and a stable string form', () {
+      expect(
+        failure,
+        const SyncEntityFailure(
+          entityType: SyncEntityType.category,
+          code: 'supabase_http_404',
+          message: 'Missing table.',
+        ),
+      );
+      expect(failure.hashCode, isNonZero);
+      expect(
+        failure,
+        isNot(
+          const SyncEntityFailure(
+            entityType: SyncEntityType.transaction,
+            code: 'supabase_http_404',
+            message: 'Missing table.',
+          ),
+        ),
+      );
+      expect(failure.toString(), contains('category'));
+    });
+
+    test('reports compare failures by content', () {
+      final withFailure = SyncReport(
+        pushed: 0,
+        pulled: 0,
+        conflictsResolved: 0,
+        pendingOperations: 0,
+        failures: const [failure],
+        isConfigured: true,
+        isAuthenticated: true,
+        completedAt: completedAt,
+      );
+
+      expect(
+        withFailure,
+        SyncReport(
+          pushed: 0,
+          pulled: 0,
+          conflictsResolved: 0,
+          pendingOperations: 0,
+          failures: const [failure],
+          isConfigured: true,
+          isAuthenticated: true,
+          completedAt: completedAt,
+        ),
+      );
+      expect(withFailure, isNot(report()));
+      expect(withFailure.toString(), contains('failures: 1'));
+    });
+  });
 
   group('SyncReport', () {
     test('uses value equality across all fields', () {

@@ -1457,4 +1457,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get errCloudSessionRejected =>
       'La nube rechazó esta sesión. Inicia sesión de nuevo y reintenta.';
+
+  @override
+  String get syncPartialTitle => 'Algunos cambios no se sincronizaron';
+
+  @override
+  String get syncPartialBody =>
+      'El resto de tus datos se sincronizó. Estas entidades fallaron:';
 }

@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/failure_text.dart';
+import '../../../../core/sync/sync_operation.dart';
 
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 
 import '../bloc/sync_bloc.dart';
 import '../bloc/sync_event.dart';
+import '../../domain/entities/sync_entities.dart';
 import '../bloc/sync_state.dart';
 
 /// App-bar control showing pending changes and triggering a manual sync.
@@ -21,6 +23,10 @@ class SyncStatusChip extends StatelessWidget {
       builder: (context, state) {
         final isSyncing = state is SyncInProgress;
         final hasFailure = state is SyncFailure;
+        final entityFailures = state is SyncSuccess
+            ? state.report.failures
+            : const <SyncEntityFailure>[];
+        final hasEntityFailures = entityFailures.isNotEmpty;
         final pending = switch (state) {
           SyncIdle(:final status) => status.pendingCount,
           SyncSuccess(:final report) => report.pendingOperations,
@@ -39,7 +45,7 @@ class SyncStatusChip extends StatelessWidget {
 
         final icon = isSyncing
             ? Icons.cloud_sync_outlined
-            : hasFailure || !configured || !authenticated
+            : hasFailure || hasEntityFailures || !configured || !authenticated
             ? Icons.cloud_off_outlined
             : pending > 0
             ? Icons.cloud_upload_outlined
@@ -51,7 +57,7 @@ class SyncStatusChip extends StatelessWidget {
             ? context.l10n.syncOfflineNotConfigured
             : !authenticated
             ? context.l10n.signInToSync
-            : hasFailure
+            : hasFailure || hasEntityFailures
             ? context.l10n.syncFailedRetry
             : pending > 0
             ? context.l10n.syncNowPending(pending)
@@ -94,20 +100,50 @@ class SyncStatusChip extends StatelessWidget {
       context.pushNamed(AppRoutes.loginName);
       return;
     }
-    if (state is SyncFailure) {
+
+    final failures = switch (state) {
+      SyncSuccess(:final report) => report.failures,
+      _ => const <SyncEntityFailure>[],
+    };
+    if (state is SyncFailure || failures.isNotEmpty) {
+      final l10n = context.l10n;
       final retry = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(context.l10n.syncFailedTitle),
-          content: Text(context.failureText(state.message)),
+          title: Text(
+            failures.isEmpty ? l10n.syncFailedTitle : l10n.syncPartialTitle,
+          ),
+          content: failures.isEmpty
+              ? Text(
+                  context.failureText(
+                    state is SyncFailure ? state.message : '',
+                  ),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(l10n.syncPartialBody),
+                    const SizedBox(height: 8),
+                    for (final failure in failures)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          '${_entityLabel(context, failure.entityType)} · '
+                          '${failure.code}',
+                          style: Theme.of(dialogContext).textTheme.bodySmall,
+                        ),
+                      ),
+                  ],
+                ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(context.l10n.cancel),
+              child: Text(l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(context.l10n.retry),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -118,5 +154,19 @@ class SyncStatusChip extends StatelessWidget {
       return;
     }
     bloc.add(const SyncNow());
+  }
+
+  String _entityLabel(BuildContext context, SyncEntityType type) {
+    final l10n = context.l10n;
+    return switch (type) {
+      SyncEntityType.category => l10n.categoriesTitle,
+      SyncEntityType.scheduledPayment => l10n.scheduledPayments,
+      SyncEntityType.wallet || SyncEntityType.walletTransfer => l10n.money,
+      SyncEntityType.savingsGoal => l10n.savingsGoals,
+      SyncEntityType.transaction => l10n.transactions,
+      SyncEntityType.debt => l10n.debts,
+      SyncEntityType.budget => l10n.budgets,
+      SyncEntityType.receivable => l10n.receivablesTitle,
+    };
   }
 }
