@@ -289,6 +289,7 @@ void main() {
       MockAnalyzeSpending(),
       MockGetSavings(),
       getTransactions,
+      MockGetDebts(),
       MockInsightCache(),
     );
 

@@ -540,5 +540,7 @@
   "principalLabel": "Principal",
   "interestLabel": "Interest",
   "remainingBalance": "Remaining",
-  "currentDebts": "Current debts"
+  "currentDebts": "Current debts",
+  "insightHistory": "History",
+  "insightsLabel": "Insights"
 }

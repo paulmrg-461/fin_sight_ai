@@ -5,6 +5,7 @@ import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../bloc/ai_coach_bloc.dart';
 import '../bloc/ai_coach_event.dart';
+import '../../domain/entities/insight_history_entry.dart';
 import '../bloc/ai_coach_state.dart';
 import '../widgets/insight_card.dart';
 
@@ -34,23 +35,31 @@ class AiCoachScreen extends StatelessWidget {
                 LoadInsights(languageCode: _languageCode(context)),
               ),
             ),
-            AiCoachLoaded(:final insights, :final fromCache) => ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              children: [
-                Text(
-                  context.l10n.yourFinancialCoach,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  context.l10n.insightsDisclaimer,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                if (fromCache) ...[const SizedBox(height: 12), _CachedBanner()],
-                const SizedBox(height: 16),
-                for (final insight in insights) InsightCard(insight: insight),
-              ],
-            ),
+            AiCoachLoaded(:final insights, :final fromCache, :final history) =>
+              ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                children: [
+                  Text(
+                    context.l10n.yourFinancialCoach,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.l10n.insightsDisclaimer,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  if (fromCache) ...[
+                    const SizedBox(height: 12),
+                    _CachedBanner(),
+                  ],
+                  const SizedBox(height: 16),
+                  for (final insight in insights) InsightCard(insight: insight),
+                  if (history.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    _HistorySection(history: history),
+                  ],
+                ],
+              ),
           };
         },
       ),
@@ -86,6 +95,65 @@ class AiCoachScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HistorySection extends StatelessWidget {
+  const _HistorySection({required this.history});
+
+  final List<InsightHistoryEntry> history;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final localizations = MaterialLocalizations.of(context);
+
+    String labelFor(InsightHistoryKind kind) => switch (kind) {
+      InsightHistoryKind.insights => l10n.insightsLabel,
+      InsightHistoryKind.analysis => l10n.analyzeSpending,
+      InsightHistoryKind.suggestions => l10n.savingsTips,
+    };
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ExpansionTile(
+        leading: Icon(Icons.history_rounded, color: theme.colorScheme.primary),
+        title: Text(l10n.insightHistory),
+        subtitle: Text(
+          localizations.formatDecimal(history.length),
+          style: theme.textTheme.bodySmall,
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        children: [
+          for (final entry in history)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${localizations.formatMediumDate(entry.createdAt)} · '
+                    '${localizations.formatTimeOfDay(TimeOfDay.fromDateTime(entry.createdAt))} · ${labelFor(entry.kind)}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  for (final insight in entry.insights)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        insight.content,
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

@@ -31,6 +31,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 021 | Show committed cashflow on the dashboard | P2 | S | 009, 012, 016 | DONE (957 unit, 29 integration) |
 | 022 | Duplicate a transaction | P3 | S | 008 | DONE (957 unit, 30 integration) |
 | 023 | Debt payment plan + dashboard debt overview | P2 | M | 008, 021 | DONE (976 unit, 30 integration) |
+| 024 | AI debt context + insight history | P2 | M | 019, 020, 023 | DONE (982 unit, 30 integration) |
+
+- 024 fed active debts into the AI prompt and stored a capped, per-language history of generations with a History section in the coach.
 
 - 023 added amortization plans to debt details and a current-debts card on the dashboard.
 

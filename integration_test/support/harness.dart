@@ -308,6 +308,7 @@ class IntegrationHarness {
       analyzeSpending,
       getSavings,
       getTransactions,
+      getDebts,
       HiveInsightCache(boxes),
     );
     dashboardBloc = DashboardBloc(

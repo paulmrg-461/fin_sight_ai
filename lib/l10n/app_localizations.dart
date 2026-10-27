@@ -2485,6 +2485,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Current debts'**
   String get currentDebts;
+
+  /// No description provided for @insightHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get insightHistory;
+
+  /// No description provided for @insightsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get insightsLabel;
 }
 
 class _AppLocalizationsDelegate

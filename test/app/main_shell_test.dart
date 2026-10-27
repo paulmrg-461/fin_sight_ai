@@ -299,6 +299,7 @@ void main() {
       MockAnalyzeSpending(),
       MockGetSavings(),
       getTransactions,
+      MockGetDebts(),
       MockInsightCache(),
     );
     final getDashboard = MockGetDashboardData();

@@ -656,15 +656,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i826.ScanReceiptUseCase>(
       () => _i826.ScanReceiptUseCase(gh<_i832.ReceiptRepository>()),
     );
-    gh.factory<_i872.AiCoachBloc>(
-      () => _i872.AiCoachBloc(
-        gh<_i811.GetInsightsUseCase>(),
-        gh<_i177.AnalyzeSpendingUseCase>(),
-        gh<_i363.GetSavingsSuggestionsUseCase>(),
-        gh<_i1051.GetTransactionsUseCase>(),
-        gh<_i802.InsightCache>(),
-      ),
-    );
     gh.lazySingleton<_i160.GetScheduledPaymentsUseCase>(
       () => _i160.GetScheduledPaymentsUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
@@ -686,6 +677,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i998.SignUpUseCase>(),
         gh<_i998.SignOutUseCase>(),
         gh<_i998.RestoreSessionUseCase>(),
+      ),
+    );
+    gh.factory<_i872.AiCoachBloc>(
+      () => _i872.AiCoachBloc(
+        gh<_i811.GetInsightsUseCase>(),
+        gh<_i177.AnalyzeSpendingUseCase>(),
+        gh<_i363.GetSavingsSuggestionsUseCase>(),
+        gh<_i1051.GetTransactionsUseCase>(),
+        gh<_i243.GetDebtsUseCase>(),
+        gh<_i802.InsightCache>(),
       ),
     );
     gh.factory<_i1009.DebtBloc>(

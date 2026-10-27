@@ -491,5 +491,7 @@
   "principalLabel": "Capital",
   "interestLabel": "Interés",
   "remainingBalance": "Saldo restante",
-  "currentDebts": "Deudas actuales"
+  "currentDebts": "Deudas actuales",
+  "insightHistory": "Historial",
+  "insightsLabel": "Ideas"
 }

@@ -2,9 +2,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
 import '../../../../core/usecase/usecase.dart';
+import '../../../debts/domain/entities/debt_entity.dart';
+import '../../../debts/domain/usecases/get_debts_usecase.dart';
 import '../../../transactions/domain/entities/transaction_entity.dart';
 import '../../../transactions/domain/usecases/get_transactions_usecase.dart';
 import '../../domain/entities/financial_insight_entity.dart';
+import '../../domain/entities/insight_history_entry.dart';
 import '../../domain/repositories/insight_cache.dart';
 import '../../domain/usecases/analyze_spending_usecase.dart';
 import '../../domain/usecases/get_insights_usecase.dart';
@@ -20,6 +23,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     this._analyzeSpending,
     this._getSuggestions,
     this._getTransactions,
+    this._getDebts,
     this._cache,
   ) : super(const AiCoachInitial()) {
     on<LoadInsights>(_onLoadInsights);
@@ -31,6 +35,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   final AnalyzeSpendingUseCase _analyzeSpending;
   final GetSavingsSuggestionsUseCase _getSuggestions;
   final GetTransactionsUseCase _getTransactions;
+  final GetDebtsUseCase _getDebts;
   final InsightCache _cache;
 
   Future<void> _onLoadInsights(
@@ -44,7 +49,13 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     if (failure != null) {
       final cached = await _cache.read(event.languageCode);
       if (cached != null && cached.isNotEmpty) {
-        emit(AiCoachLoaded(cached, fromCache: true));
+        emit(
+          AiCoachLoaded(
+            cached,
+            fromCache: true,
+            history: await _history(event.languageCode),
+          ),
+        );
         return;
       }
       emit(AiCoachFailure(failure.message));
@@ -56,8 +67,12 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
       emit(const AiCoachEmpty());
       return;
     }
-    await _cache.write(event.languageCode, insights);
-    emit(AiCoachLoaded(insights));
+    await _cache.write(
+      event.languageCode,
+      insights,
+      kind: InsightHistoryKind.insights,
+    );
+    emit(AiCoachLoaded(insights, history: await _history(event.languageCode)));
   }
 
   Future<void> _onAnalyzeSpending(
@@ -82,8 +97,12 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
       return;
     }
     final insights = [insight, ...previous];
-    await _cache.write(event.languageCode, insights);
-    emit(AiCoachLoaded(insights));
+    await _cache.write(
+      event.languageCode,
+      insights,
+      kind: InsightHistoryKind.analysis,
+    );
+    emit(AiCoachLoaded(insights, history: await _history(event.languageCode)));
   }
 
   Future<void> _onGetSuggestions(
@@ -108,9 +127,42 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
       return;
     }
     final insights = [insight, ...previous];
-    await _cache.write(event.languageCode, insights);
-    emit(AiCoachLoaded(insights));
+    await _cache.write(
+      event.languageCode,
+      insights,
+      kind: InsightHistoryKind.suggestions,
+    );
+    emit(AiCoachLoaded(insights, history: await _history(event.languageCode)));
   }
+
+  Future<String> _debtSummary() async {
+    final result = await _getDebts(const NoParams());
+    final debts = result
+        .getOrElse((_) => const <DebtEntity>[])
+        .where((debt) => !debt.isPaid)
+        .toList(growable: false);
+    if (debts.isEmpty) {
+      return '';
+    }
+    final total = debts.fold<double>(
+      0,
+      (sum, debt) => sum + debt.remainingAmount,
+    );
+    final minimum = debts.fold<double>(
+      0,
+      (sum, debt) => sum + debt.minimumPayment,
+    );
+    final highestRate = debts
+        .map((debt) => debt.interestRate)
+        .reduce((a, b) => a > b ? a : b);
+    return 'Debts: ${debts.length}. Total remaining: '
+        '\$${total.toStringAsFixed(2)}. Minimum payments: '
+        '\$${minimum.toStringAsFixed(2)}. Highest rate: '
+        '${highestRate.toStringAsFixed(2)}%.';
+  }
+
+  Future<List<InsightHistoryEntry>> _history(String languageCode) =>
+      _cache.readHistory(languageCode);
 
   List<FinancialInsightEntity> get _currentInsights {
     final current = state;
@@ -123,8 +175,10 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
         : 'English';
     final result = await _getTransactions(const NoParams());
     final transactions = result.getOrElse((_) => const <TransactionEntity>[]);
+    final debts = await _debtSummary();
     if (transactions.isEmpty) {
-      return 'No transactions recorded yet. Write the response in $language.';
+      return 'No transactions recorded yet.${debts.isEmpty ? '' : ' $debts'} '
+          'Write the response in $language.';
     }
 
     var income = 0.0;
@@ -157,6 +211,7 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
         'Balance: \$${(income - expenses).toStringAsFixed(2)}. '
         'Top expense categories: '
         '${categorySummary.isEmpty ? 'none' : categorySummary}. '
+        '${debts.isEmpty ? '' : '$debts '}'
         'Write the response in $language.';
   }
 }

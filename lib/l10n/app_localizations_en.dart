@@ -1313,4 +1313,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentDebts => 'Current debts';
+
+  @override
+  String get insightHistory => 'History';
+
+  @override
+  String get insightsLabel => 'Insights';
 }

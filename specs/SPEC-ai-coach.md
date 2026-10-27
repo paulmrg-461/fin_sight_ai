@@ -54,3 +54,16 @@ States: initial, loading, loaded, empty, failure. New analyses are prepended to 
 flutter analyze
 flutter test --coverage
 ```
+
+## Context
+
+The prompt context includes transaction totals and top expense categories plus active debt
+information: count, total remaining, total minimum payments, and the highest annual rate. Debt
+read failures are ignored so coaching still works.
+
+## History
+
+Every successful generation is appended to `ai_insights` as an
+`InsightHistoryEntry` (timestamp, kind `insights`/`analysis`/`suggestions`, contents). History is
+per language, newest first, capped at 20 batches, and cleared with account data. The coach screen
+exposes it in a **History** expansion; the latest batch remains the offline fallback.

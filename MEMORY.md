@@ -56,6 +56,13 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `MainShell` refreshes the dashboard when its bottom-navigation tab is selected, so schedules/debts added in other branches appear immediately without extra startup reads.
 - Tests: BLoC projection, widget preview/tap, and an integration flow where a debt minimum appears on the dashboard.
 
+## AI debt context + history (plan 024)
+
+- `AiCoachBloc` appends active debt context to every prompt: count, total remaining, total minimums, and highest rate; debt failures are ignored.
+- `InsightHistoryEntry` stores each successful generation (timestamp + kind + insights). The per-language history is newest-first, capped at 20, stored in `ai_insights`, and cleared on sign-out.
+- The coach screen renders a localized **History** expansion with date/time, trigger (`Insights`/`Analyze spending`/`Savings tips`), and contents; latest insights remain the offline fallback.
+- Tests cover cache history/kind/cap, debt prompt context, history exposure, and history equality.
+
 ## AI insight cache (plan 020)
 
 - `ai_insights` is a user-owned Hive box (cleared by `LocalDataScope` on sign-out) storing the last insights per language.
