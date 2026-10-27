@@ -5,6 +5,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/domain/failure.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/entities/debt_entity.dart';
+import '../../domain/services/debt_payoff_calculator.dart';
 import '../../domain/usecases/add_debt_usecase.dart';
 import '../../domain/usecases/calculate_payoff_usecase.dart';
 import '../../domain/usecases/delete_debt_usecase.dart';
@@ -111,13 +112,22 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
       return;
     }
 
+    final expectedDate = result.getOrElse((_) => null);
     emit(
       DebtLoaded(
         debts: current.debts,
         payoff: PayoffEstimate(
           debtId: debt.id,
           monthlyPayment: event.monthlyPayment,
-          expectedDate: result.getOrElse((_) => null),
+          expectedDate: expectedDate,
+          plan: expectedDate == null
+              ? null
+              : DebtPayoffCalculator.buildPaymentPlan(
+                  remainingAmount: debt.remainingAmount,
+                  annualInterestRate: debt.interestRate,
+                  monthlyPayment: event.monthlyPayment,
+                  from: DateTime.now(),
+                ),
         ),
       ),
     );

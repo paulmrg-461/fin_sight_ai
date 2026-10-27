@@ -6,6 +6,7 @@ import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
+import '../../domain/services/debt_payment_plan.dart';
 import '../bloc/debt_bloc.dart';
 import '../bloc/debt_event.dart';
 import '../bloc/debt_state.dart';
@@ -72,9 +73,12 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
     }
   }
 
-  void _calculatePayoff() {
-    final value = double.tryParse(_payoffController.text.trim());
-    if (value == null || !value.isFinite || value <= 0) {
+  void _calculatePayoff(DebtEntity debt) {
+    final input = double.tryParse(_payoffController.text.trim());
+    final value = input == null || !input.isFinite || input <= 0
+        ? debt.minimumPayment
+        : input;
+    if (!value.isFinite || value <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.l10n.enterValidMonthlyPayment)),
       );
@@ -180,7 +184,7 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                   ),
                   const SizedBox(width: 8),
                   FilledButton(
-                    onPressed: _calculatePayoff,
+                    onPressed: () => _calculatePayoff(debt),
                     child: Text(context.l10n.calculate),
                   ),
                 ],
@@ -195,6 +199,10 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                         ),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+                if (payoff.plan != null) ...[
+                  const SizedBox(height: 12),
+                  _PaymentPlanCard(plan: payoff.plan!),
+                ],
               ],
               const SizedBox(height: 24),
               Text(
@@ -222,6 +230,179 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
       }
     }
     return null;
+  }
+}
+
+class _PaymentPlanCard extends StatelessWidget {
+  const _PaymentPlanCard({required this.plan});
+
+  final DebtPaymentPlan plan;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.calendar_month_outlined,
+                  size: 20,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l10n.paymentPlan,
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+                Chip(label: Text(l10n.paymentsCount(plan.months))),
+              ],
+            ),
+            const SizedBox(height: 8),
+            _PlanTotal(label: l10n.totalInterest, amount: plan.totalInterest),
+            _PlanTotal(label: l10n.totalPaidLabel, amount: plan.totalPaid),
+            const Divider(height: 20),
+            for (final installment in plan.installments)
+              _InstallmentRow(installment: installment),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlanTotal extends StatelessWidget {
+  const _PlanTotal({required this.label, required this.amount});
+
+  final String label;
+  final double amount;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          MoneyText(
+            amount,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InstallmentRow extends StatelessWidget {
+  const _InstallmentRow({required this.installment});
+
+  final DebtInstallment installment;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '${installment.period}',
+              style: theme.textTheme.labelMedium,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  formatDisplayDate(installment.date),
+                  style: theme.textTheme.bodyMedium,
+                ),
+                Row(
+                  children: [
+                    Text(
+                      '${l10n.principalLabel} ',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    MoneyText(
+                      installment.principal,
+                      style: theme.textTheme.labelSmall,
+                    ),
+                    Text(
+                      ' · ${l10n.interestLabel} ',
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    MoneyText(
+                      installment.interest,
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              MoneyText(
+                installment.payment,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${l10n.remainingBalance}: ',
+                    style: theme.textTheme.labelSmall,
+                  ),
+                  MoneyText(
+                    installment.remaining,
+                    style: theme.textTheme.labelSmall,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

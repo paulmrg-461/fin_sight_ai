@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/debt_entity.dart';
+import '../../domain/services/debt_payment_plan.dart';
 
 /// Projected payoff for a specific debt.
 class PayoffEstimate extends Equatable {
@@ -8,6 +9,7 @@ class PayoffEstimate extends Equatable {
     required this.debtId,
     required this.monthlyPayment,
     required this.expectedDate,
+    this.plan,
   });
 
   final String debtId;
@@ -16,8 +18,11 @@ class PayoffEstimate extends Equatable {
   /// `null` when the payment does not cover the interest.
   final DateTime? expectedDate;
 
+  /// Full amortization schedule for [monthlyPayment], when available.
+  final DebtPaymentPlan? plan;
+
   @override
-  List<Object?> get props => [debtId, monthlyPayment, expectedDate];
+  List<Object?> get props => [debtId, monthlyPayment, expectedDate, plan];
 }
 
 /// Base state for the debts feature.

@@ -988,9 +988,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count deudas activas',
-      one: '1 deuda activa',
-      zero: 'Sin deudas activas',
+      other: '$count activas',
+      one: '1 activa',
     );
     return '$_temp0';
   }
@@ -1291,4 +1290,35 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get saveAsCopy => 'Guardar como copia';
+
+  @override
+  String get paymentPlan => 'Plan de pagos';
+
+  @override
+  String paymentsCount(int count) {
+    return '$count pagos';
+  }
+
+  @override
+  String get totalInterest => 'Intereses totales';
+
+  @override
+  String get totalPaidLabel => 'Total pagado';
+
+  @override
+  String paymentNumber(int number) {
+    return 'Pago $number';
+  }
+
+  @override
+  String get principalLabel => 'Capital';
+
+  @override
+  String get interestLabel => 'Interés';
+
+  @override
+  String get remainingBalance => 'Saldo restante';
+
+  @override
+  String get currentDebts => 'Deudas actuales';
 }

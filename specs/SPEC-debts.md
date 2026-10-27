@@ -84,3 +84,18 @@ Screens/widgets: `DebtListScreen` (progress cards), `AddDebtScreen` (validated f
 flutter analyze
 flutter test --coverage
 ```
+
+## Payment plan
+
+`DebtPayoffCalculator.buildPaymentPlan` produces a deterministic monthly
+amortization schedule from the remaining balance, annual rate, and chosen
+monthly payment:
+
+- Each installment records date, payment, interest, principal, and remaining.
+- The final installment is shortened to the exact remaining balance.
+- Total interest and total paid are aggregated.
+- A payment that cannot cover interest returns `null`.
+- The payoff date is derived from the same plan, so the estimate and schedule
+  always agree.
+- Debt details render the plan; an empty monthly-payment field uses the debt's
+  minimum payment.

@@ -365,7 +365,7 @@
     }
   },
   "totalDebt": "Deuda total",
-  "activeDebts": "{count, plural, =0{Sin deudas activas} =1{1 deuda activa} other{{count} deudas activas}}",
+  "activeDebts": "{count, plural, =1{1 activa} other{{count} activas}}",
   "@activeDebts": {
     "placeholders": {
       "count": {
@@ -468,5 +468,28 @@
   "errGeneric": "Algo salió mal. Inténtalo de nuevo.",
   "savedInsights": "Mostrando ideas guardadas. Reconéctate para actualizar.",
   "committedNext30Days": "Comprometido próximos 30 días",
-  "saveAsCopy": "Guardar como copia"
+  "saveAsCopy": "Guardar como copia",
+  "paymentPlan": "Plan de pagos",
+  "paymentsCount": "{count} pagos",
+  "@paymentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalInterest": "Intereses totales",
+  "totalPaidLabel": "Total pagado",
+  "paymentNumber": "Pago {number}",
+  "@paymentNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "principalLabel": "Capital",
+  "interestLabel": "Interés",
+  "remainingBalance": "Saldo restante",
+  "currentDebts": "Deudas actuales"
 }

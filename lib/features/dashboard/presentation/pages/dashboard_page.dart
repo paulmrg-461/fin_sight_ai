@@ -19,6 +19,7 @@ import '../bloc/dashboard_state.dart';
 import '../../domain/entities/dashboard_entities.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/committed_30_days_card.dart';
+import '../widgets/debts_summary_card.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../../../auth/presentation/widgets/account_button.dart';
@@ -27,6 +28,9 @@ import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
 import '../../../receivables/presentation/widgets/receivables_summary_card.dart';
+import '../../../debts/presentation/bloc/debt_bloc.dart';
+import '../../../debts/domain/entities/debt_entity.dart';
+import '../../../debts/presentation/bloc/debt_state.dart';
 
 /// Analytics dashboard with navigation shortcuts.
 class DashboardPage extends StatelessWidget {
@@ -171,6 +175,18 @@ class DashboardPage extends StatelessWidget {
                       ReceivablesSummaryCard(
                         onTap: () =>
                             _openFeature(context, AppRoutes.receivablesName),
+                      ),
+                      BlocBuilder<DebtBloc, DebtState>(
+                        builder: (context, debtState) {
+                          final debts = debtState is DebtLoaded
+                              ? debtState.debts
+                              : const <DebtEntity>[];
+                          return DebtsSummaryCard(
+                            debts: debts,
+                            onTap: () =>
+                                _openFeature(context, AppRoutes.debtsName),
+                          );
+                        },
                       ),
                       if (committed30 != null && !committed30.isEmpty)
                         Committed30DaysCard(

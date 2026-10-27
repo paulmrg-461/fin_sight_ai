@@ -201,14 +201,20 @@ void main() {
         const CalculatePayoff(debtId: 'debt-1', monthlyPayment: 150),
       ),
       expect: () => [
-        DebtLoaded(
-          debts: [debt],
-          payoff: PayoffEstimate(
-            debtId: 'debt-1',
-            monthlyPayment: 150,
-            expectedDate: DateTime.utc(2027, 6, 1),
-          ),
-        ),
+        isA<DebtLoaded>()
+            .having((state) => state.debts, 'debts', [debt])
+            .having((state) => state.payoff?.debtId, 'debtId', 'debt-1')
+            .having(
+              (state) => state.payoff?.monthlyPayment,
+              'monthlyPayment',
+              150,
+            )
+            .having(
+              (state) => state.payoff?.expectedDate,
+              'expectedDate',
+              DateTime.utc(2027, 6, 1),
+            )
+            .having((state) => state.payoff?.plan, 'plan', isNotNull),
       ],
     );
 

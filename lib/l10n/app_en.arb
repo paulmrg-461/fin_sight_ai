@@ -414,7 +414,7 @@
     }
   },
   "totalDebt": "Total debt",
-  "activeDebts": "{count, plural, =0{No active debts} =1{1 active debt} other{{count} active debts}}",
+  "activeDebts": "{count, plural, =1{1 active} other{{count} active}}",
   "@activeDebts": {
     "placeholders": {
       "count": {
@@ -517,5 +517,28 @@
   "errGeneric": "Something went wrong. Please try again.",
   "savedInsights": "Showing saved insights. Reconnect to refresh.",
   "committedNext30Days": "Committed next 30 days",
-  "saveAsCopy": "Save as copy"
+  "saveAsCopy": "Save as copy",
+  "paymentPlan": "Payment plan",
+  "paymentsCount": "{count} payments",
+  "@paymentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "totalInterest": "Total interest",
+  "totalPaidLabel": "Total paid",
+  "paymentNumber": "Payment {number}",
+  "@paymentNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "principalLabel": "Principal",
+  "interestLabel": "Interest",
+  "remainingBalance": "Remaining",
+  "currentDebts": "Current debts"
 }

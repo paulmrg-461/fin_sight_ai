@@ -220,6 +220,7 @@ void main() {
     await tester.enterText(fields.at(2), '12');
     await tester.enterText(fields.at(3), '100');
     await tester.tap(find.text('Save debt'));
+    await pumpUntilGone(tester, find.text('Save debt'));
 
     await pumpUntil(tester, find.text('Bank'));
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
@@ -228,6 +229,13 @@ void main() {
     final debts = result.getOrElse((_) => const <DebtEntity>[]);
     expect(debts.single.creditorName, 'Bank');
     expect(debts.single.totalAmount, 1000);
+
+    await tester.tap(find.text('Bank'));
+    await pumpUntil(tester, find.text('Debt details'));
+    await tester.tap(find.text('Calculate'));
+    await pumpUntil(tester, find.text('Payment plan'));
+    expect(find.text('Total interest'), findsOneWidget);
+    expect(find.textContaining('payments'), findsWidgets);
   });
 
   testWidgets('tracks money lent, receives a payment, and persists restart', (

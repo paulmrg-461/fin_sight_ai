@@ -115,5 +115,48 @@ void main() {
 
       expect(payoff, isNull);
     });
+
+    test('builds a zero-interest amortization plan', () {
+      final plan = DebtPayoffCalculator.buildPaymentPlan(
+        remainingAmount: 300,
+        annualInterestRate: 0,
+        monthlyPayment: 100,
+        from: from,
+      );
+
+      expect(plan, isNotNull);
+      expect(plan!.months, 3);
+      expect(plan.totalInterest, 0);
+      expect(plan.totalPaid, 300);
+      expect(plan.installments.map((item) => item.remaining), [200, 100, 0]);
+      expect(plan.payoffDate, DateTime.utc(2026, 4, 15, 10));
+    });
+
+    test('splits interest and principal and shortens the final payment', () {
+      final plan = DebtPayoffCalculator.buildPaymentPlan(
+        remainingAmount: 1000,
+        annualInterestRate: 12,
+        monthlyPayment: 600,
+        from: from,
+      );
+
+      expect(plan, isNotNull);
+      expect(plan!.installments.first.interest, 10);
+      expect(plan.installments.first.principal, 590);
+      expect(plan.installments.last.payment, lessThan(600));
+      expect(plan.installments.last.remaining, 0);
+      expect(plan.totalInterest, greaterThan(10));
+    });
+
+    test('returns null when the payment does not cover interest', () {
+      final plan = DebtPayoffCalculator.buildPaymentPlan(
+        remainingAmount: 1000,
+        annualInterestRate: 24,
+        monthlyPayment: 10,
+        from: from,
+      );
+
+      expect(plan, isNull);
+    });
   });
 }

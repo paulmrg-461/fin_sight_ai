@@ -35,6 +35,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
 - Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
 
+## Debt payment plan + dashboard overview (plan 023)
+
+- `DebtPaymentPlan`/`DebtInstallment` (pure domain) plus `DebtPayoffCalculator.buildPaymentPlan` compute monthly payment, interest, principal, remaining, total interest, and total paid; the final payment is shortened and non-amortizing payments return `null`.
+- `calculatePayoffDate` now derives from the plan, so the payoff date and schedule cannot diverge.
+- `PayoffEstimate.plan` drives a **Payment plan** card in debt details with every installment; an empty monthly-payment field falls back to the debt minimum.
+- The dashboard has a **Current debts** card (active count, total remaining, next due creditor/date/minimum, opens `/debts`) fed by `DebtBloc` and hidden when no active debt remains.
+- Tests: plan math, model equality, bloc plan attachment, dashboard widget, and the debt-detail integration flow.
+
 ## Duplicate transaction (plan 022)
 
 - The edit form exposes **Save as copy**: it dispatches `AddTransaction` with the current fields, today's date, and no id.

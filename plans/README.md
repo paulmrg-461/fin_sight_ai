@@ -30,6 +30,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 020 | Cache AI insights for offline use | P3 | M | 019 | DONE (955 unit, 28 integration) |
 | 021 | Show committed cashflow on the dashboard | P2 | S | 009, 012, 016 | DONE (957 unit, 29 integration) |
 | 022 | Duplicate a transaction | P3 | S | 008 | DONE (957 unit, 30 integration) |
+| 023 | Debt payment plan + dashboard debt overview | P2 | M | 008, 021 | DONE (976 unit, 30 integration) |
+
+- 023 added amortization plans to debt details and a current-debts card on the dashboard.
 
 - 022 added **Save as copy** to the transaction edit form, creating a new id dated today.
 

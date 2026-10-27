@@ -1895,7 +1895,7 @@ abstract class AppLocalizations {
   /// No description provided for @activeDebts.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{No active debts} =1{1 active debt} other{{count} active debts}}'**
+  /// **'{count, plural, =1{1 active} other{{count} active}}'**
   String activeDebts(int count);
 
   /// No description provided for @editReceivable.
@@ -2431,6 +2431,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save as copy'**
   String get saveAsCopy;
+
+  /// No description provided for @paymentPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment plan'**
+  String get paymentPlan;
+
+  /// No description provided for @paymentsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} payments'**
+  String paymentsCount(int count);
+
+  /// No description provided for @totalInterest.
+  ///
+  /// In en, this message translates to:
+  /// **'Total interest'**
+  String get totalInterest;
+
+  /// No description provided for @totalPaidLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total paid'**
+  String get totalPaidLabel;
+
+  /// No description provided for @paymentNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment {number}'**
+  String paymentNumber(int number);
+
+  /// No description provided for @principalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Principal'**
+  String get principalLabel;
+
+  /// No description provided for @interestLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest'**
+  String get interestLabel;
+
+  /// No description provided for @remainingBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get remainingBalance;
+
+  /// No description provided for @currentDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'Current debts'**
+  String get currentDebts;
 }
 
 class _AppLocalizationsDelegate
