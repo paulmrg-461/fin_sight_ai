@@ -493,5 +493,17 @@
   "remainingBalance": "Saldo restante",
   "currentDebts": "Deudas actuales",
   "insightHistory": "Historial",
-  "insightsLabel": "Ideas"
+  "insightsLabel": "Ideas",
+  "askCoach": "Preguntar al coach",
+  "askCoachHint": "Pregunta sobre tu dinero…",
+  "send": "Enviar",
+  "clearChat": "Borrar conversación",
+  "clearChatQuestion": "¿Borrar la conversación?",
+  "clearChatBody": "Esto elimina las preguntas y respuestas guardadas en este dispositivo.",
+  "coachChatEmptyTitle": "Pregunta lo que quieras sobre tus finanzas",
+  "coachChatEmptyBody": "Las preguntas usan tus transacciones y deudas reales como contexto. Nada sale del dispositivo salvo el prompt enviado al proveedor de IA.",
+  "coachSuggestionOne": "¿Cómo puedo pagar mi deuda más rápido?",
+  "coachSuggestionTwo": "¿En qué estoy gastando de más?",
+  "coachSuggestionThree": "¿Cuánto podría ahorrar este mes?",
+  "coachThinking": "Pensando…"
 }

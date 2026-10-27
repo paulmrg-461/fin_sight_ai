@@ -56,6 +56,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `MainShell` refreshes the dashboard when its bottom-navigation tab is selected, so schedules/debts added in other branches appear immediately without extra startup reads.
 - Tests: BLoC projection, widget preview/tap, and an integration flow where a debt minimum appears on the dashboard.
 
+## Free-form coach chat (plan 025)
+
+- `/ai-coach/chat` uses `CoachChatBloc` + `AskCoachUseCase`; answers are plain text from the same Groq datasource.
+- `CoachContextBuilder` now builds the shared transaction/debt/language context for both insights and chat.
+- `CoachMessage` history is stored in `ai_insights` (`chat_messages`, newest 100) and cleared with account data; the user turn is saved before the network call and kept on failure.
+- UI: suggestion prompts, user/coach bubbles, send progress, localized errors, confirmed clear action; entry from the coach app bar.
+- Tests cover use case, repository prompt/plain text, Hive store cap/corruption, BLoC success/failure/clear, and the integration chat flow.
+
 ## AI debt context + history (plan 024)
 
 - `AiCoachBloc` appends active debt context to every prompt: count, total remaining, total minimums, and highest rate; debt failures are ignored.

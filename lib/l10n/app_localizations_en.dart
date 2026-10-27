@@ -1319,4 +1319,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get insightsLabel => 'Insights';
+
+  @override
+  String get askCoach => 'Ask the coach';
+
+  @override
+  String get askCoachHint => 'Ask about your money…';
+
+  @override
+  String get send => 'Send';
+
+  @override
+  String get clearChat => 'Clear conversation';
+
+  @override
+  String get clearChatQuestion => 'Clear the conversation?';
+
+  @override
+  String get clearChatBody =>
+      'This deletes the saved questions and answers on this device.';
+
+  @override
+  String get coachChatEmptyTitle => 'Ask anything about your finances';
+
+  @override
+  String get coachChatEmptyBody =>
+      'Questions use your real transactions and debts as context. Nothing leaves the device except the prompt sent to the AI provider.';
+
+  @override
+  String get coachSuggestionOne => 'How can I pay off my debt faster?';
+
+  @override
+  String get coachSuggestionTwo => 'Where am I overspending?';
+
+  @override
+  String get coachSuggestionThree => 'How much could I save this month?';
+
+  @override
+  String get coachThinking => 'Thinking…';
 }

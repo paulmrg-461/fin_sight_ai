@@ -34,22 +34,30 @@ import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasou
     as _i323;
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/groq_api_datasource.dart'
     as _i369;
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_coach_chat_store.dart'
+    as _i765;
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_insight_cache.dart'
     as _i220;
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart'
     as _i587;
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/ai_coach_repository.dart'
     as _i853;
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/coach_chat_store.dart'
+    as _i766;
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart'
     as _i802;
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart'
     as _i177;
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/ask_coach_usecase.dart'
+    as _i205;
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart'
     as _i811;
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart'
     as _i363;
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart'
     as _i872;
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_bloc.dart'
+    as _i739;
 import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart'
     as _i231;
 import 'package:fin_sight_ai/features/auth/data/datasources/secure_session_storage.dart'
@@ -266,6 +274,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i147.ReceiptImagePicker>(
       () => _i147.ImagePickerReceiptImagePicker(),
     );
+    gh.lazySingleton<_i766.CoachChatStore>(
+      () => _i765.HiveCoachChatStore(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i231.AuthRemoteDataSource>(
       () =>
           _i862.SupabaseAuthDataSource(gh<_i519.Client>(), gh<_i1042.AppEnv>()),
@@ -337,6 +348,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i177.AnalyzeSpendingUseCase>(
       () => _i177.AnalyzeSpendingUseCase(gh<_i853.AiCoachRepository>()),
+    );
+    gh.lazySingleton<_i205.AskCoachUseCase>(
+      () => _i205.AskCoachUseCase(gh<_i853.AiCoachRepository>()),
     );
     gh.lazySingleton<_i811.GetInsightsUseCase>(
       () => _i811.GetInsightsUseCase(gh<_i853.AiCoachRepository>()),
@@ -722,6 +736,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i292.SaveReceiptUseCase>(
       () => _i292.SaveReceiptUseCase(
         gh<_i832.ReceiptRepository>(),
+        uuid: gh<_i706.Uuid>(),
+      ),
+    );
+    gh.factory<_i739.CoachChatBloc>(
+      () => _i739.CoachChatBloc(
+        gh<_i205.AskCoachUseCase>(),
+        gh<_i1051.GetTransactionsUseCase>(),
+        gh<_i243.GetDebtsUseCase>(),
+        gh<_i766.CoachChatStore>(),
         uuid: gh<_i706.Uuid>(),
       ),
     );

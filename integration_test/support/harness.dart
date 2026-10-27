@@ -19,9 +19,11 @@ import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_event.dart';
 import 'package:fin_sight_ai/core/utils/app_env.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/repositories/ai_coach_repository_impl.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/ask_coach_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_bloc.dart';
 import 'package:fin_sight_ai/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart';
@@ -106,6 +108,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
+import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_coach_chat_store.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/hive_insight_cache.dart';
 
 import 'fakes.dart';
@@ -158,6 +161,7 @@ class IntegrationHarness {
   late ReceivableBloc receivableBloc;
   late OcrBloc ocrBloc;
   late AiCoachBloc aiCoachBloc;
+  late CoachChatBloc coachChatBloc;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
@@ -316,6 +320,13 @@ class IntegrationHarness {
       GetCommittedCashflowUseCase(scheduledPaymentRepository, debtRepository),
     );
 
+    coachChatBloc = CoachChatBloc(
+      AskCoachUseCase(aiCoachRepository),
+      getTransactions,
+      getDebts,
+      HiveCoachChatStore(boxes),
+    );
+
     const appEnv = AppEnv(supabaseUrl: '', supabaseAnonKey: '', groqApiKey: '');
     authRepository = AuthRepositoryImpl(
       authRemote,
@@ -434,6 +445,7 @@ class IntegrationHarness {
       receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
+      coachChatBloc: coachChatBloc,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,
@@ -525,6 +537,7 @@ class IntegrationHarness {
     await receivableBloc.close();
     await ocrBloc.close();
     await aiCoachBloc.close();
+    await coachChatBloc.close();
     await dashboardBloc.close();
     await syncBloc.close();
     await authBloc.close();

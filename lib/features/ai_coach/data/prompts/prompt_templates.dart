@@ -34,6 +34,13 @@ Respond ONLY with a JSON object:
 Use the 50/30/20 rule as a reference when it fits the context.
 ''';
 
+  static const String chat = '''
+You are FinSight AI, a careful personal finance coach.
+Answer the user's question directly using the financial context.
+Keep it under 120 words, plain text only (no markdown or JSON), and give one
+concrete next step when it fits.
+''';
+
   static const String debtPayoff = '''
 You are FinSight AI. Propose a debt payoff strategy.
 Respond ONLY with a JSON object:

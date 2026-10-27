@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/main_shell.dart';
 import '../../features/ai_coach/presentation/screens/ai_coach_screen.dart';
+import '../../features/ai_coach/presentation/screens/coach_chat_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../core/currency/presentation/screens/settings_screen.dart';
 import '../../features/budgets/presentation/screens/budget_screen.dart';
@@ -98,6 +99,11 @@ GoRouter buildRouter({
         path: AppRoutes.aiCoachPath,
         name: AppRoutes.aiCoachName,
         builder: (context, state) => const AiCoachScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.coachChatPath,
+        name: AppRoutes.coachChatName,
+        builder: (context, state) => const CoachChatScreen(),
       ),
       GoRoute(
         path: AppRoutes.loginPath,

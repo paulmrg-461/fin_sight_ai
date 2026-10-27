@@ -59,6 +59,28 @@ class AiCoachRepositoryImpl implements AiCoachRepository {
   ResultFuture<FinancialInsightEntity> getSavingsSuggestions(String context) =>
       _singleInsight(PromptTemplates.savingsSuggestions, context);
 
+  @override
+  ResultFuture<String> askCoach(String question, String context) async {
+    final raw = await _call(
+      PromptTemplates.chat,
+      'Question: $question\n\nFinancial context:\n$context',
+    );
+    final failure = raw.getLeft().toNullable();
+    if (failure != null) {
+      return Left(failure);
+    }
+    final answer = raw.getOrElse((_) => '').trim();
+    if (answer.isEmpty) {
+      return const Left(
+        ServerFailure(
+          'The AI coach returned an empty response.',
+          code: 'groq_empty_content',
+        ),
+      );
+    }
+    return Right(answer);
+  }
+
   Future<Result<FinancialInsightEntity>> _singleInsight(
     String prompt,
     String context,

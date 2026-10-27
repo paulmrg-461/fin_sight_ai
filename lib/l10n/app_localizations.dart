@@ -2497,6 +2497,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Insights'**
   String get insightsLabel;
+
+  /// No description provided for @askCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask the coach'**
+  String get askCoach;
+
+  /// No description provided for @askCoachHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask about your money…'**
+  String get askCoachHint;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @clearChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear conversation'**
+  String get clearChat;
+
+  /// No description provided for @clearChatQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the conversation?'**
+  String get clearChatQuestion;
+
+  /// No description provided for @clearChatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This deletes the saved questions and answers on this device.'**
+  String get clearChatBody;
+
+  /// No description provided for @coachChatEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask anything about your finances'**
+  String get coachChatEmptyTitle;
+
+  /// No description provided for @coachChatEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions use your real transactions and debts as context. Nothing leaves the device except the prompt sent to the AI provider.'**
+  String get coachChatEmptyBody;
+
+  /// No description provided for @coachSuggestionOne.
+  ///
+  /// In en, this message translates to:
+  /// **'How can I pay off my debt faster?'**
+  String get coachSuggestionOne;
+
+  /// No description provided for @coachSuggestionTwo.
+  ///
+  /// In en, this message translates to:
+  /// **'Where am I overspending?'**
+  String get coachSuggestionTwo;
+
+  /// No description provided for @coachSuggestionThree.
+  ///
+  /// In en, this message translates to:
+  /// **'How much could I save this month?'**
+  String get coachSuggestionThree;
+
+  /// No description provided for @coachThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get coachThinking;
 }
 
 class _AppLocalizationsDelegate

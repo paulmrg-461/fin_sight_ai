@@ -67,3 +67,17 @@ Every successful generation is appended to `ai_insights` as an
 `InsightHistoryEntry` (timestamp, kind `insights`/`analysis`/`suggestions`, contents). History is
 per language, newest first, capped at 20 batches, and cleared with account data. The coach screen
 exposes it in a **History** expansion; the latest batch remains the offline fallback.
+
+## Free-form chat
+
+`/ai-coach/chat` runs a persisted conversation through `CoachChatBloc`:
+
+- `AskCoachUseCase` validates the question (≤500 chars) and calls
+  `AiCoachRepository.askCoach`, which uses the chat prompt and the shared
+  `CoachContextBuilder` context. Answers are plain text, not JSON.
+- `CoachMessage` (user/coach) is stored in `ai_insights` via `CoachChatStore`,
+  newest 100 messages, cleared with account data.
+- The user turn is persisted before the network call; a failure keeps the
+  question visible and surfaces a localized error.
+- The UI shows suggestion prompts, bubbles, send progress, and a confirmed clear
+  action. Entry point: chat icon in the AI Coach app bar.

@@ -13,4 +13,7 @@ abstract interface class AiCoachRepository {
 
   /// Returns savings suggestions for [context].
   ResultFuture<FinancialInsightEntity> getSavingsSuggestions(String context);
+
+  /// Answers a free-form question with the financial context.
+  ResultFuture<String> askCoach(String question, String context);
 }

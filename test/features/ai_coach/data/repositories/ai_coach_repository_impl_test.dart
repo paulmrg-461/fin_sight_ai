@@ -126,6 +126,42 @@ void main() {
       expect(failure?.message, contains('GROQ_API_KEY'));
     });
 
+    test('answers a free-form question as plain text', () async {
+      when(() => datasource.callGroqApi(any(), any()))
+          .thenAnswer((_) async => '  Pay the card first.  ');
+
+      final result = await repository.askCoach(
+        'What first?',
+        'Transactions: 2.',
+      );
+
+      expect(result.getOrElse((_) => ''), 'Pay the card first.');
+      final prompt = verify(
+        () => datasource.callGroqApi(captureAny(), captureAny()),
+      ).captured;
+      expect(prompt[0], PromptTemplates.chat);
+      expect(prompt[1], contains('Question: What first?'));
+      expect(prompt[1], contains('Transactions: 2.'));
+    });
+
+    test('rejects an empty chat answer', () async {
+      when(() => datasource.callGroqApi(any(), any()))
+          .thenAnswer((_) async => '   ');
+
+      final result = await repository.askCoach('Help', '');
+
+      expect(result.getLeft().toNullable()?.code, 'groq_empty_content');
+    });
+
+    test('propagates chat transport failures', () async {
+      when(() => datasource.callGroqApi(any(), any()))
+          .thenThrow(const ServerException('Offline.', code: 'groq_timeout'));
+
+      final result = await repository.askCoach('Help', '');
+
+      expect(result.getLeft().toNullable()?.message, contains('timed out'));
+    });
+
     test('explains a rejected API key', () async {
       when(() => datasource.callGroqApi(any(), any()))
           .thenThrow(const ServerException('Rejected.', code: 'groq_http_401'));

@@ -1327,4 +1327,43 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get insightsLabel => 'Ideas';
+
+  @override
+  String get askCoach => 'Preguntar al coach';
+
+  @override
+  String get askCoachHint => 'Pregunta sobre tu dinero…';
+
+  @override
+  String get send => 'Enviar';
+
+  @override
+  String get clearChat => 'Borrar conversación';
+
+  @override
+  String get clearChatQuestion => '¿Borrar la conversación?';
+
+  @override
+  String get clearChatBody =>
+      'Esto elimina las preguntas y respuestas guardadas en este dispositivo.';
+
+  @override
+  String get coachChatEmptyTitle =>
+      'Pregunta lo que quieras sobre tus finanzas';
+
+  @override
+  String get coachChatEmptyBody =>
+      'Las preguntas usan tus transacciones y deudas reales como contexto. Nada sale del dispositivo salvo el prompt enviado al proveedor de IA.';
+
+  @override
+  String get coachSuggestionOne => '¿Cómo puedo pagar mi deuda más rápido?';
+
+  @override
+  String get coachSuggestionTwo => '¿En qué estoy gastando de más?';
+
+  @override
+  String get coachSuggestionThree => '¿Cuánto podría ahorrar este mes?';
+
+  @override
+  String get coachThinking => 'Pensando…';
 }

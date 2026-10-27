@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../core/theme/app_theme.dart';
 import '../core/theme/theme_controller.dart';
 import '../features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import '../features/ai_coach/presentation/bloc/coach_chat_bloc.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../core/currency/presentation/bloc/currency_bloc.dart';
 import '../core/l10n/l10n.dart';
@@ -37,6 +38,7 @@ class FinSightApp extends StatelessWidget {
     required this.receivableBloc,
     required this.ocrBloc,
     required this.aiCoachBloc,
+    required this.coachChatBloc,
     required this.dashboardBloc,
     required this.syncBloc,
     required this.authBloc,
@@ -55,6 +57,7 @@ class FinSightApp extends StatelessWidget {
   final ReceivableBloc receivableBloc;
   final OcrBloc ocrBloc;
   final AiCoachBloc aiCoachBloc;
+  final CoachChatBloc coachChatBloc;
   final DashboardBloc dashboardBloc;
   final SyncBloc syncBloc;
   final AuthBloc authBloc;
@@ -74,6 +77,7 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<ReceivableBloc>.value(value: receivableBloc),
         BlocProvider<OcrBloc>.value(value: ocrBloc),
         BlocProvider<AiCoachBloc>.value(value: aiCoachBloc),
+        BlocProvider<CoachChatBloc>.value(value: coachChatBloc),
         BlocProvider<DashboardBloc>.value(value: dashboardBloc),
         BlocProvider<SyncBloc>.value(value: syncBloc),
         BlocProvider<AuthBloc>.value(value: authBloc),

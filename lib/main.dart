@@ -10,6 +10,7 @@ import 'core/services/reminder_scheduler.dart' show ReminderScheduler;
 import 'features/debts/presentation/bloc/debt_bloc.dart';
 import 'features/receivables/presentation/bloc/receivable_bloc.dart';
 import 'features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'features/ai_coach/presentation/bloc/coach_chat_bloc.dart';
 import 'features/auth/data/services/account_scope_service.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
@@ -102,6 +103,7 @@ Future<void> main() async {
       receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: getIt<AiCoachBloc>(),
+      coachChatBloc: getIt<CoachChatBloc>(),
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,

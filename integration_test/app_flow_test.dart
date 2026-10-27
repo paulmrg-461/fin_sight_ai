@@ -329,6 +329,22 @@ void main() {
     expect(receivables.single.paymentHistory, hasLength(1));
   });
 
+  testWidgets('asks the AI coach a free-form question', (tester) async {
+    harness.groq.response = 'Pay the card first.';
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.aiCoachName);
+    await pumpUntil(tester, find.byTooltip('Ask the coach'));
+
+    await tester.tap(find.byTooltip('Ask the coach'));
+    await pumpUntil(tester, find.text('Ask anything about your finances'));
+
+    await tester.tap(find.text('Where am I overspending?'));
+    await pumpUntil(tester, find.text('Pay the card first.'));
+
+    expect(find.text('Where am I overspending?'), findsOneWidget);
+  });
+
   testWidgets('requests AI insights and renders a suggestion card', (
     tester,
   ) async {

@@ -9,6 +9,7 @@ import '../../../transactions/domain/usecases/get_transactions_usecase.dart';
 import '../../domain/entities/financial_insight_entity.dart';
 import '../../domain/entities/insight_history_entry.dart';
 import '../../domain/repositories/insight_cache.dart';
+import '../../domain/services/coach_context_builder.dart';
 import '../../domain/usecases/analyze_spending_usecase.dart';
 import '../../domain/usecases/get_insights_usecase.dart';
 import '../../domain/usecases/get_savings_suggestions_usecase.dart';
@@ -135,32 +136,6 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
     emit(AiCoachLoaded(insights, history: await _history(event.languageCode)));
   }
 
-  Future<String> _debtSummary() async {
-    final result = await _getDebts(const NoParams());
-    final debts = result
-        .getOrElse((_) => const <DebtEntity>[])
-        .where((debt) => !debt.isPaid)
-        .toList(growable: false);
-    if (debts.isEmpty) {
-      return '';
-    }
-    final total = debts.fold<double>(
-      0,
-      (sum, debt) => sum + debt.remainingAmount,
-    );
-    final minimum = debts.fold<double>(
-      0,
-      (sum, debt) => sum + debt.minimumPayment,
-    );
-    final highestRate = debts
-        .map((debt) => debt.interestRate)
-        .reduce((a, b) => a > b ? a : b);
-    return 'Debts: ${debts.length}. Total remaining: '
-        '\$${total.toStringAsFixed(2)}. Minimum payments: '
-        '\$${minimum.toStringAsFixed(2)}. Highest rate: '
-        '${highestRate.toStringAsFixed(2)}%.';
-  }
-
   Future<List<InsightHistoryEntry>> _history(String languageCode) =>
       _cache.readHistory(languageCode);
 
@@ -170,48 +145,14 @@ class AiCoachBloc extends Bloc<AiCoachEvent, AiCoachState> {
   }
 
   Future<String> _buildContext(String languageCode) async {
-    final language = languageCode.toLowerCase().startsWith('es')
-        ? 'Spanish'
-        : 'English';
-    final result = await _getTransactions(const NoParams());
-    final transactions = result.getOrElse((_) => const <TransactionEntity>[]);
-    final debts = await _debtSummary();
-    if (transactions.isEmpty) {
-      return 'No transactions recorded yet.${debts.isEmpty ? '' : ' $debts'} '
-          'Write the response in $language.';
-    }
-
-    var income = 0.0;
-    var expenses = 0.0;
-    final expensesByCategory = <String, double>{};
-
-    for (final transaction in transactions) {
-      if (transaction.isIncome) {
-        income += transaction.amount;
-      } else {
-        expenses += transaction.amount;
-        expensesByCategory.update(
-          transaction.category,
-          (value) => value + transaction.amount,
-          ifAbsent: () => transaction.amount,
-        );
-      }
-    }
-
-    final topCategories = expensesByCategory.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final categorySummary = topCategories
-        .take(3)
-        .map((entry) => '${entry.key}: \$${entry.value.toStringAsFixed(2)}')
-        .join(', ');
-
-    return 'Transactions: ${transactions.length}. '
-        'Income: \$${income.toStringAsFixed(2)}. '
-        'Expenses: \$${expenses.toStringAsFixed(2)}. '
-        'Balance: \$${(income - expenses).toStringAsFixed(2)}. '
-        'Top expense categories: '
-        '${categorySummary.isEmpty ? 'none' : categorySummary}. '
-        '${debts.isEmpty ? '' : '$debts '}'
-        'Write the response in $language.';
+    final transactionsResult = await _getTransactions(const NoParams());
+    final debtsResult = await _getDebts(const NoParams());
+    return CoachContextBuilder.build(
+      transactions: transactionsResult.getOrElse(
+        (_) => const <TransactionEntity>[],
+      ),
+      debts: debtsResult.getOrElse((_) => const <DebtEntity>[]),
+      languageCode: languageCode,
+    );
   }
 }

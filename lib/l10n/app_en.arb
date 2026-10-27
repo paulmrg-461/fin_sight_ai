@@ -542,5 +542,17 @@
   "remainingBalance": "Remaining",
   "currentDebts": "Current debts",
   "insightHistory": "History",
-  "insightsLabel": "Insights"
+  "insightsLabel": "Insights",
+  "askCoach": "Ask the coach",
+  "askCoachHint": "Ask about your money…",
+  "send": "Send",
+  "clearChat": "Clear conversation",
+  "clearChatQuestion": "Clear the conversation?",
+  "clearChatBody": "This deletes the saved questions and answers on this device.",
+  "coachChatEmptyTitle": "Ask anything about your finances",
+  "coachChatEmptyBody": "Questions use your real transactions and debts as context. Nothing leaves the device except the prompt sent to the AI provider.",
+  "coachSuggestionOne": "How can I pay off my debt faster?",
+  "coachSuggestionTwo": "Where am I overspending?",
+  "coachSuggestionThree": "How much could I save this month?",
+  "coachThinking": "Thinking…"
 }

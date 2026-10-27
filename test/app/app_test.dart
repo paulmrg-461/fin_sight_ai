@@ -13,10 +13,13 @@ import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:fin_sight_ai/core/theme/theme_controller.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/analyze_spending_usecase.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/repositories/coach_chat_store.dart';
+import 'package:fin_sight_ai/features/ai_coach/domain/usecases/ask_coach_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_insights_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/repositories/insight_cache.dart';
 import 'package:fin_sight_ai/features/ai_coach/domain/usecases/get_savings_suggestions_usecase.dart';
 import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/ai_coach_bloc.dart';
+import 'package:fin_sight_ai/features/ai_coach/presentation/bloc/coach_chat_bloc.dart';
 import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_state.dart';
@@ -79,6 +82,10 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockGetTransactions extends Mock implements GetTransactionsUseCase {}
+
+class MockAskCoach extends Mock implements AskCoachUseCase {}
+
+class MockCoachChatStore extends Mock implements CoachChatStore {}
 
 class MockAddTransaction extends Mock implements AddTransactionUseCase {}
 
@@ -358,6 +365,12 @@ void main() {
       receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
+      coachChatBloc: CoachChatBloc(
+        MockAskCoach(),
+        MockGetTransactions(),
+        MockGetDebts(),
+        MockCoachChatStore(),
+      ),
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,

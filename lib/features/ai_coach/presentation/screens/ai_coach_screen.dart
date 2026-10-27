@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../bloc/ai_coach_bloc.dart';
 import '../bloc/ai_coach_event.dart';
 import '../../domain/entities/insight_history_entry.dart';
@@ -19,7 +21,16 @@ class AiCoachScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.aiCoach)),
+      appBar: AppBar(
+        title: Text(context.l10n.aiCoach),
+        actions: [
+          IconButton(
+            onPressed: () => context.pushNamed(AppRoutes.coachChatName),
+            tooltip: context.l10n.askCoach,
+            icon: const Icon(Icons.forum_outlined),
+          ),
+        ],
+      ),
       body: BlocBuilder<AiCoachBloc, AiCoachState>(
         builder: (context, state) {
           return switch (state) {
