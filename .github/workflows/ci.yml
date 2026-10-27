@@ -57,6 +57,30 @@ jobs:
       - name: Apply migrations and run RLS against Postgres 16
         run: ./supabase/validate_local.sh
 
+  release-apk:
+    name: Release APK build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: beta
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK with placeholder defines
+        run: |
+          flutter build apk --release \
+            --dart-define-from-file=example.env
+
   integration:
     name: Integration tests (Linux)
     runs-on: ubuntu-latest

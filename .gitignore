@@ -57,3 +57,6 @@ app.*.map.json
 !macos/
 !windows/
 !web/
+
+# Golden test images are part of the test suite
+!test/**/goldens/*.png
