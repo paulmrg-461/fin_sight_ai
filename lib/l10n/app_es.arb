@@ -544,5 +544,12 @@
   "interestSavedLabel": "Intereses ahorrados",
   "monthsEarlierLabel": "Meses menos",
   "editSavingsGoal": "Editar meta de ahorro",
-  "monthlyToReach": "Mensual para lograrlo"
+  "monthlyToReach": "Mensual para lograrlo",
+  "globalSearch": "Buscar en todo",
+  "globalSearchHint": "Transacciones, deudas, metas, programados…",
+  "globalSearchEmpty": "Escribe para buscar en tus datos",
+  "globalSearchEmptyBody": "Encuentra una transacción, acreedor, meta de ahorro, pago programado o dinero prestado.",
+  "globalSearchNoResults": "Sin resultados",
+  "globalSearchNoResultsBody": "Prueba otra palabra o revisa la sección directamente.",
+  "globalSearchTransactions": "Transacciones"
 }

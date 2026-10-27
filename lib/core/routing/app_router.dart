@@ -8,6 +8,7 @@ import '../../core/currency/presentation/screens/settings_screen.dart';
 import '../../features/budgets/presentation/screens/budget_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/savings/presentation/screens/savings_goals_screen.dart';
+import '../../features/search/presentation/screens/global_search_screen.dart';
 import '../../features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import '../../features/wallets/presentation/screens/wallet_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -95,6 +96,11 @@ GoRouter buildRouter({
         path: AppRoutes.ocrPath,
         name: AppRoutes.ocrName,
         builder: (context, state) => OcrScreen(imagePicker: receiptImagePicker),
+      ),
+      GoRoute(
+        path: AppRoutes.searchPath,
+        name: AppRoutes.searchName,
+        builder: (context, state) => const GlobalSearchScreen(),
       ),
       GoRoute(
         path: AppRoutes.aiCoachPath,

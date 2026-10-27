@@ -38,6 +38,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 028 | Isolate sync failures and show diagnostics | P1 | M | 005, 027 | DONE (1033 unit, 32 integration) |
 | 029 | Show the impact of extra debt payments | P2 | S | 023 | DONE (with 030: 1037 unit, 32 integration) |
 | 030 | Edit savings goals and show monthly pace | P2 | S/M | 026 | DONE (1037 unit, 32 integration) |
+| 031 | Global search across local finance data | P2 | S | 014, 026 | DONE (1037 unit, 33 integration) |
+
+- 031 added global search from the dashboard across transactions, debts, goals, schedules, and receivables.
 
 - 029 added interest/time-saved comparisons for extra debt payments.
 - 030 added goal editing and a monthly savings pace.

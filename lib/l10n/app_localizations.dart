@@ -2761,6 +2761,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Monthly to reach target'**
   String get monthlyToReach;
+
+  /// No description provided for @globalSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search everything'**
+  String get globalSearch;
+
+  /// No description provided for @globalSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions, debts, goals, schedules…'**
+  String get globalSearchHint;
+
+  /// No description provided for @globalSearchEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Type to search your data'**
+  String get globalSearchEmpty;
+
+  /// No description provided for @globalSearchEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a transaction, creditor, savings goal, schedule, or money lent.'**
+  String get globalSearchEmptyBody;
+
+  /// No description provided for @globalSearchNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results'**
+  String get globalSearchNoResults;
+
+  /// No description provided for @globalSearchNoResultsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another word or check the section directly.'**
+  String get globalSearchNoResultsBody;
+
+  /// No description provided for @globalSearchTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get globalSearchTransactions;
 }
 
 class _AppLocalizationsDelegate

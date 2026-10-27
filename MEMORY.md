@@ -63,6 +63,13 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## Global search (plan 031)
+
+- `/search` from the dashboard app bar searches the already-loaded `TransactionBloc`, `DebtBloc`, `SavingsBloc`, `ScheduledPaymentBloc`, and `ReceivableBloc` states (case-insensitive; 10 results per section).
+- Results navigate to their section; empty query and no-results have dedicated states; copy is EN/ES.
+- It does not hit Hive or add dependencies; a transaction date filter can narrow what the search sees.
+- Integration covers transaction/debt/goal matches and the no-results state.
+
 ## Debt impact + savings v2 (plans 029–030)
 
 - Debt extra payments now report interest saved and months earlier versus the minimum, computed from two plans at the same instant; the impact card only appears when something improves.

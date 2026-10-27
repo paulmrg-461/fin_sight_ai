@@ -8,6 +8,7 @@ import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_event.dart';
 import 'package:fin_sight_ai/features/debts/domain/usecases/add_debt_usecase.dart';
 import 'package:fin_sight_ai/features/ocr/domain/entities/receipt_entity.dart';
 import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
+import 'package:fin_sight_ai/features/savings/domain/entities/savings_goal_entity.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/domain/entities/scheduled_payment_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/entities/transaction_entity.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/add_transaction_usecase.dart';
@@ -606,6 +607,56 @@ void main() {
     await tester.tap(find.text('Copy previous month'));
     await pumpUntil(tester, find.text(money(100)));
     expect(find.text('Food'), findsOneWidget);
+  });
+
+  testWidgets('searches across transactions, debts, and goals', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 47,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Salchipapas',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.addDebt(
+      AddDebtParams(
+        creditorName: 'Banco',
+        totalAmount: 1000,
+        remainingAmount: 600,
+        interestRate: 12,
+        minimumPayment: 100,
+        dueDate: DateTime.now().add(const Duration(days: 10)),
+      ),
+    );
+    await harness.savingsRepository.addGoal(
+      SavingsGoalEntity(
+        id: 'goal-trip',
+        name: 'Viaje',
+        targetAmount: 2000,
+        createdAt: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('Balance'));
+    harness.router.goNamed(AppRoutes.searchName);
+    await pumpUntil(tester, find.text('Search everything'));
+
+    final field = find.byType(TextField).first;
+    await tester.enterText(field, 'banco');
+    await tester.pump();
+    await pumpUntil(tester, find.text('Banco'));
+    expect(find.text('Debts'), findsOneWidget);
+
+    await tester.enterText(field, 'viaje');
+    await tester.pump();
+    await pumpUntil(tester, find.text('Viaje'));
+    expect(find.text('Savings goals'), findsOneWidget);
+
+    await tester.enterText(field, 'zzz');
+    await tester.pump();
+    await pumpUntil(tester, find.text('No results'));
   });
 
   testWidgets('creates a savings goal and adds money', (tester) async {

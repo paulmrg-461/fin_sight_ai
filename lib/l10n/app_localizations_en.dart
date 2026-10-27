@@ -1467,4 +1467,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monthlyToReach => 'Monthly to reach target';
+
+  @override
+  String get globalSearch => 'Search everything';
+
+  @override
+  String get globalSearchHint => 'Transactions, debts, goals, schedules…';
+
+  @override
+  String get globalSearchEmpty => 'Type to search your data';
+
+  @override
+  String get globalSearchEmptyBody =>
+      'Find a transaction, creditor, savings goal, schedule, or money lent.';
+
+  @override
+  String get globalSearchNoResults => 'No results';
+
+  @override
+  String get globalSearchNoResultsBody =>
+      'Try another word or check the section directly.';
+
+  @override
+  String get globalSearchTransactions => 'Transactions';
 }

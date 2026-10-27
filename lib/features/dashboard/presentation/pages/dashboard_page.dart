@@ -86,6 +86,11 @@ class DashboardPage extends StatelessWidget {
               ?.copyWith(fontWeight: FontWeight.w700),
         ),
         actions: [
+          IconButton(
+            onPressed: () => context.pushNamed(AppRoutes.searchName),
+            tooltip: context.l10n.globalSearch,
+            icon: const Icon(Icons.search_rounded),
+          ),
           const AccountButton(),
           const SyncStatusChip(),
           IconButton(

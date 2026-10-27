@@ -593,5 +593,12 @@
   "interestSavedLabel": "Interest saved",
   "monthsEarlierLabel": "Months earlier",
   "editSavingsGoal": "Edit savings goal",
-  "monthlyToReach": "Monthly to reach target"
+  "monthlyToReach": "Monthly to reach target",
+  "globalSearch": "Search everything",
+  "globalSearchHint": "Transactions, debts, goals, schedules…",
+  "globalSearchEmpty": "Type to search your data",
+  "globalSearchEmptyBody": "Find a transaction, creditor, savings goal, schedule, or money lent.",
+  "globalSearchNoResults": "No results",
+  "globalSearchNoResultsBody": "Try another word or check the section directly.",
+  "globalSearchTransactions": "Transactions"
 }

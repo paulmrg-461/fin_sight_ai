@@ -39,6 +39,9 @@ abstract final class AppRoutes {
   static const String savingsName = 'savings';
   static const String savingsPath = '/savings';
 
+  static const String searchName = 'search';
+  static const String searchPath = '/search';
+
   static const String scheduledPaymentsName = 'scheduled-payments';
   static const String scheduledPaymentsPath = '/scheduled-payments';
 }
