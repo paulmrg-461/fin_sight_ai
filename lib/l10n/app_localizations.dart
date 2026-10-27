@@ -2803,6 +2803,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transactions'**
   String get globalSearchTransactions;
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reportsTitle;
+
+  /// No description provided for @reportsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly income, expenses, and category breakdown.'**
+  String get reportsDescription;
+
+  /// No description provided for @shareReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Share CSV'**
+  String get shareReport;
+
+  /// No description provided for @reportShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Report shared.'**
+  String get reportShared;
+
+  /// No description provided for @reportShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share the report.'**
+  String get reportShareFailed;
+
+  /// No description provided for @noReportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing recorded this month'**
+  String get noReportData;
+
+  /// No description provided for @noReportDataBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another month or add transactions to see a report.'**
+  String get noReportDataBody;
+
+  /// No description provided for @monthComparison.
+  ///
+  /// In en, this message translates to:
+  /// **'vs previous month'**
+  String get monthComparison;
 }
 
 class _AppLocalizationsDelegate

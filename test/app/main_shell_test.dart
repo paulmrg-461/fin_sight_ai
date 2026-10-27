@@ -67,6 +67,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/sched
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
+import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
@@ -104,6 +106,8 @@ class MockAddTransaction extends Mock implements AddTransactionUseCase {}
 class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
 
 class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
+
+class MockReportExporter extends Mock implements ReportExporter {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -403,6 +407,7 @@ void main() {
       receivableBloc: receivableBloc,
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
+      reportsBloc: ReportsBloc(MockGetByDateRange(), MockReportExporter()),
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),

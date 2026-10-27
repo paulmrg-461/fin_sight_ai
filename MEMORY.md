@@ -63,6 +63,14 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## Monthly reports + sharing (plan 032)
+
+- `/reports` navigates months, reads current + previous ranges, and reuses `DashboardCalculator` for summary/comparison/breakdown.
+- `ReportsBloc` exposes loading/loaded/empty/failure plus share status; share builds `TransactionCsv`, writes a temp file, and opens the native sheet via `share_plus`.
+- `ReportExporter` keeps sharing testable: `ShareReportExporter` is injectable, the integration harness uses `FakeReportExporter`.
+- Tests: BLoC share states, MonthlyReport equality, exporter default/failure paths, integration report + share.
+- `share_plus` added; Linux/Android debug builds verified.
+
 ## Global search (plan 031)
 
 - `/search` from the dashboard app bar searches the already-loaded `TransactionBloc`, `DebtBloc`, `SavingsBloc`, `ScheduledPaymentBloc`, and `ReceivableBloc` states (case-insensitive; 10 results per section).

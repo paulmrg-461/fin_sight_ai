@@ -609,6 +609,41 @@ void main() {
     expect(find.text('Food'), findsOneWidget);
   });
 
+  testWidgets('builds a monthly report and shares its CSV', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 300,
+        type: TransactionType.income,
+        category: 'Freelance',
+        description: 'Invoice',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 100,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Dinner',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.reportsName);
+    await pumpUntil(tester, find.text('Reports'));
+
+    await pumpUntil(tester, find.text(money(200)));
+    await tester.tap(find.byTooltip('Share CSV'));
+    await pumpUntil(tester, find.text('Report shared.'));
+
+    expect(harness.reportExporter.lastCsv, contains('Dinner'));
+    expect(harness.reportExporter.lastFileName, endsWith('.csv'));
+
+    await tester.tap(find.byTooltip('Previous month'));
+    await pumpUntil(tester, find.text('Nothing recorded this month'));
+  });
+
   testWidgets('searches across transactions, debts, and goals', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

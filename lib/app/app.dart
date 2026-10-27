@@ -20,6 +20,7 @@ import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_event.dart';
 import '../features/debts/presentation/bloc/debt_bloc.dart';
 import '../features/receivables/presentation/bloc/receivable_bloc.dart';
+import '../features/reports/presentation/bloc/reports_bloc.dart';
 import '../features/savings/presentation/bloc/savings_bloc.dart';
 import '../features/ocr/presentation/bloc/ocr_bloc.dart';
 import '../features/sync/presentation/bloc/sync_bloc.dart';
@@ -50,6 +51,7 @@ class FinSightApp extends StatelessWidget {
     required this.categoryBloc,
     required this.scheduledPaymentBloc,
     required this.savingsBloc,
+    required this.reportsBloc,
   });
 
   final ThemeController themeController;
@@ -70,6 +72,7 @@ class FinSightApp extends StatelessWidget {
   final CategoryBloc categoryBloc;
   final ScheduledPaymentBloc scheduledPaymentBloc;
   final SavingsBloc savingsBloc;
+  final ReportsBloc reportsBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -91,6 +94,7 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<CategoryBloc>.value(value: categoryBloc),
         BlocProvider<ScheduledPaymentBloc>.value(value: scheduledPaymentBloc),
         BlocProvider<SavingsBloc>.value(value: savingsBloc),
+        BlocProvider<ReportsBloc>.value(value: reportsBloc),
       ],
       child: MultiBlocListener(
         listeners: [

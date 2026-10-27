@@ -47,6 +47,8 @@ import 'package:fin_sight_ai/features/savings/data/repositories/savings_reposito
 import 'package:fin_sight_ai/features/savings/domain/repositories/savings_repository.dart';
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
+import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
+import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_event.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_event.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
@@ -128,6 +130,7 @@ class IntegrationHarness {
   final ThemeController themeController = ThemeController();
   final FakeOcrDataSource ocr = FakeOcrDataSource();
   final FakeGroqDatasource groq = FakeGroqDatasource();
+  final FakeReportExporter reportExporter = FakeReportExporter();
   final FakeReceiptImagePicker imagePicker = FakeReceiptImagePicker();
   final FakeAuthRemoteDataSource authRemote = FakeAuthRemoteDataSource();
   final InMemorySessionStorage authStorage = InMemorySessionStorage();
@@ -171,6 +174,7 @@ class IntegrationHarness {
   late CoachChatBloc coachChatBloc;
   late SavingsRepository savingsRepository;
   late SavingsBloc savingsBloc;
+  late ReportsBloc reportsBloc;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
@@ -343,6 +347,8 @@ class IntegrationHarness {
       DeleteSavingsGoalUseCase(savingsRepository),
     );
 
+    reportsBloc = ReportsBloc(getTransactionsByDateRange, reportExporter);
+
     coachChatBloc = CoachChatBloc(
       AskCoachUseCase(aiCoachRepository),
       getTransactions,
@@ -451,6 +457,7 @@ class IntegrationHarness {
         budgetBloc.add(const LoadBudgets());
         walletBloc.add(const LoadWallets());
         categoryBloc.add(const LoadCategories());
+        reportsBloc.add(const LoadReports());
         savingsBloc.add(const LoadSavingsGoals());
         scheduledPaymentBloc.add(const LoadScheduledPayments());
       }
@@ -473,6 +480,7 @@ class IntegrationHarness {
       aiCoachBloc: aiCoachBloc,
       coachChatBloc: coachChatBloc,
       savingsBloc: savingsBloc,
+      reportsBloc: reportsBloc,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,
@@ -503,6 +511,7 @@ class IntegrationHarness {
       budgetBloc.add(const LoadBudgets());
       walletBloc.add(const LoadWallets());
       categoryBloc.add(const LoadCategories());
+      reportsBloc.add(const LoadReports());
       scheduledPaymentBloc.add(const LoadScheduledPayments());
     });
 

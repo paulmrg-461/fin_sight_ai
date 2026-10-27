@@ -600,5 +600,13 @@
   "globalSearchEmptyBody": "Find a transaction, creditor, savings goal, schedule, or money lent.",
   "globalSearchNoResults": "No results",
   "globalSearchNoResultsBody": "Try another word or check the section directly.",
-  "globalSearchTransactions": "Transactions"
+  "globalSearchTransactions": "Transactions",
+  "reportsTitle": "Reports",
+  "reportsDescription": "Monthly income, expenses, and category breakdown.",
+  "shareReport": "Share CSV",
+  "reportShared": "Report shared.",
+  "reportShareFailed": "Could not share the report.",
+  "noReportData": "Nothing recorded this month",
+  "noReportDataBody": "Choose another month or add transactions to see a report.",
+  "monthComparison": "vs previous month"
 }

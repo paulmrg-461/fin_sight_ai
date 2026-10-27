@@ -161,6 +161,12 @@ import 'package:fin_sight_ai/features/receivables/domain/usecases/update_receiva
     as _i642;
 import 'package:fin_sight_ai/features/receivables/presentation/bloc/receivable_bloc.dart'
     as _i9;
+import 'package:fin_sight_ai/features/reports/data/repositories/share_report_exporter.dart'
+    as _i57;
+import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart'
+    as _i124;
+import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart'
+    as _i1023;
 import 'package:fin_sight_ai/features/savings/data/datasources/savings_local_data_source.dart'
     as _i703;
 import 'package:fin_sight_ai/features/savings/data/repositories/savings_repository_impl.dart'
@@ -273,6 +279,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i519.Client>(() => coreModule.provideHttpClient());
     gh.lazySingleton<_i32.ThemeController>(() => _i32.ThemeController());
     gh.lazySingleton<_i956.Clock>(() => const _i956.Clock());
+    gh.lazySingleton<_i124.ReportExporter>(() => _i57.ShareReportExporter());
     gh.lazySingleton<_i880.OcrDataSource>(
       () => const _i598.MlKitOcrDataSource(),
     );
@@ -544,6 +551,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i268.DebtRepository>(),
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
+      ),
+    );
+    gh.factory<_i1023.ReportsBloc>(
+      () => _i1023.ReportsBloc(
+        gh<_i271.GetTransactionsByDateRangeUseCase>(),
+        gh<_i124.ReportExporter>(),
       ),
     );
     gh.lazySingleton<_i734.AddReceivableUseCase>(

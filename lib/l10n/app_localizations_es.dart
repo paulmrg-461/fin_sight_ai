@@ -1499,4 +1499,30 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get globalSearchTransactions => 'Transacciones';
+
+  @override
+  String get reportsTitle => 'Reportes';
+
+  @override
+  String get reportsDescription =>
+      'Ingresos, gastos y desglose por categoría del mes.';
+
+  @override
+  String get shareReport => 'Compartir CSV';
+
+  @override
+  String get reportShared => 'Reporte compartido.';
+
+  @override
+  String get reportShareFailed => 'No se pudo compartir el reporte.';
+
+  @override
+  String get noReportData => 'Sin movimientos este mes';
+
+  @override
+  String get noReportDataBody =>
+      'Elige otro mes o agrega transacciones para ver un reporte.';
+
+  @override
+  String get monthComparison => 'vs mes anterior';
 }

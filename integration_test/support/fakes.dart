@@ -1,10 +1,14 @@
+import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/session_storage.dart';
 import 'package:fin_sight_ai/features/auth/domain/entities/auth_session.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart';
+import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
 
 /// Deterministic OCR result used by integration tests.
 class FakeOcrDataSource implements OcrDataSource {
@@ -137,4 +141,30 @@ class FakeAuthRemoteDataSource implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut(String accessToken) async {}
+}
+
+/// Records report shares without invoking a platform share sheet.
+class FakeReportExporter implements ReportExporter {
+  bool shouldFail = false;
+  String? lastCsv;
+  String? lastFileName;
+
+  @override
+  ResultFuture<String> shareCsv({
+    required String fileName,
+    required String csv,
+    required String subject,
+  }) async {
+    lastFileName = fileName;
+    lastCsv = csv;
+    if (shouldFail) {
+      return const Left(
+        CacheFailure(
+          'Unable to share the report.',
+          code: 'report_share_failed',
+        ),
+      );
+    }
+    return Right('/tmp/$fileName');
+  }
 }

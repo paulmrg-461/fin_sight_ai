@@ -551,5 +551,13 @@
   "globalSearchEmptyBody": "Encuentra una transacción, acreedor, meta de ahorro, pago programado o dinero prestado.",
   "globalSearchNoResults": "Sin resultados",
   "globalSearchNoResultsBody": "Prueba otra palabra o revisa la sección directamente.",
-  "globalSearchTransactions": "Transacciones"
+  "globalSearchTransactions": "Transacciones",
+  "reportsTitle": "Reportes",
+  "reportsDescription": "Ingresos, gastos y desglose por categoría del mes.",
+  "shareReport": "Compartir CSV",
+  "reportShared": "Reporte compartido.",
+  "reportShareFailed": "No se pudo compartir el reporte.",
+  "noReportData": "Sin movimientos este mes",
+  "noReportDataBody": "Elige otro mes o agrega transacciones para ver un reporte.",
+  "monthComparison": "vs mes anterior"
 }
