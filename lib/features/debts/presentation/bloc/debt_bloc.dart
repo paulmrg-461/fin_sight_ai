@@ -113,6 +113,29 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
     }
 
     final expectedDate = result.getOrElse((_) => null);
+    final now = DateTime.now();
+    final plan = expectedDate == null
+        ? null
+        : DebtPayoffCalculator.buildPaymentPlan(
+            remainingAmount: debt.remainingAmount,
+            annualInterestRate: debt.interestRate,
+            monthlyPayment: event.monthlyPayment,
+            from: now,
+          );
+    final baseline = DebtPayoffCalculator.buildPaymentPlan(
+      remainingAmount: debt.remainingAmount,
+      annualInterestRate: debt.interestRate,
+      monthlyPayment: debt.minimumPayment,
+      from: now,
+    );
+    final interestSaved = plan == null || baseline == null
+        ? 0.0
+        : (baseline.totalInterest - plan.totalInterest)
+              .clamp(0, double.infinity)
+              .toDouble();
+    final monthsSaved = plan == null || baseline == null
+        ? 0
+        : (baseline.months - plan.months).clamp(0, 1200).toInt();
     emit(
       DebtLoaded(
         debts: current.debts,
@@ -120,14 +143,9 @@ class DebtBloc extends Bloc<DebtEvent, DebtState> {
           debtId: debt.id,
           monthlyPayment: event.monthlyPayment,
           expectedDate: expectedDate,
-          plan: expectedDate == null
-              ? null
-              : DebtPayoffCalculator.buildPaymentPlan(
-                  remainingAmount: debt.remainingAmount,
-                  annualInterestRate: debt.interestRate,
-                  monthlyPayment: event.monthlyPayment,
-                  from: DateTime.now(),
-                ),
+          plan: plan,
+          interestSaved: interestSaved,
+          monthsSaved: monthsSaved,
         ),
       ),
     );

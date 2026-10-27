@@ -10,6 +10,8 @@ class PayoffEstimate extends Equatable {
     required this.monthlyPayment,
     required this.expectedDate,
     this.plan,
+    this.interestSaved = 0,
+    this.monthsSaved = 0,
   });
 
   final String debtId;
@@ -21,8 +23,21 @@ class PayoffEstimate extends Equatable {
   /// Full amortization schedule for [monthlyPayment], when available.
   final DebtPaymentPlan? plan;
 
+  /// Interest avoided versus paying only the minimum.
+  final double interestSaved;
+
+  /// Months avoided versus paying only the minimum.
+  final int monthsSaved;
+
   @override
-  List<Object?> get props => [debtId, monthlyPayment, expectedDate, plan];
+  List<Object?> get props => [
+    debtId,
+    monthlyPayment,
+    expectedDate,
+    plan,
+    interestSaved,
+    monthsSaved,
+  ];
 }
 
 /// Base state for the debts feature.

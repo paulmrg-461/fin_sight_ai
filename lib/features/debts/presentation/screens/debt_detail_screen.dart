@@ -200,6 +200,13 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 if (payoff.plan != null) ...[
+                  if (payoff.interestSaved > 0 || payoff.monthsSaved > 0) ...[
+                    const SizedBox(height: 12),
+                    _PayoffImpact(
+                      interestSaved: payoff.interestSaved,
+                      monthsSaved: payoff.monthsSaved,
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   _PaymentPlanCard(plan: payoff.plan!),
                 ],
@@ -230,6 +237,73 @@ class _DebtDetailScreenState extends State<DebtDetailScreen> {
       }
     }
     return null;
+  }
+}
+
+class _PayoffImpact extends StatelessWidget {
+  const _PayoffImpact({required this.interestSaved, required this.monthsSaved});
+
+  final double interestSaved;
+  final int monthsSaved;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return Card(
+      margin: EdgeInsets.zero,
+      color: theme.colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Icon(
+              Icons.savings_outlined,
+              color: theme.colorScheme.onPrimaryContainer,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.interestSavedLabel,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  MoneyText(
+                    interestSaved,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  l10n.monthsEarlierLabel,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                Text(
+                  '$monthsSaved',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

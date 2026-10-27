@@ -214,7 +214,17 @@ void main() {
               'expectedDate',
               DateTime.utc(2027, 6, 1),
             )
-            .having((state) => state.payoff?.plan, 'plan', isNotNull),
+            .having((state) => state.payoff?.plan, 'plan', isNotNull)
+            .having(
+              (state) => state.payoff?.interestSaved,
+              'interestSaved',
+              greaterThan(0),
+            )
+            .having(
+              (state) => state.payoff?.monthsSaved,
+              'monthsSaved',
+              greaterThan(0),
+            ),
       ],
     );
 
