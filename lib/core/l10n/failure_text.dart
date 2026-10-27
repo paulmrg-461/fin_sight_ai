@@ -64,6 +64,10 @@ extension FailureText on BuildContext {
       'Synchronization failed. Pending changes were kept.' =>
         l10n.errSyncFailedQueueKept,
       'Synchronization failed.' => l10n.errSyncFailed,
+      'The cloud schema is out of date. Apply the latest Supabase migrations and retry.' =>
+        l10n.errCloudSchemaOutdated,
+      'The cloud rejected this session. Sign in again and retry.' =>
+        l10n.errCloudSessionRejected,
       'Synchronization received invalid data.' => l10n.errSyncInvalidData,
       'The AI coach returned an empty response.' => l10n.errAiEmpty,
       'Unable to reach the AI coach. Please try again.' =>

@@ -535,5 +535,8 @@
         "type": "int"
       }
     }
-  }
+  },
+  "syncFailedTitle": "Error de sincronización",
+  "errCloudSchemaOutdated": "El esquema en la nube está desactualizado. Aplica las últimas migraciones de Supabase y reintenta.",
+  "errCloudSessionRejected": "La nube rechazó esta sesión. Inicia sesión de nuevo y reintenta."
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
@@ -32,9 +33,11 @@ class SyncBloc extends Bloc<SyncEvent, SyncState> {
   Future<void> _onSyncNow(SyncNow event, Emitter<SyncState> emit) async {
     emit(const SyncInProgress());
     final result = await _syncNow(const NoParams());
-    result.fold(
-      (failure) => emit(SyncFailure(failure.message)),
-      (report) => emit(SyncSuccess(report)),
-    );
+    result.fold((failure) {
+      if (kDebugMode) {
+        debugPrint('SYNC failed: ${failure.code} — ${failure.message}');
+      }
+      emit(SyncFailure(failure.message));
+    }, (report) => emit(SyncSuccess(report)));
   }
 }

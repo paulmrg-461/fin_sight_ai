@@ -85,3 +85,12 @@ the offline unit test suite.
 GitHub Actions runs `flutter analyze`, unit tests, and Linux integration tests.
 The RLS script is not run in CI because it needs project credentials; add it as
 a protected deployment step or a scheduled job with repository secrets.
+
+## Troubleshooting sync
+
+- **`supabase_http_404` / “cloud schema is out of date”**: a table used by the
+  client does not exist. Apply every migration (currently `0001`–`0007`) with
+  `./supabase/apply_all.sh` or the SQL Editor, then tap the sync icon again.
+- **`supabase_http_401/403`**: the session was rejected; sign in again.
+- **`supabase_network_error`**: the device could not reach the project; check
+  connectivity or DNS/VPN.

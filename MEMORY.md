@@ -56,6 +56,12 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `MainShell` refreshes the dashboard when its bottom-navigation tab is selected, so schedules/debts added in other branches appear immediately without extra startup reads.
 - Tests: BLoC projection, widget preview/tap, and an integration flow where a debt minimum appears on the dashboard.
 
+## Sync 404 troubleshooting
+
+- The sync chip now opens a dialog with the actual failure and a Retry action; debug builds log `SYNC failed: <code>` and transport details.
+- `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
+- Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
+
 ## Savings goals (plan 026)
 
 - Hive `savings_goals` box (cleared via `LocalDataScope`) with `SavingsGoalEntity` + `SavingsContribution` (saved/remaining/progress/completion).

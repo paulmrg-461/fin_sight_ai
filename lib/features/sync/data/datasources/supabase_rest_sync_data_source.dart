@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 
@@ -390,7 +391,10 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
         'Could not reach Supabase.',
         code: 'supabase_network_error',
       );
-    } catch (_) {
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('SYNC transport error: ${error.runtimeType}: $error');
+      }
       throw const ServerException(
         'Could not reach Supabase.',
         code: 'supabase_network_error',

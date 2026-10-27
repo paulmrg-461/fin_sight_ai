@@ -2707,6 +2707,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 goal} other{{count} goals}}'**
   String savingsGoalsCount(int count);
+
+  /// No description provided for @syncFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Synchronization failed'**
+  String get syncFailedTitle;
+
+  /// No description provided for @errCloudSchemaOutdated.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud schema is out of date. Apply the latest Supabase migrations and retry.'**
+  String get errCloudSchemaOutdated;
+
+  /// No description provided for @errCloudSessionRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud rejected this session. Sign in again and retry.'**
+  String get errCloudSessionRejected;
 }
 
 class _AppLocalizationsDelegate

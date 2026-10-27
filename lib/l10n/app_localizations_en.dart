@@ -1437,4 +1437,15 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get syncFailedTitle => 'Synchronization failed';
+
+  @override
+  String get errCloudSchemaOutdated =>
+      'The cloud schema is out of date. Apply the latest Supabase migrations and retry.';
+
+  @override
+  String get errCloudSessionRejected =>
+      'The cloud rejected this session. Sign in again and retry.';
 }

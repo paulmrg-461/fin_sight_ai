@@ -403,6 +403,24 @@ void main() {
   });
 
   group('SyncRepositoryImpl.syncNow', () {
+    test('explains a missing cloud schema on 404', () async {
+      when(
+        () => remote.fetchCategories(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenThrow(
+        const ServerException('Missing table.', code: 'supabase_http_404'),
+      );
+
+      final result = await buildRepository(env: configuredEnv()).syncNow();
+
+      final failure = result.getLeft().toNullable();
+      expect(failure?.code, 'supabase_http_404');
+      expect(failure?.message, contains('Supabase migrations'));
+    });
+
     test('returns an offline report when Supabase is not configured', () async {
       final operation = SyncOperation.upsert(
         entityType: SyncEntityType.transaction,

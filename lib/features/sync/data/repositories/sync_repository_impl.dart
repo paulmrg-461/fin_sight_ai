@@ -166,12 +166,13 @@ class SyncRepositoryImpl implements SyncRepository {
         ),
       );
     } on ServerException catch (exception) {
-      return Left(
-        ServerFailure(
-          'Synchronization failed. Pending changes were kept.',
-          code: exception.code,
-        ),
-      );
+      final message = switch (exception.code) {
+        'supabase_http_404' => 'The cloud schema is out of date. Apply the latest Supabase migrations and retry.',
+        'supabase_http_401' || 'supabase_http_403' =>
+          'The cloud rejected this session. Sign in again and retry.',
+        _ => 'Synchronization failed. Pending changes were kept.',
+      };
+      return Left(ServerFailure(message, code: exception.code));
     } on CacheException catch (exception) {
       return Left(_cacheFailure(exception));
     } on FormatException {

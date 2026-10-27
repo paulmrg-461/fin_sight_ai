@@ -1446,4 +1446,15 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get syncFailedTitle => 'Error de sincronización';
+
+  @override
+  String get errCloudSchemaOutdated =>
+      'El esquema en la nube está desactualizado. Aplica las últimas migraciones de Supabase y reintenta.';
+
+  @override
+  String get errCloudSessionRejected =>
+      'La nube rechazó esta sesión. Inicia sesión de nuevo y reintenta.';
 }

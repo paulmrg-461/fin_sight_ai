@@ -2,6 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/l10n/failure_text.dart';
+
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 
@@ -58,13 +60,12 @@ class SyncStatusChip extends StatelessWidget {
         return IconButton(
           onPressed: isSyncing
               ? null
-              : () {
-                  if (configured && !authenticated) {
-                    context.pushNamed(AppRoutes.loginName);
-                  } else {
-                    context.read<SyncBloc>().add(const SyncNow());
-                  }
-                },
+              : () => _handleTap(
+                  context,
+                  state: state,
+                  configured: configured,
+                  authenticated: authenticated,
+                ),
           tooltip: tooltip,
           icon: isSyncing
               ? const SizedBox(
@@ -80,5 +81,42 @@ class SyncStatusChip extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _handleTap(
+    BuildContext context, {
+    required SyncState state,
+    required bool configured,
+    required bool authenticated,
+  }) async {
+    final bloc = context.read<SyncBloc>();
+    if (configured && !authenticated) {
+      context.pushNamed(AppRoutes.loginName);
+      return;
+    }
+    if (state is SyncFailure) {
+      final retry = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(context.l10n.syncFailedTitle),
+          content: Text(context.failureText(state.message)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(context.l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(context.l10n.retry),
+            ),
+          ],
+        ),
+      );
+      if (retry == true) {
+        bloc.add(const SyncNow());
+      }
+      return;
+    }
+    bloc.add(const SyncNow());
   }
 }
