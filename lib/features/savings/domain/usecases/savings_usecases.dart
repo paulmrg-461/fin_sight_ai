@@ -82,6 +82,69 @@ class CreateSavingsGoalUseCase
   }
 }
 
+class UpdateSavingsGoalParams {
+  const UpdateSavingsGoalParams({
+    required this.id,
+    required this.name,
+    required this.targetAmount,
+    this.targetDate,
+  });
+
+  final String id;
+  final String name;
+  final double targetAmount;
+  final DateTime? targetDate;
+}
+
+@lazySingleton
+class UpdateSavingsGoalUseCase
+    implements UseCase<SavingsGoalEntity, UpdateSavingsGoalParams> {
+  const UpdateSavingsGoalUseCase(this._repository);
+
+  final SavingsRepository _repository;
+
+  @override
+  Future<Result<SavingsGoalEntity>> call(UpdateSavingsGoalParams params) async {
+    final id = params.id.trim();
+    if (id.isEmpty) {
+      return const Left(
+        ValidationFailure('Goal id is required.', code: 'missing_goal_id'),
+      );
+    }
+    final name = params.name.trim();
+    if (name.isEmpty) {
+      return const Left(
+        ValidationFailure('Goal name is required.', code: 'missing_goal_name'),
+      );
+    }
+    if (name.length > 120) {
+      return const Left(
+        ValidationFailure(
+          'Goal name must be 120 characters or fewer.',
+          code: 'goal_name_too_long',
+        ),
+      );
+    }
+    if (!params.targetAmount.isFinite || params.targetAmount <= 0) {
+      return const Left(
+        ValidationFailure(
+          'Target amount must be greater than zero.',
+          code: 'invalid_target',
+        ),
+      );
+    }
+    return _repository.updateGoal(
+      SavingsGoalEntity(
+        id: id,
+        name: name,
+        targetAmount: double.parse(params.targetAmount.toStringAsFixed(2)),
+        createdAt: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+        targetDate: params.targetDate,
+      ),
+    );
+  }
+}
+
 class AddSavingsContributionParams {
   const AddSavingsContributionParams({
     required this.goalId,

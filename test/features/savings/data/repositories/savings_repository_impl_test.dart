@@ -138,6 +138,24 @@ void main() {
     expect(await dataSource.getAllGoals(), isEmpty);
   });
 
+  test('updates a goal while preserving contributions', () async {
+    await repository.addGoal(goal());
+    await repository.addContribution(
+      'g-1',
+      SavingsContribution(id: 'c-1', amount: 100, date: DateTime.utc(2026)),
+    );
+
+    final result = await repository.updateGoal(
+      goal().copyWith(name: 'House', targetAmount: 2000),
+    );
+
+    final updated = result.getOrElse((_) => fail('Expected update'));
+    expect(updated.name, 'House');
+    expect(updated.targetAmount, 2000);
+    expect(updated.savedAmount, 100);
+    expect(updated.isSynced, isFalse);
+  });
+
   test('reports missing goals when contributing', () async {
     final result = await repository.addContribution(
       'missing',

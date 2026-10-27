@@ -612,6 +612,7 @@ void main() {
     await harness.pumpApp(tester);
     harness.router.goNamed(AppRoutes.savingsName);
     await pumpUntil(tester, find.text('No savings goals yet'));
+    await tester.pumpAndSettle();
 
     await tester.tap(
       find.widgetWithText(FloatingActionButton, 'New savings goal'),
@@ -638,6 +639,21 @@ void main() {
     expect(goals, hasLength(1));
     expect(goals.single.name, 'Trip');
     expect(goals.single.savedAmount, 400);
+
+    await tester.tap(find.byKey(const ValueKey('goal-actions')).first);
+    await tester.pumpAndSettle();
+    await pumpUntil(tester, find.text('Edit savings goal'));
+    await tester.tap(find.text('Edit savings goal'));
+    await pumpUntil(tester, find.text('Save changes'));
+    await tester.enterText(find.byType(TextFormField).at(1), '1200');
+    await tester.tap(find.text('Save changes'));
+    await pumpUntilGone(tester, find.text('Save changes'));
+
+    final edited = (await harness.savingsRepository.getGoals()).getOrElse(
+      (_) => throw TestFailure('Expected edited goal'),
+    );
+    expect(edited.single.targetAmount, 1200);
+    expect(edited.single.savedAmount, 400);
   });
 
   testWidgets('signs in and out from the dashboard', (tester) async {

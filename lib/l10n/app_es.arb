@@ -540,5 +540,9 @@
   "errCloudSchemaOutdated": "El esquema en la nube está desactualizado. Aplica las últimas migraciones de Supabase y reintenta.",
   "errCloudSessionRejected": "La nube rechazó esta sesión. Inicia sesión de nuevo y reintenta.",
   "syncPartialTitle": "Algunos cambios no se sincronizaron",
-  "syncPartialBody": "El resto de tus datos se sincronizó. Estas entidades fallaron:"
+  "syncPartialBody": "El resto de tus datos se sincronizó. Estas entidades fallaron:",
+  "interestSavedLabel": "Intereses ahorrados",
+  "monthsEarlierLabel": "Meses menos",
+  "editSavingsGoal": "Editar meta de ahorro",
+  "monthlyToReach": "Mensual para lograrlo"
 }

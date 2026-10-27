@@ -338,6 +338,7 @@ class IntegrationHarness {
     savingsBloc = SavingsBloc(
       GetSavingsGoalsUseCase(savingsRepository),
       CreateSavingsGoalUseCase(savingsRepository),
+      UpdateSavingsGoalUseCase(savingsRepository),
       AddSavingsContributionUseCase(savingsRepository),
       DeleteSavingsGoalUseCase(savingsRepository),
     );

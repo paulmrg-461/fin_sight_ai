@@ -40,6 +40,36 @@ void main() {
     expect(complete.isComplete, isTrue);
   });
 
+  test('computes the monthly amount needed before the target date', () {
+    final item = SavingsGoalEntity(
+      id: 'g-1',
+      name: 'Trip',
+      targetAmount: 1000,
+      createdAt: createdAt,
+      targetDate: DateTime.utc(2026, 12, 1),
+      contributions: [contribution(amount: 400)],
+    );
+
+    expect(item.monthlyNeeded(DateTime.utc(2026, 10, 1)), 300);
+    expect(item.monthlyNeeded(DateTime.utc(2026, 12, 1)), isNull);
+    expect(
+      goal(
+        target: 400,
+        contributions: [contribution(amount: 400)],
+      ).monthlyNeeded(DateTime.utc(2026, 10, 1)),
+      isNull,
+    );
+    expect(
+      SavingsGoalEntity(
+        id: 'g',
+        name: 'No date',
+        targetAmount: 100,
+        createdAt: createdAt,
+      ).monthlyNeeded(DateTime.utc(2026, 10, 1)),
+      isNull,
+    );
+  });
+
   test('copyWith and equality cover contributions', () {
     expect(goal(), goal());
     expect(goal().hashCode, goal().hashCode);

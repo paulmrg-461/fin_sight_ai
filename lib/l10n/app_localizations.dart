@@ -2737,6 +2737,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The rest of your data was synchronized. These entities failed:'**
   String get syncPartialBody;
+
+  /// No description provided for @interestSavedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest saved'**
+  String get interestSavedLabel;
+
+  /// No description provided for @monthsEarlierLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Months earlier'**
+  String get monthsEarlierLabel;
+
+  /// No description provided for @editSavingsGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit savings goal'**
+  String get editSavingsGoal;
+
+  /// No description provided for @monthlyToReach.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly to reach target'**
+  String get monthlyToReach;
 }
 
 class _AppLocalizationsDelegate

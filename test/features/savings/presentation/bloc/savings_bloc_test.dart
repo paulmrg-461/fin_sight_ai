@@ -14,6 +14,8 @@ class MockGetGoals extends Mock implements GetSavingsGoalsUseCase {}
 
 class MockCreateGoal extends Mock implements CreateSavingsGoalUseCase {}
 
+class MockUpdateGoal extends Mock implements UpdateSavingsGoalUseCase {}
+
 class MockAddContribution extends Mock
     implements AddSavingsContributionUseCase {}
 
@@ -22,6 +24,7 @@ class MockDeleteGoal extends Mock implements DeleteSavingsGoalUseCase {}
 void main() {
   late MockGetGoals getGoals;
   late MockCreateGoal createGoal;
+  late MockUpdateGoal updateGoal;
   late MockAddContribution addContribution;
   late MockDeleteGoal deleteGoal;
 
@@ -40,18 +43,27 @@ void main() {
     registerFallbackValue(
       const AddSavingsContributionParams(goalId: 'g-1', amount: 1),
     );
+    registerFallbackValue(
+      const UpdateSavingsGoalParams(id: 'g-1', name: 'Trip', targetAmount: 1),
+    );
   });
 
   setUp(() {
     getGoals = MockGetGoals();
     createGoal = MockCreateGoal();
+    updateGoal = MockUpdateGoal();
     addContribution = MockAddContribution();
     deleteGoal = MockDeleteGoal();
     when(() => getGoals(any())).thenAnswer((_) async => Right([goal]));
   });
 
-  SavingsBloc buildBloc() =>
-      SavingsBloc(getGoals, createGoal, addContribution, deleteGoal);
+  SavingsBloc buildBloc() => SavingsBloc(
+    getGoals,
+    createGoal,
+    updateGoal,
+    addContribution,
+    deleteGoal,
+  );
 
   group('SavingsBloc', () {
     test('initial state is SavingsInitial', () {
@@ -94,6 +106,24 @@ void main() {
         SavingsLoaded([goal]),
       ],
       verify: (_) => verify(() => createGoal(any())).called(1),
+    );
+
+    blocTest<SavingsBloc, SavingsState>(
+      'updates a goal and reloads',
+      setUp: () {
+        when(() => updateGoal(any())).thenAnswer((_) async => Right(goal));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(
+        const UpdateSavingsGoalEvent(
+          UpdateSavingsGoalParams(id: 'g-1', name: 'Trip', targetAmount: 1200),
+        ),
+      ),
+      expect: () => [
+        const SavingsLoading(),
+        SavingsLoaded([goal]),
+      ],
+      verify: (_) => verify(() => updateGoal(any())).called(1),
     );
 
     blocTest<SavingsBloc, SavingsState>(

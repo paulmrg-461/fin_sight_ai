@@ -70,6 +70,39 @@ void main() {
     verifyNever(() => repository.addGoal(any()));
   });
 
+  test('updates a goal and validates its fields', () async {
+    when(() => repository.updateGoal(any())).thenAnswer(
+      (invocation) async =>
+          Right(invocation.positionalArguments.first as SavingsGoalEntity),
+    );
+
+    final result = await UpdateSavingsGoalUseCase(repository)(
+      UpdateSavingsGoalParams(
+        id: ' g-1 ',
+        name: '  Trip  ',
+        targetAmount: 1200.126,
+        targetDate: DateTime.utc(2027, 1, 1),
+      ),
+    );
+
+    final updated = result.getOrElse((_) => fail('Expected update'));
+    expect(updated.id, 'g-1');
+    expect(updated.name, 'Trip');
+    expect(updated.targetAmount, 1200.13);
+
+    for (final entry in <UpdateSavingsGoalParams, String>{
+      const UpdateSavingsGoalParams(id: ' ', name: 'Trip', targetAmount: 1):
+          'missing_goal_id',
+      const UpdateSavingsGoalParams(id: 'g', name: ' ', targetAmount: 1):
+          'missing_goal_name',
+      const UpdateSavingsGoalParams(id: 'g', name: 'Trip', targetAmount: 0):
+          'invalid_target',
+    }.entries) {
+      final invalid = await UpdateSavingsGoalUseCase(repository)(entry.key);
+      expect(invalid.fold((f) => f.code, (_) => null), entry.value);
+    }
+  });
+
   test('adds a contribution with a generated id and date', () async {
     when(() => repository.addContribution(any(), any()))
         .thenAnswer((_) async => Right(goal));

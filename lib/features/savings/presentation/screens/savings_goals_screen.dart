@@ -35,6 +35,26 @@ class SavingsGoalsScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _editGoal(BuildContext context, SavingsGoalEntity goal) async {
+    final result = await showDialog<(String, double, DateTime?)>(
+      context: context,
+      builder: (_) => _GoalDialog(initial: goal),
+    );
+    if (result == null || !context.mounted) {
+      return;
+    }
+    context.read<SavingsBloc>().add(
+      UpdateSavingsGoalEvent(
+        UpdateSavingsGoalParams(
+          id: goal.id,
+          name: result.$1,
+          targetAmount: result.$2,
+          targetDate: result.$3,
+        ),
+      ),
+    );
+  }
+
   Future<void> _addMoney(BuildContext context, SavingsGoalEntity goal) async {
     final amount = await showDialog<double>(
       context: context,
@@ -122,6 +142,7 @@ class SavingsGoalsScreen extends StatelessWidget {
                     _GoalCard(
                       goal: goal,
                       onAddMoney: () => _addMoney(context, goal),
+                      onEdit: () => _editGoal(context, goal),
                       onDelete: () => _delete(context, goal),
                     ),
                 ],
@@ -204,11 +225,13 @@ class _GoalCard extends StatelessWidget {
   const _GoalCard({
     required this.goal,
     required this.onAddMoney,
+    required this.onEdit,
     required this.onDelete,
   });
 
   final SavingsGoalEntity goal;
   final VoidCallback onAddMoney;
+  final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
@@ -232,8 +255,14 @@ class _GoalCard extends StatelessWidget {
                   Chip(label: Text(l10n.goalCompleted))
                 else
                   PopupMenuButton<String>(
-                    onSelected: (_) => onDelete(),
+                    key: const ValueKey('goal-actions'),
+                    onSelected: (action) =>
+                        action == 'edit' ? onEdit() : onDelete(),
                     itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'edit',
+                        child: Text(l10n.editSavingsGoal),
+                      ),
                       PopupMenuItem(value: 'delete', child: Text(l10n.delete)),
                     ],
                   ),
@@ -284,6 +313,18 @@ class _GoalCard extends StatelessWidget {
                     style: theme.textTheme.bodySmall,
                   ),
                 ],
+                if (goal.monthlyNeeded(DateTime.now()) != null) ...[
+                  Text(
+                    '${l10n.monthlyToReach}: ',
+                    style: theme.textTheme.labelSmall,
+                  ),
+                  MoneyText(
+                    goal.monthlyNeeded(DateTime.now())!,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 FilledButton.tonalIcon(
                   onPressed: goal.isComplete ? null : onAddMoney,
@@ -300,7 +341,9 @@ class _GoalCard extends StatelessWidget {
 }
 
 class _GoalDialog extends StatefulWidget {
-  const _GoalDialog();
+  const _GoalDialog({this.initial});
+
+  final SavingsGoalEntity? initial;
 
   @override
   State<_GoalDialog> createState() => _GoalDialogState();
@@ -311,6 +354,17 @@ class _GoalDialogState extends State<_GoalDialog> {
   final _nameController = TextEditingController();
   final _targetController = TextEditingController();
   DateTime? _targetDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final initial = widget.initial;
+    if (initial != null) {
+      _nameController.text = initial.name;
+      _targetController.text = initial.targetAmount.toStringAsFixed(2);
+      _targetDate = initial.targetDate;
+    }
+  }
 
   @override
   void dispose() {
@@ -347,7 +401,9 @@ class _GoalDialogState extends State<_GoalDialog> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     return AlertDialog(
-      title: Text(l10n.newSavingsGoal),
+      title: Text(
+        widget.initial == null ? l10n.newSavingsGoal : l10n.editSavingsGoal,
+      ),
       content: Form(
         key: _formKey,
         child: Column(
@@ -398,7 +454,12 @@ class _GoalDialogState extends State<_GoalDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(l10n.createGoal)),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(
+            widget.initial == null ? l10n.createGoal : l10n.saveChanges,
+          ),
+        ),
       ],
     );
   }

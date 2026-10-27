@@ -99,3 +99,10 @@ monthly payment:
   always agree.
 - Debt details render the plan; an empty monthly-payment field uses the debt's
   minimum payment.
+
+## Extra payments
+
+The detail calculator compares the custom monthly payment with the minimum:
+`PayoffEstimate.interestSaved` and `monthsSaved` are derived from two plans built
+with the same calculator and timestamp. The UI shows an impact card only when
+the custom payment improves either metric.

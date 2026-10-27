@@ -1464,4 +1464,16 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get syncPartialBody =>
       'El resto de tus datos se sincronizó. Estas entidades fallaron:';
+
+  @override
+  String get interestSavedLabel => 'Intereses ahorrados';
+
+  @override
+  String get monthsEarlierLabel => 'Meses menos';
+
+  @override
+  String get editSavingsGoal => 'Editar meta de ahorro';
+
+  @override
+  String get monthlyToReach => 'Mensual para lograrlo';
 }

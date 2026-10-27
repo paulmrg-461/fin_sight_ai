@@ -73,6 +73,18 @@ class SavingsGoalEntity extends Entity {
 
   bool get isComplete => savedAmount >= targetAmount;
 
+  /// Monthly amount needed to reach the target by [from]'s target date.
+  double? monthlyNeeded(DateTime from) {
+    final deadline = targetDate;
+    if (deadline == null || isComplete || !deadline.isAfter(from)) {
+      return null;
+    }
+    final months =
+        (deadline.year - from.year) * 12 + (deadline.month - from.month);
+    final periods = months <= 0 ? 1 : months;
+    return double.parse((remainingAmount / periods).toStringAsFixed(2));
+  }
+
   SavingsGoalEntity copyWith({
     String? id,
     String? name,

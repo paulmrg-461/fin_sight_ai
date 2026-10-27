@@ -63,6 +63,13 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## Debt impact + savings v2 (plans 029–030)
+
+- Debt extra payments now report interest saved and months earlier versus the minimum, computed from two plans at the same instant; the impact card only appears when something improves.
+- Savings goals can be edited (name/target/date) without losing contributions; edits queue a sync upsert.
+- Goals with a future target date show the monthly amount needed to reach the target.
+- Tests cover the extra-payment comparison, goal update validation/repository/BLoC, monthly pace, and the integration edit flow.
+
 ## Savings goals (plan 026)
 
 - Hive `savings_goals` box (cleared via `LocalDataScope`) with `SavingsGoalEntity` + `SavingsContribution` (saved/remaining/progress/completion).

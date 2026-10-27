@@ -427,6 +427,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i119.GetSavingsGoalsUseCase>(
       () => _i119.GetSavingsGoalsUseCase(gh<_i361.SavingsRepository>()),
     );
+    gh.lazySingleton<_i119.UpdateSavingsGoalUseCase>(
+      () => _i119.UpdateSavingsGoalUseCase(gh<_i361.SavingsRepository>()),
+    );
     gh.lazySingleton<_i119.DeleteSavingsGoalUseCase>(
       () => _i119.DeleteSavingsGoalUseCase(gh<_i361.SavingsRepository>()),
     );
@@ -534,14 +537,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i315.ReceivableLocalDataSource>(),
         syncQueue: gh<_i588.SyncQueue>(),
         clock: gh<_i956.Clock>(),
-      ),
-    );
-    gh.factory<_i851.SavingsBloc>(
-      () => _i851.SavingsBloc(
-        gh<_i119.GetSavingsGoalsUseCase>(),
-        gh<_i119.CreateSavingsGoalUseCase>(),
-        gh<_i119.AddSavingsContributionUseCase>(),
-        gh<_i119.DeleteSavingsGoalUseCase>(),
       ),
     );
     gh.lazySingleton<_i978.MakePaymentUseCase>(
@@ -742,6 +737,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i998.SignUpUseCase>(),
         gh<_i998.SignOutUseCase>(),
         gh<_i998.RestoreSessionUseCase>(),
+      ),
+    );
+    gh.factory<_i851.SavingsBloc>(
+      () => _i851.SavingsBloc(
+        gh<_i119.GetSavingsGoalsUseCase>(),
+        gh<_i119.CreateSavingsGoalUseCase>(),
+        gh<_i119.UpdateSavingsGoalUseCase>(),
+        gh<_i119.AddSavingsContributionUseCase>(),
+        gh<_i119.DeleteSavingsGoalUseCase>(),
       ),
     );
     gh.factory<_i1009.DebtBloc>(

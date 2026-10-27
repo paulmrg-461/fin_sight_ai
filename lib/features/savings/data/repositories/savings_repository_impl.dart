@@ -67,6 +67,51 @@ class SavingsRepositoryImpl implements SavingsRepository {
   }
 
   @override
+  @override
+  ResultFuture<SavingsGoalEntity> updateGoal(SavingsGoalEntity goal) async {
+    try {
+      final goals = await _localDataSource.getGoals();
+      SavingsGoalModel? existing;
+      for (final item in goals) {
+        if (item.id == goal.id) {
+          existing = item;
+          break;
+        }
+      }
+      if (existing == null) {
+        return const Left(
+          ValidationFailure(
+            'Savings goal not found.',
+            code: 'savings_not_found',
+          ),
+        );
+      }
+      final now = clock.now();
+      final updated = SavingsGoalModel.fromEntity(
+        existing.copyWith(
+          name: goal.name,
+          targetAmount: goal.targetAmount,
+          targetDate: goal.targetDate,
+          updatedAt: now,
+          isSynced: false,
+        ),
+      );
+      await _localDataSource.saveGoal(updated);
+      await _enqueue(updated);
+      return Right(updated.toEntity());
+    } on CacheException catch (exception) {
+      return Left(CacheFailure(exception.message, code: exception.code));
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to update the savings goal.',
+          code: 'savings_write_failed',
+        ),
+      );
+    }
+  }
+
+  @override
   ResultFuture<SavingsGoalEntity> addContribution(
     String goalId,
     SavingsContribution contribution,

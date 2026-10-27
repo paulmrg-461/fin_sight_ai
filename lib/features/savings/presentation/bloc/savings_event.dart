@@ -22,6 +22,15 @@ final class CreateSavingsGoalEvent extends SavingsEvent {
   List<Object?> get props => [params];
 }
 
+final class UpdateSavingsGoalEvent extends SavingsEvent {
+  const UpdateSavingsGoalEvent(this.params);
+
+  final UpdateSavingsGoalParams params;
+
+  @override
+  List<Object?> get props => [params];
+}
+
 final class AddSavingsContributionEvent extends SavingsEvent {
   const AddSavingsContributionEvent(this.params);
 

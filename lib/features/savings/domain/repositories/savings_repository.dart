@@ -6,6 +6,9 @@ abstract interface class SavingsRepository {
 
   ResultFuture<SavingsGoalEntity> addGoal(SavingsGoalEntity goal);
 
+  /// Updates editable fields while preserving id and contributions.
+  ResultFuture<SavingsGoalEntity> updateGoal(SavingsGoalEntity goal);
+
   ResultFuture<SavingsGoalEntity> addContribution(
     String goalId,
     SavingsContribution contribution,

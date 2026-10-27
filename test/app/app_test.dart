@@ -104,6 +104,8 @@ class MockGetSavingsGoals extends Mock implements GetSavingsGoalsUseCase {}
 
 class MockCreateSavingsGoal extends Mock implements CreateSavingsGoalUseCase {}
 
+class MockUpdateSavingsGoal extends Mock implements UpdateSavingsGoalUseCase {}
+
 class MockAddSavingsContribution extends Mock
     implements AddSavingsContributionUseCase {}
 
@@ -380,6 +382,7 @@ void main() {
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),
+        MockUpdateSavingsGoal(),
         MockAddSavingsContribution(),
         MockDeleteSavingsGoal(),
       ),

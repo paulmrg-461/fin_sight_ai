@@ -1455,4 +1455,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get syncPartialBody =>
       'The rest of your data was synchronized. These entities failed:';
+
+  @override
+  String get interestSavedLabel => 'Interest saved';
+
+  @override
+  String get monthsEarlierLabel => 'Months earlier';
+
+  @override
+  String get editSavingsGoal => 'Edit savings goal';
+
+  @override
+  String get monthlyToReach => 'Monthly to reach target';
 }

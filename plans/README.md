@@ -36,6 +36,11 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 026 | Savings goals with dashboard and AI context | P2 | L | 016, 020, 023 | DONE (1021 unit, 32 integration) |
 | 027 | Sync savings goals with Supabase | P2 | M | 005, 026 | DONE (1027 unit, 32 integration) |
 | 028 | Isolate sync failures and show diagnostics | P1 | M | 005, 027 | DONE (1033 unit, 32 integration) |
+| 029 | Show the impact of extra debt payments | P2 | S | 023 | DONE (with 030: 1037 unit, 32 integration) |
+| 030 | Edit savings goals and show monthly pace | P2 | S/M | 026 | DONE (1037 unit, 32 integration) |
+
+- 029 added interest/time-saved comparisons for extra debt payments.
+- 030 added goal editing and a monthly savings pace.
 
 - 028 isolated per-entity pull failures, added `SyncReport.failures`, and made the sync chip explain failures with a retry dialog.
 
