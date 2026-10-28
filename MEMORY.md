@@ -30,13 +30,17 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Hive at-rest encryption (AES + secure key) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
-### Current checkpoint (2026-10-27)
+### Current checkpoint (2026-10-27, latest)
 
+- HEAD: `516e3b8` on `develop` and `main` (both pushed, in sync).
 - Gates: `flutter analyze` clean, **1097** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
-- Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
+- Recent commits (newest first): `516e3b8` money/category specs, `61375a0` startup recovery screen, `0c432d7` Hive encryption, `fd03216` Android widget, `8105180` receipt metadata sync, `e5feb70` biometric app lock, `799dd99` CSV import, `dd5ae34` onboarding, `2627b9d` golden/CI, `809e2dd` budget alerts, `c308ed6` reports/share.
+- Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption.
+- Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GROQ_API_KEY` set. Never print or commit those values; rotate the Groq key and the Supabase DB password that were shared in chat.
 
 ## Hive at-rest encryption (plan 040)
 
