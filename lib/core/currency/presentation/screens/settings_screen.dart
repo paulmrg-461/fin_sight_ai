@@ -10,6 +10,8 @@ import '../../../../core/locale/presentation/bloc/locale_event.dart';
 import '../../../../core/locale/presentation/bloc/locale_state.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../features/security/presentation/bloc/security_cubit.dart';
+import '../../../../features/security/presentation/bloc/security_state.dart';
 import '../bloc/currency_bloc.dart';
 import '../bloc/currency_event.dart';
 import '../bloc/currency_state.dart';
@@ -86,6 +88,28 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
+                    _SettingsSection(
+                      icon: Icons.fingerprint_rounded,
+                      title: l10n.securityTitle,
+                      description: l10n.securityDescription,
+                      child: BlocBuilder<SecurityCubit, SecurityState>(
+                        builder: (context, security) {
+                          return SwitchListTile.adaptive(
+                            contentPadding: EdgeInsets.zero,
+                            value: security.enabled,
+                            onChanged: security.loading || !security.available
+                                ? null
+                                : (value) => context
+                                      .read<SecurityCubit>()
+                                      .setEnabled(value),
+                            title: Text(l10n.securityTitle),
+                            subtitle: security.available
+                                ? null
+                                : Text(l10n.securityUnavailable),
+                          );
+                        },
+                      ),
+                    ),
                     _SettingsSection(
                       icon: Icons.translate_rounded,
                       title: l10n.language,

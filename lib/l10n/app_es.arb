@@ -606,5 +606,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "securityTitle": "Bloqueo de la app",
+  "securityDescription": "Pide tu huella, rostro o PIN del dispositivo para abrir FinSight AI.",
+  "securityUnavailable": "No hay biometría ni credencial del dispositivo configurada.",
+  "appLockedTitle": "FinSight AI está bloqueada",
+  "appLockedBody": "Desbloquea con tu huella, rostro o PIN del dispositivo para ver tus finanzas.",
+  "unlockApp": "Desbloquear"
 }

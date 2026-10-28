@@ -57,6 +57,18 @@ void main() {
     await harness.dispose();
   });
 
+  testWidgets('locks the app until biometrics succeed', (tester) async {
+    harness.securityPreferences.enabled = true;
+    harness.biometrics.result = false;
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('FinSight AI is locked'));
+
+    harness.biometrics.result = true;
+    await tester.tap(find.text('Unlock'));
+    await pumpUntil(tester, find.text('No transactions yet'));
+  });
+
   testWidgets('shows onboarding once and opens the dashboard', (tester) async {
     harness.onboardingService.completed = false;
 

@@ -2,6 +2,9 @@ import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/currency/currency_usecases.dart';
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart';
 import 'package:fin_sight_ai/core/l10n/l10n.dart';
+import 'package:fin_sight_ai/core/services/biometric_service.dart';
+import 'package:fin_sight_ai/core/services/security_preferences.dart';
+import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart';
 import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_state.dart';
@@ -22,9 +25,26 @@ class MockGetLocale extends Mock implements GetLocaleUseCase {}
 
 class MockSetLocale extends Mock implements SetLocaleUseCase {}
 
+class _NoSecurityPreferences implements SecurityPreferences {
+  @override
+  Future<bool> isBiometricEnabled() async => false;
+
+  @override
+  Future<void> setBiometricEnabled(bool enabled) async {}
+}
+
+class _NoBiometrics implements BiometricService {
+  @override
+  Future<bool> isAvailable() async => false;
+
+  @override
+  Future<bool> authenticate() async => false;
+}
+
 void main() {
   late CurrencyBloc bloc;
   late LocaleBloc localeBloc;
+  late SecurityCubit securityCubit;
   late MockSetLocale setLocale;
 
   setUpAll(() {
@@ -41,17 +61,20 @@ void main() {
     when(() => setLocale(any())).thenAnswer((_) async => const Right(null));
     localeBloc = LocaleBloc(MockGetLocale(), setLocale)
       ..emit(const LocaleLoaded(Locale('en')));
+    securityCubit = SecurityCubit(_NoSecurityPreferences(), _NoBiometrics());
   });
 
   tearDown(() async {
     await bloc.close();
     await localeBloc.close();
+    await securityCubit.close();
   });
 
   Widget wrap(Widget child) => MultiBlocProvider(
     providers: [
       BlocProvider<CurrencyBloc>.value(value: bloc),
       BlocProvider<LocaleBloc>.value(value: localeBloc),
+      BlocProvider<SecurityCubit>.value(value: securityCubit),
     ],
     child: MaterialApp(
       locale: const Locale('en'),
@@ -124,6 +147,10 @@ void main() {
   });
 
   testWidgets('SettingsScreen switches language', (tester) async {
+    tester.view.physicalSize = const Size(1000, 2200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
     when(() => setLocale(any()))
         .thenAnswer((_) async => const Right(Locale('es')));
 
@@ -134,6 +161,7 @@ void main() {
         providers: [
           BlocProvider<CurrencyBloc>.value(value: bloc),
           BlocProvider<LocaleBloc>.value(value: localeBloc),
+          BlocProvider<SecurityCubit>.value(value: securityCubit),
         ],
         child: BlocBuilder<LocaleBloc, LocaleState>(
           builder: (context, state) {
@@ -149,7 +177,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('Español'));
+    await tester.scrollUntilVisible(
+      find.text('Español'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     final spanish = localeBloc.stream.firstWhere(
       (state) => state is LocaleLoaded && state.locale?.languageCode == 'es',
     );

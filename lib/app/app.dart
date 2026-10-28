@@ -12,6 +12,8 @@ import '../core/l10n/l10n.dart';
 import '../core/services/onboarding_service.dart';
 import '../features/import_data/presentation/bloc/import_csv_cubit.dart';
 import '../features/onboarding/presentation/widgets/onboarding_gate.dart';
+import '../features/security/presentation/bloc/security_cubit.dart';
+import '../features/security/presentation/widgets/app_lock_gate.dart';
 import '../core/locale/presentation/bloc/locale_bloc.dart';
 import '../core/locale/presentation/bloc/locale_state.dart';
 import '../features/budgets/presentation/bloc/budget_bloc.dart';
@@ -57,6 +59,7 @@ class FinSightApp extends StatelessWidget {
     required this.reportsBloc,
     required this.onboardingService,
     required this.importCsvCubit,
+    required this.securityCubit,
   });
 
   final ThemeController themeController;
@@ -80,6 +83,7 @@ class FinSightApp extends StatelessWidget {
   final ReportsBloc reportsBloc;
   final OnboardingService onboardingService;
   final ImportCsvCubit importCsvCubit;
+  final SecurityCubit securityCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +107,7 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<SavingsBloc>.value(value: savingsBloc),
         BlocProvider<ReportsBloc>.value(value: reportsBloc),
         BlocProvider<ImportCsvCubit>.value(value: importCsvCubit),
+        BlocProvider<SecurityCubit>.value(value: securityCubit),
       ],
       child: MultiBlocListener(
         listeners: [
@@ -143,7 +148,9 @@ class FinSightApp extends StatelessWidget {
                     routerConfig: router,
                     builder: (context, child) => OnboardingGate(
                       service: onboardingService,
-                      child: child ?? const SizedBox.shrink(),
+                      child: AppLockGate(
+                        child: child ?? const SizedBox.shrink(),
+                      ),
                     ),
                   );
                 },

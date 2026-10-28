@@ -36,6 +36,7 @@ import 'features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dar
 import 'features/savings/presentation/bloc/savings_bloc.dart';
 import 'features/reports/presentation/bloc/reports_bloc.dart';
 import 'features/import_data/presentation/bloc/import_csv_cubit.dart';
+import 'features/security/presentation/bloc/security_cubit.dart';
 import 'features/reports/presentation/bloc/reports_event.dart';
 import 'features/savings/presentation/bloc/savings_event.dart';
 import 'features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
@@ -127,6 +128,7 @@ Future<void> main() async {
       reportsBloc: reportsBloc,
       onboardingService: getIt<OnboardingService>(),
       importCsvCubit: getIt<ImportCsvCubit>(),
+      securityCubit: getIt<SecurityCubit>(),
     ),
   );
 

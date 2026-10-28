@@ -1604,4 +1604,25 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get securityTitle => 'App lock';
+
+  @override
+  String get securityDescription =>
+      'Require your fingerprint, face, or device PIN to open FinSight AI.';
+
+  @override
+  String get securityUnavailable =>
+      'No biometric or device credential is configured on this device.';
+
+  @override
+  String get appLockedTitle => 'FinSight AI is locked';
+
+  @override
+  String get appLockedBody =>
+      'Unlock with your fingerprint, face, or device PIN to view your finances.';
+
+  @override
+  String get unlockApp => 'Unlock';
 }

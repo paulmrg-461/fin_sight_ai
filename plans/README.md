@@ -44,6 +44,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 034 | Golden coverage and release APK CI job | P2 | S | 033 | DONE (1051 unit, 34 integration) |
 | 035 | First-run onboarding | P2 | S | 011 | DONE (1053 unit, 35 integration) |
 | 036 | Import transactions from CSV | P2 | M | 015 | DONE (1064 unit, 36 integration) |
+| 037 | App lock with biometrics | P1 | M | 004, 035 | DONE (1072 unit, 37 integration) |
+
+- 037 added an opt-in biometric app lock with a lifecycle-aware gate and localized settings copy.
 
 - 036 added tolerant pasted-CSV imports with dedupe and per-row errors.
 

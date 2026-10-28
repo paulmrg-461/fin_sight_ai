@@ -1613,4 +1613,25 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get securityTitle => 'Bloqueo de la app';
+
+  @override
+  String get securityDescription =>
+      'Pide tu huella, rostro o PIN del dispositivo para abrir FinSight AI.';
+
+  @override
+  String get securityUnavailable =>
+      'No hay biometría ni credencial del dispositivo configurada.';
+
+  @override
+  String get appLockedTitle => 'FinSight AI está bloqueada';
+
+  @override
+  String get appLockedBody =>
+      'Desbloquea con tu huella, rostro o PIN del dispositivo para ver tus finanzas.';
+
+  @override
+  String get unlockApp => 'Desbloquear';
 }

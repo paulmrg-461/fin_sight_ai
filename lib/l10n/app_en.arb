@@ -655,5 +655,11 @@
         "type": "int"
       }
     }
-  }
+  },
+  "securityTitle": "App lock",
+  "securityDescription": "Require your fingerprint, face, or device PIN to open FinSight AI.",
+  "securityUnavailable": "No biometric or device credential is configured on this device.",
+  "appLockedTitle": "FinSight AI is locked",
+  "appLockedBody": "Unlock with your fingerprint, face, or device PIN to view your finances.",
+  "unlockApp": "Unlock"
 }

@@ -64,7 +64,10 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/core/services/biometric_service.dart';
 import 'package:fin_sight_ai/core/services/onboarding_service.dart';
+import 'package:fin_sight_ai/core/services/security_preferences.dart';
+import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart';
 import 'package:fin_sight_ai/features/import_data/presentation/bloc/import_csv_cubit.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
@@ -106,6 +109,10 @@ class MockOnboardingService extends Mock implements OnboardingService {}
 
 class MockImportCsvUseCase extends Mock
     implements ImportTransactionsCsvUseCase {}
+
+class MockSecurityPreferences extends Mock implements SecurityPreferences {}
+
+class MockBiometricService extends Mock implements BiometricService {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -243,6 +250,14 @@ MockOnboardingService _onboarding() {
   final service = MockOnboardingService();
   when(() => service.isCompleted()).thenAnswer((_) async => true);
   return service;
+}
+
+SecurityCubit _security() {
+  final preferences = MockSecurityPreferences();
+  final biometrics = MockBiometricService();
+  when(() => preferences.isBiometricEnabled()).thenAnswer((_) async => false);
+  when(() => biometrics.isAvailable()).thenAnswer((_) async => false);
+  return SecurityCubit(preferences, biometrics);
 }
 
 void main() {
@@ -400,6 +415,7 @@ void main() {
       reportsBloc: ReportsBloc(MockGetByDateRange(), MockReportExporter()),
       onboardingService: _onboarding(),
       importCsvCubit: ImportCsvCubit(MockImportCsvUseCase()),
+      securityCubit: _security(),
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),

@@ -49,6 +49,7 @@ import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.d
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:fin_sight_ai/features/import_data/presentation/bloc/import_csv_cubit.dart';
+import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_event.dart';
 import 'package:fin_sight_ai/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_event.dart';
@@ -134,6 +135,8 @@ class IntegrationHarness {
   final FakeGroqDatasource groq = FakeGroqDatasource();
   final FakeReportExporter reportExporter = FakeReportExporter();
   final FakeOnboardingService onboardingService = FakeOnboardingService();
+  final FakeBiometricService biometrics = FakeBiometricService();
+  final FakeSecurityPreferences securityPreferences = FakeSecurityPreferences();
   final FakeReceiptImagePicker imagePicker = FakeReceiptImagePicker();
   final FakeAuthRemoteDataSource authRemote = FakeAuthRemoteDataSource();
   final InMemorySessionStorage authStorage = InMemorySessionStorage();
@@ -179,6 +182,7 @@ class IntegrationHarness {
   late SavingsBloc savingsBloc;
   late ReportsBloc reportsBloc;
   late ImportCsvCubit importCsvCubit;
+  late SecurityCubit securityCubit;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
@@ -352,6 +356,7 @@ class IntegrationHarness {
     );
 
     reportsBloc = ReportsBloc(getTransactionsByDateRange, reportExporter);
+    securityCubit = SecurityCubit(securityPreferences, biometrics);
     importCsvCubit = ImportCsvCubit(
       ImportTransactionsCsvUseCase(transactionRepository, addTransaction),
     );
@@ -489,6 +494,7 @@ class IntegrationHarness {
       savingsBloc: savingsBloc,
       reportsBloc: reportsBloc,
       importCsvCubit: importCsvCubit,
+      securityCubit: securityCubit,
       onboardingService: onboardingService,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,

@@ -1,6 +1,6 @@
 # Project Memory — FinSight AI
 
-_Last updated: 2026-10-26. Read this before starting a new session._
+_Last updated: 2026-10-27. Read this before starting a new session._
 
 ## Delivered and pushed
 
@@ -24,16 +24,27 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 | AI Coach language + offline cache | Done |
 | Localized failures + AI output language | Done |
 | Platform scaffolds tracked (Android/iOS/Linux/macOS/Windows/web) | Done |
-| Integration suite (30 flows + benchmarks) | Done |
+| Biometric app lock (opt-in, lifecycle-aware) | Done |
+| Integration suite (37 flows + benchmarks) | Done |
 
-### Current checkpoint (2026-10-26)
+### Current checkpoint (2026-10-27)
 
-- HEAD: `fab8193` on `develop` and `main` (in sync, pushed).
-- Gates: `flutter analyze` clean, **968** unit/widget tests, coverage gate green, **30** Linux integration tests.
+- Gates: `flutter analyze` clean, **1072** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
 - Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
+
+## App lock with biometrics (plan 037)
+
+- `BiometricService` wraps `local_auth` behind an interface; `LocalAuthBiometricService` treats plugin errors as "unavailable" instead of crashing.
+- `SecurityPreferences` persists `biometric_lock_enabled` in the settings box; storage faults leave the app unlocked.
+- `SecurityCubit` reconciles the stored flag with device support, so a restored backup on a device without biometrics cannot lock the user out. `setEnabled` refuses to enable when unsupported.
+- `AppLockGate` wraps the router child (after onboarding), locks on load and on `AppLifecycleState.paused`, and shows a themed lock screen with retry. Duplicate prompts are blocked.
+- Settings has a security card with an adaptive switch and localized English/Spanish copy; the switch is disabled while loading or unsupported.
+- Android: `MainActivity` is a `FlutterFragmentActivity` and the manifest declares `USE_BIOMETRIC`.
+- Tests: cubit persistence/capability, gate lock/unlock paths, settings providers, and an integration flow that keeps the dashboard hidden until unlock.
+- Known gap: this is presentation gating only; Hive boxes are still unencrypted.
 
 ## Debt payment plan + dashboard overview (plan 023)
 

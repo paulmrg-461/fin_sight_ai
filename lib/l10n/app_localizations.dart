@@ -2965,6 +2965,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 failed} other{{count} failed}}'**
   String importCsvFailed(int count);
+
+  /// No description provided for @securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'App lock'**
+  String get securityTitle;
+
+  /// No description provided for @securityDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Require your fingerprint, face, or device PIN to open FinSight AI.'**
+  String get securityDescription;
+
+  /// No description provided for @securityUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No biometric or device credential is configured on this device.'**
+  String get securityUnavailable;
+
+  /// No description provided for @appLockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FinSight AI is locked'**
+  String get appLockedTitle;
+
+  /// No description provided for @appLockedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock with your fingerprint, face, or device PIN to view your finances.'**
+  String get appLockedBody;
+
+  /// No description provided for @unlockApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get unlockApp;
 }
 
 class _AppLocalizationsDelegate

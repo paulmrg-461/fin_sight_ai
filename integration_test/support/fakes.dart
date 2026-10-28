@@ -1,7 +1,9 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/services/biometric_service.dart';
 import 'package:fin_sight_ai/core/services/onboarding_service.dart';
+import 'package:fin_sight_ai/core/services/security_preferences.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -182,5 +184,36 @@ class FakeOnboardingService implements OnboardingService {
   @override
   Future<void> complete() async {
     completed = true;
+  }
+}
+
+class FakeBiometricService implements BiometricService {
+  FakeBiometricService({this.available = true, this.result = true});
+
+  bool available;
+  bool result;
+  int authenticateCalls = 0;
+
+  @override
+  Future<bool> isAvailable() async => available;
+
+  @override
+  Future<bool> authenticate() async {
+    authenticateCalls++;
+    return result;
+  }
+}
+
+class FakeSecurityPreferences implements SecurityPreferences {
+  FakeSecurityPreferences({this.enabled = false});
+
+  bool enabled;
+
+  @override
+  Future<bool> isBiometricEnabled() async => enabled;
+
+  @override
+  Future<void> setBiometricEnabled(bool enabled) async {
+    this.enabled = enabled;
   }
 }

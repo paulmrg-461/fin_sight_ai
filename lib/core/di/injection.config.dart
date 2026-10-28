@@ -22,11 +22,13 @@ import 'package:fin_sight_ai/core/locale/locale_usecases.dart' as _i4;
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart'
     as _i282;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
+import 'package:fin_sight_ai/core/services/biometric_service.dart' as _i559;
 import 'package:fin_sight_ai/core/services/local_data_scope.dart' as _i1041;
 import 'package:fin_sight_ai/core/services/onboarding_service.dart' as _i682;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
 import 'package:fin_sight_ai/core/services/reminder_scheduler.dart' as _i244;
+import 'package:fin_sight_ai/core/services/security_preferences.dart' as _i44;
 import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
@@ -195,6 +197,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/domain/usecases/schedul
     as _i160;
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart'
     as _i200;
+import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart'
+    as _i247;
 import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_data_source.dart'
     as _i995;
 import 'package:fin_sight_ai/features/sync/data/datasources/sync_local_data_source.dart'
@@ -246,6 +250,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:go_router/go_router.dart' as _i583;
 import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:local_auth/local_auth.dart' as _i152;
 import 'package:uuid/uuid.dart' as _i706;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -285,6 +290,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i32.ThemeController>(() => _i32.ThemeController());
     gh.lazySingleton<_i956.Clock>(() => const _i956.Clock());
     gh.lazySingleton<_i124.ReportExporter>(() => _i57.ShareReportExporter());
+    gh.lazySingleton<_i44.SecurityPreferences>(
+      () => _i44.HiveSecurityPreferences(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i880.OcrDataSource>(
       () => const _i598.MlKitOcrDataSource(),
     );
@@ -294,6 +302,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i441.SessionStorage>(() => _i26.SecureSessionStorage());
     gh.lazySingleton<_i682.OnboardingService>(
       () => _i682.HiveOnboardingService(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i559.BiometricService>(
+      () => _i559.LocalAuthBiometricService(
+        auth: gh<_i152.LocalAuthentication>(),
+      ),
     );
     gh.lazySingleton<_i666.ReceiptImageStore>(
       () => _i666.FileReceiptImageStore(),
@@ -416,6 +429,12 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
         syncQueue: gh<_i588.SyncQueue>(),
+      ),
+    );
+    gh.factory<_i247.SecurityCubit>(
+      () => _i247.SecurityCubit(
+        gh<_i44.SecurityPreferences>(),
+        gh<_i559.BiometricService>(),
       ),
     );
     gh.lazySingleton<_i361.SavingsRepository>(
