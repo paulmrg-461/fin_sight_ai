@@ -52,7 +52,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 
 - Shared empty/error states now use a glowing icon halo and a gradient card wash; section headers gained a gradient accent bar.
 - Theme-level polish: segmented buttons, extended FAB, popup menus, taller app bars, stadium nav indicator, roomier list tiles.
-- New `AppProgressBar` (animated, rounded, gradient, semantics) replaced every raw progress indicator across budgets, savings, debts, receivables, wallets, and budget alerts.
+- New `AppProgressBar` (animated, rounded, gradient, semantics) replaced every raw progress indicator across budgets, savings, debts, receivables, wallets, and budget alerts; `AppPercentPill` unifies budget/savings/debt percentages.
 - Transactions group by day with Today/Yesterday headers and a daily net; budgets show a category badge, percentage pill, animated bar, and remaining/over indicator.
 - Annual reports render two proportional mini bars per month (income vs expenses) for a quick yearly trend.
 - Goldens regenerated (drawer, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.

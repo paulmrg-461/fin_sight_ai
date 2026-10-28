@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_percent_pill.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
@@ -29,6 +31,26 @@ class DebtCard extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: debt.isPaid
+                          ? AppColors.success.withValues(alpha: 0.14)
+                          : theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      debt.isPaid
+                          ? Icons.check_rounded
+                          : Icons.account_balance_rounded,
+                      size: 20,
+                      color: debt.isPaid
+                          ? AppColors.success
+                          : theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       debt.creditorName,
@@ -37,6 +59,11 @@ class DebtCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  AppPercentPill(
+                    percent: (debt.progress * 100).round(),
+                    color: AppColors.emerald,
+                  ),
+                  const SizedBox(width: 6),
                   Chip(
                     label: Text(
                       debt.isPaid ? context.l10n.paid : context.l10n.active,

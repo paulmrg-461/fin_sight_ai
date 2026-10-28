@@ -4,8 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_percent_pill.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/savings_goal_entity.dart';
@@ -242,12 +244,37 @@ class _GoalCard extends StatelessWidget {
           children: [
             Row(
               children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: goal.isComplete
+                        ? AppColors.emerald.withValues(alpha: 0.14)
+                        : theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    goal.isComplete
+                        ? Icons.check_rounded
+                        : Icons.savings_rounded,
+                    size: 20,
+                    color: goal.isComplete
+                        ? AppColors.emerald
+                        : theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Text(goal.name, style: theme.textTheme.titleMedium),
                 ),
                 if (goal.isComplete)
                   Chip(label: Text(l10n.goalCompleted))
                 else
+                  AppPercentPill(
+                    percent: (goal.progress * 100).round(),
+                    color: AppColors.emerald,
+                  ),
+                if (!goal.isComplete)
                   PopupMenuButton<String>(
                     key: const ValueKey('goal-actions'),
                     onSelected: (action) =>

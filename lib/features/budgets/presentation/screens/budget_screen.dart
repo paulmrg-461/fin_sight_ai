@@ -7,6 +7,7 @@ import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_percent_pill.dart';
 import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../../categories/presentation/bloc/category_bloc.dart';
@@ -411,9 +412,13 @@ class _BudgetCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  _PercentPill(
+                  AppPercentPill(
                     percent: (progress.percentage * 100).round(),
-                    overBudget: overBudget,
+                    color: overBudget
+                        ? AppColors.danger
+                        : progress.percentage >= 0.8
+                        ? AppColors.warning
+                        : AppColors.emerald,
                   ),
                   IconButton(
                     onPressed: onDelete,
@@ -473,38 +478,6 @@ class _BudgetCard extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PercentPill extends StatelessWidget {
-  const _PercentPill({required this.percent, required this.overBudget});
-
-  final int percent;
-  final bool overBudget;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = overBudget
-        ? theme.colorScheme.error
-        : percent >= 80
-        ? AppColors.warning
-        : AppColors.emerald;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        '$percent%',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w800,
         ),
       ),
     );

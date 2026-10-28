@@ -28,6 +28,8 @@ progress visuals, calmer hierarchy, and less plain list content.
   proportional mini bars, making the year's trend glanceable.
 - Reports: month/year text uses Material localizations (no intl locale init).
 - All progress surfaces now share height, radius, animation, and semantics.
+- New `AppPercentPill` gives budgets, savings goals, and debts the same
+  percentage badge; savings and debt cards also gained leading icon badges.
 
 ## Verification
 
