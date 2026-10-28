@@ -47,7 +47,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 037 | App lock with biometrics | P1 | M | 004, 035 | DONE (1072 unit, 37 integration) |
 | 038 | Sync receipt metadata | P2 | M | 005, 007, 028 | DONE (1081 unit, 37 integration) |
 | 039 | Android home-screen widget | P2 | M | 010, 021 | DONE (1086 unit, 37 integration) |
-| 040 | Encrypt Hive boxes at rest | P1 | M | 002, 037, 039 | DONE (1096 unit, 37 integration) |
+| 040 | Encrypt Hive boxes at rest | P1 | M | 002, 037, 039 | DONE (1097 unit, 37 integration) |
 
 - 040 encrypted every Hive box with an AES key held in platform secure storage and a guarded one-time plaintext migration.
 

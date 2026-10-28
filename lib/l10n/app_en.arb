@@ -662,5 +662,7 @@
   "appLockedTitle": "FinSight AI is locked",
   "appLockedBody": "Unlock with your fingerprint, face, or device PIN to view your finances.",
   "unlockApp": "Unlock",
-  "receiptsLabel": "Receipts"
+  "receiptsLabel": "Receipts",
+  "startupStorageErrorTitle": "Local data could not be unlocked",
+  "startupStorageErrorBody": "FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data."
 }

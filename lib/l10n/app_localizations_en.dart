@@ -1628,4 +1628,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptsLabel => 'Receipts';
+
+  @override
+  String get startupStorageErrorTitle => 'Local data could not be unlocked';
+
+  @override
+  String get startupStorageErrorBody =>
+      'FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data.';
 }

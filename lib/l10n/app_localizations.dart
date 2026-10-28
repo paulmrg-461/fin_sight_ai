@@ -3007,6 +3007,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Receipts'**
   String get receiptsLabel;
+
+  /// No description provided for @startupStorageErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Local data could not be unlocked'**
+  String get startupStorageErrorTitle;
+
+  /// No description provided for @startupStorageErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data.'**
+  String get startupStorageErrorBody;
 }
 
 class _AppLocalizationsDelegate

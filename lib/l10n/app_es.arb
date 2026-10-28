@@ -613,5 +613,7 @@
   "appLockedTitle": "FinSight AI está bloqueada",
   "appLockedBody": "Desbloquea con tu huella, rostro o PIN del dispositivo para ver tus finanzas.",
   "unlockApp": "Desbloquear",
-  "receiptsLabel": "Recibos"
+  "receiptsLabel": "Recibos",
+  "startupStorageErrorTitle": "No se pudieron desbloquear los datos locales",
+  "startupStorageErrorBody": "FinSight AI no pudo abrir tus datos locales cifrados. No se eliminó ningún registro. Si esto sigue ocurriendo después de restaurar una copia de seguridad, borra el almacenamiento de la app en los ajustes del dispositivo y vuelve a iniciar sesión para restaurar los datos sincronizados."
 }

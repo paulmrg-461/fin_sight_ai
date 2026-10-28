@@ -1637,4 +1637,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get receiptsLabel => 'Recibos';
+
+  @override
+  String get startupStorageErrorTitle =>
+      'No se pudieron desbloquear los datos locales';
+
+  @override
+  String get startupStorageErrorBody =>
+      'FinSight AI no pudo abrir tus datos locales cifrados. No se eliminó ningún registro. Si esto sigue ocurriendo después de restaurar una copia de seguridad, borra el almacenamiento de la app en los ajustes del dispositivo y vuelve a iniciar sesión para restaurar los datos sincronizados.';
 }

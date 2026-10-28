@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:material_ui/material_ui.dart';
 
 import 'app/app.dart';
+import 'app/startup_failure_app.dart';
 import 'app/startup_loader.dart';
 import 'core/di/injection.dart';
 import 'core/services/app_boxes.dart';
@@ -53,6 +54,17 @@ import 'features/transactions/presentation/bloc/transaction_event.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await _bootstrap();
+  } catch (error, stack) {
+    if (kDebugMode) {
+      debugPrint('Startup failed: $error\n$stack');
+    }
+    runApp(const StartupFailureApp());
+  }
+}
+
+Future<void> _bootstrap() async {
   await configureDependencies();
 
   // Wipe another account's data before any service reads local storage.

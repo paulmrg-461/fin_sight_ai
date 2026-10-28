@@ -32,7 +32,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 
 ### Current checkpoint (2026-10-27)
 
-- Gates: `flutter analyze` clean, **1096** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1097** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
@@ -44,7 +44,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - `EncryptedBoxOpener` opens boxes with `HiveAesCipher`, and only migrates plaintext when `allowLegacyMigration` is true: it copies entries, deletes the old file, and reopens encrypted.
 - `StorageModule` reads the unencrypted `storage_meta` flag first. Once `encrypted` is set, a missing/wrong key throws instead of feeding ciphertext to the plaintext reader; on first successful launch the flag is written.
 - Tests cover key generation/reuse/malformed fallback, fresh encrypted boxes, one-time migration, refused legacy fallback, wrong-key safety, and raw-file checks that plaintext no longer appears.
-- **Caveat:** losing the secure-storage key makes local boxes unreadable; the app fails loudly and synced data can be repopulated after clearing app data.
+- **Caveat:** losing the secure-storage key makes local boxes unreadable. `main.dart` now catches startup failures and shows `StartupFailureApp` with a non-destructive recovery message instead of crashing to a blank screen.
 
 ## Android home-screen widget (plan 039)
 
