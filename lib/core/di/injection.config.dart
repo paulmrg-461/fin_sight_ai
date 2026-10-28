@@ -28,6 +28,7 @@ import 'package:fin_sight_ai/core/services/onboarding_service.dart' as _i682;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
 import 'package:fin_sight_ai/core/services/reminder_scheduler.dart' as _i244;
+import 'package:fin_sight_ai/core/services/secure_screen.dart' as _i993;
 import 'package:fin_sight_ai/core/services/security_preferences.dart' as _i44;
 import 'package:fin_sight_ai/core/services/widget_data_bridge.dart' as _i270;
 import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
@@ -75,7 +76,7 @@ import 'package:fin_sight_ai/features/auth/data/repositories/auth_repository_imp
 import 'package:fin_sight_ai/features/auth/data/services/account_scope_service.dart'
     as _i754;
 import 'package:fin_sight_ai/features/auth/domain/repositories/auth_repository.dart'
-    as _i993;
+    as _i994;
 import 'package:fin_sight_ai/features/auth/domain/usecases/auth_usecases.dart'
     as _i998;
 import 'package:fin_sight_ai/features/auth/presentation/bloc/auth_bloc.dart'
@@ -263,8 +264,8 @@ extension GetItInjectableX on _i174.GetIt {
     final storageModule = _$StorageModule();
     final reminderModule = _$ReminderModule();
     final coreModule = _$CoreModule();
-    final currencyModule = _$CurrencyModule();
     final localDataModule = _$LocalDataModule();
+    final currencyModule = _$CurrencyModule();
     final transactionsModule = _$TransactionsModule();
     final debtsModule = _$DebtsModule();
     final receivablesModule = _$ReceivablesModule();
@@ -287,6 +288,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i706.Uuid>(() => coreModule.provideUuid());
     gh.lazySingleton<_i1042.AppEnv>(() => coreModule.provideAppEnv());
     gh.lazySingleton<_i519.Client>(() => coreModule.provideHttpClient());
+    gh.lazySingleton<_i666.ReceiptImageStore>(
+      () => coreModule.provideReceiptImageStore(),
+    );
     gh.lazySingleton<_i32.ThemeController>(() => _i32.ThemeController());
     gh.lazySingleton<_i956.Clock>(() => const _i956.Clock());
     gh.lazySingleton<_i124.ReportExporter>(() => _i57.ShareReportExporter());
@@ -296,8 +300,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i880.OcrDataSource>(
       () => const _i598.MlKitOcrDataSource(),
     );
+    gh.lazySingleton<_i1041.LocalDataScope>(
+      () => localDataModule.provideLocalDataScope(
+        gh<_i422.AppBoxes>(),
+        gh<_i666.ReceiptImageStore>(),
+      ),
+    );
     gh.lazySingleton<_i802.InsightCache>(
       () => _i220.HiveInsightCache(gh<_i422.AppBoxes>()),
+    );
+    gh.lazySingleton<_i993.SecureScreen>(
+      () => const _i993.MethodChannelSecureScreen(),
     );
     gh.lazySingleton<_i441.SessionStorage>(() => _i26.SecureSessionStorage());
     gh.lazySingleton<_i682.OnboardingService>(
@@ -305,9 +318,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i559.BiometricService>(
       () => _i559.LocalAuthBiometricService(),
-    );
-    gh.lazySingleton<_i666.ReceiptImageStore>(
-      () => _i666.FileReceiptImageStore(),
     );
     gh.lazySingleton<_i147.ReceiptImagePicker>(
       () => _i147.ImagePickerReceiptImagePicker(),
@@ -324,9 +334,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i1029.CurrencyRepository>(
       () => currencyModule.provideCurrencyRepository(gh<_i422.AppBoxes>()),
-    );
-    gh.lazySingleton<_i1041.LocalDataScope>(
-      () => localDataModule.provideLocalDataScope(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i228.TransactionLocalDataSource>(
       () => transactionsModule.provideTransactionLocalDataSource(
@@ -412,7 +419,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1041.LocalDataScope>(),
       ),
     );
-    gh.lazySingleton<_i993.AuthRepository>(
+    gh.lazySingleton<_i994.AuthRepository>(
       () => _i889.AuthRepositoryImpl(
         gh<_i231.AuthRemoteDataSource>(),
         gh<_i441.SessionStorage>(),
@@ -427,12 +434,6 @@ extension GetItInjectableX on _i174.GetIt {
         uuid: gh<_i706.Uuid>(),
         clock: gh<_i956.Clock>(),
         syncQueue: gh<_i588.SyncQueue>(),
-      ),
-    );
-    gh.factory<_i247.SecurityCubit>(
-      () => _i247.SecurityCubit(
-        gh<_i44.SecurityPreferences>(),
-        gh<_i559.BiometricService>(),
       ),
     );
     gh.lazySingleton<_i361.SavingsRepository>(
@@ -464,6 +465,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i119.DeleteSavingsGoalUseCase>(
       () => _i119.DeleteSavingsGoalUseCase(gh<_i361.SavingsRepository>()),
+    );
+    gh.factory<_i247.SecurityCubit>(
+      () => _i247.SecurityCubit(
+        gh<_i44.SecurityPreferences>(),
+        gh<_i559.BiometricService>(),
+        secureScreen: gh<_i993.SecureScreen>(),
+      ),
     );
     gh.lazySingleton<_i270.WidgetDataBridge>(
       () => _i270.AndroidWidgetDataBridge(gh<_i1029.CurrencyRepository>()),
@@ -641,22 +649,22 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i998.SignInUseCase>(
-      () => _i998.SignInUseCase(gh<_i993.AuthRepository>()),
+      () => _i998.SignInUseCase(gh<_i994.AuthRepository>()),
     );
     gh.lazySingleton<_i998.SignUpUseCase>(
-      () => _i998.SignUpUseCase(gh<_i993.AuthRepository>()),
+      () => _i998.SignUpUseCase(gh<_i994.AuthRepository>()),
     );
     gh.lazySingleton<_i998.RestoreSessionUseCase>(
-      () => _i998.RestoreSessionUseCase(gh<_i993.AuthRepository>()),
+      () => _i998.RestoreSessionUseCase(gh<_i994.AuthRepository>()),
     );
     gh.lazySingleton<_i998.SignOutUseCase>(
-      () => _i998.SignOutUseCase(gh<_i993.AuthRepository>()),
+      () => _i998.SignOutUseCase(gh<_i994.AuthRepository>()),
     );
     gh.lazySingleton<_i984.SyncRemoteDataSource>(
       () => _i995.SupabaseRestSyncDataSource(
         gh<_i519.Client>(),
         gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
+        gh<_i994.AuthRepository>(),
       ),
     );
     gh.factory<_i820.TransactionBloc>(
@@ -846,7 +854,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i703.SavingsLocalDataSource>(),
         gh<_i783.ReceiptLocalDataSource>(),
         gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
+        gh<_i994.AuthRepository>(),
         clock: gh<_i956.Clock>(),
       ),
     );
@@ -905,9 +913,9 @@ class _$ReminderModule extends _i1015.ReminderModule {}
 
 class _$CoreModule extends _i1015.CoreModule {}
 
-class _$CurrencyModule extends _i827.CurrencyModule {}
-
 class _$LocalDataModule extends _i1015.LocalDataModule {}
+
+class _$CurrencyModule extends _i827.CurrencyModule {}
 
 class _$TransactionsModule extends _i1015.TransactionsModule {}
 

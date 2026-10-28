@@ -2,13 +2,28 @@ import 'dart:io';
 
 import 'package:fin_sight_ai/core/services/app_boxes.dart';
 import 'package:fin_sight_ai/core/services/local_data_scope.dart';
+import 'package:fin_sight_ai/core/services/receipt_image_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+
+class _FakeImages implements ReceiptImageStore {
+  int clearCalls = 0;
+
+  @override
+  Future<void> clear() async => clearCalls++;
+
+  @override
+  Future<void> delete(String path) async {}
+
+  @override
+  Future<String> persist(String sourcePath) async => sourcePath;
+}
 
 void main() {
   late Directory tempDirectory;
   late AppBoxes boxes;
   late HiveLocalDataScope scope;
+  late _FakeImages images;
 
   setUpAll(() async {
     tempDirectory = await Directory.systemTemp.createTemp('finsight_scope_');
@@ -16,6 +31,7 @@ void main() {
   });
 
   setUp(() async {
+    images = _FakeImages();
     boxes = AppBoxes(
       transactions: await Hive.openBox<dynamic>('scope_transactions'),
       debts: await Hive.openBox<dynamic>('scope_debts'),
@@ -34,7 +50,7 @@ void main() {
       aiInsights: await Hive.openBox<dynamic>('scope_ai_insights'),
       savingsGoals: await Hive.openBox<dynamic>('scope_savings_goals'),
     );
-    scope = HiveLocalDataScope(boxes);
+    scope = HiveLocalDataScope(boxes, images);
   });
 
   tearDown(() async {

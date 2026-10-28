@@ -1,4 +1,5 @@
 import 'package:fin_sight_ai/core/services/biometric_service.dart';
+import 'package:fin_sight_ai/core/services/secure_screen.dart';
 import 'package:fin_sight_ai/core/services/security_preferences.dart';
 import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +16,13 @@ class _Preferences implements SecurityPreferences {
   Future<void> setBiometricEnabled(bool enabled) async {
     this.enabled = enabled;
   }
+}
+
+class _SecureScreen implements SecureScreen {
+  final List<bool> states = [];
+
+  @override
+  Future<void> setEnabled(bool enabled) async => states.add(enabled);
 }
 
 class _Biometrics implements BiometricService {
@@ -79,6 +87,22 @@ void main() {
 
     expect(preferences.enabled, isFalse);
     expect(cubit.state.enabled, isFalse);
+  });
+
+  test('toggles screenshot protection with the lock', () async {
+    final screen = _SecureScreen();
+    final cubit = SecurityCubit(
+      _Preferences(enabled: true),
+      _Biometrics(),
+      secureScreen: screen,
+    );
+    addTearDown(cubit.close);
+
+    await cubit.load();
+    await cubit.setEnabled(false);
+    await cubit.setEnabled(true);
+
+    expect(screen.states, [true, false, true]);
   });
 
   test('authenticate delegates to the biometric service', () async {

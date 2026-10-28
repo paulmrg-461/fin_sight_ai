@@ -19,6 +19,7 @@ import '../services/local_data_scope.dart';
 import '../services/local_reminder_scheduler.dart';
 import '../services/reminder_scheduler.dart';
 import '../services/receipt_image_picker.dart';
+import '../services/receipt_image_store.dart';
 import '../theme/theme_controller.dart';
 import '../utils/app_constants.dart';
 import '../utils/app_env.dart';
@@ -51,6 +52,9 @@ abstract class CoreModule {
 
   @lazySingleton
   http.Client provideHttpClient() => http.Client();
+
+  @lazySingleton
+  ReceiptImageStore provideReceiptImageStore() => FileReceiptImageStore();
 }
 
 @module
@@ -98,8 +102,10 @@ abstract class StorageModule {
 @module
 abstract class LocalDataModule {
   @lazySingleton
-  LocalDataScope provideLocalDataScope(AppBoxes boxes) =>
-      HiveLocalDataScope(boxes);
+  LocalDataScope provideLocalDataScope(
+    AppBoxes boxes,
+    ReceiptImageStore images,
+  ) => HiveLocalDataScope(boxes, images);
 }
 
 @module

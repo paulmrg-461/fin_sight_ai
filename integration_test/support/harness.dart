@@ -688,6 +688,8 @@ Future<void> pumpUntilGone(
 }
 
 class _FakeReceiptImageStore implements ReceiptImageStore {
+  @override
+  Future<void> clear() async {}
   const _FakeReceiptImageStore();
 
   @override

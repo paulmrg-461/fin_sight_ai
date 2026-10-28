@@ -1,6 +1,7 @@
 import 'package:hive_ce_flutter/hive_flutter.dart';
 
 import 'app_boxes.dart';
+import 'receipt_image_store.dart';
 
 /// Tracks which account owns the financial data stored on this device.
 ///
@@ -19,12 +20,13 @@ abstract interface class LocalDataScope {
 
 /// Hive-backed [LocalDataScope].
 class HiveLocalDataScope implements LocalDataScope {
-  const HiveLocalDataScope(this._boxes);
+  const HiveLocalDataScope(this._boxes, [this._images]);
 
   /// Settings key that records the owner of the local data.
   static const String ownerKey = 'owner_user_id';
 
   final AppBoxes _boxes;
+  final ReceiptImageStore? _images;
 
   @override
   Future<String?> getOwnerUserId() async {
@@ -49,6 +51,7 @@ class HiveLocalDataScope implements LocalDataScope {
     for (final box in _userDataBoxes) {
       await box.clear();
     }
+    await _images?.clear();
   }
 
   Iterable<Box<dynamic>> get _userDataBoxes => [
