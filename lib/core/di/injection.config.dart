@@ -251,7 +251,6 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:go_router/go_router.dart' as _i583;
 import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
-import 'package:local_auth/local_auth.dart' as _i152;
 import 'package:uuid/uuid.dart' as _i706;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -305,9 +304,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i682.HiveOnboardingService(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i559.BiometricService>(
-      () => _i559.LocalAuthBiometricService(
-        auth: gh<_i152.LocalAuthentication>(),
-      ),
+      () => _i559.LocalAuthBiometricService(),
     );
     gh.lazySingleton<_i666.ReceiptImageStore>(
       () => _i666.FileReceiptImageStore(),

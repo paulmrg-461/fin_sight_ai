@@ -9,7 +9,9 @@ import 'package:fin_sight_ai/core/locale/hive_locale_repository.dart';
 import 'package:fin_sight_ai/core/locale/locale_repository.dart';
 import 'package:fin_sight_ai/core/locale/locale_usecases.dart';
 import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart';
+import 'package:fin_sight_ai/core/services/biometric_service.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
+import 'package:fin_sight_ai/core/services/security_preferences.dart';
 import 'package:fin_sight_ai/features/categories/data/datasources/category_local_data_source.dart';
 import 'package:fin_sight_ai/features/categories/data/datasources/hive_category_local_data_source.dart';
 import 'package:fin_sight_ai/features/categories/data/repositories/category_repository_impl.dart';
@@ -91,6 +93,7 @@ import 'package:fin_sight_ai/features/sync/data/datasources/supabase_rest_sync_d
 import 'package:fin_sight_ai/features/sync/data/repositories/sync_repository_impl.dart';
 import 'package:fin_sight_ai/features/sync/domain/repositories/sync_repository.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/features/security/presentation/bloc/security_cubit.dart';
 import 'package:fin_sight_ai/features/sync/presentation/bloc/sync_bloc.dart';
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart';
 import 'package:fin_sight_ai/features/wallets/data/datasources/hive_wallet_local_data_source.dart';
@@ -187,6 +190,10 @@ void main() {
     expect(getIt<SaveReceiptUseCase>(), isNotNull);
     expect(getIt<GetReceiptsUseCase>(), isNotNull);
     expect(getIt<OcrBloc>(), isA<OcrBloc>());
+
+    expect(getIt<BiometricService>(), isA<LocalAuthBiometricService>());
+    expect(getIt<SecurityPreferences>(), isA<HiveSecurityPreferences>());
+    expect(getIt<SecurityCubit>(), isA<SecurityCubit>());
 
     expect(getIt<AiCoachDatasource>(), isA<GroqApiDatasource>());
     expect(getIt<AiCoachRepository>(), isA<AiCoachRepositoryImpl>());

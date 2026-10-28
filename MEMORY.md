@@ -42,6 +42,11 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption.
 - Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GROQ_API_KEY` set. Never print or commit those values; rotate the Groq key and the Supabase DB password that were shared in chat.
 
+## Desktop run fix (2026-10-28)
+
+- Running `flutter run -d linux` exposed a DI bug: injectable tried to resolve `LocalAuthentication` for `LocalAuthBiometricService` because its constructor took an optional plugin instance. The service now creates the plugin internally, and `injection_test` asserts `BiometricService`, `SecurityPreferences`, and `SecurityCubit` resolve.
+- Linux boxes currently live in `~/Documents` (`getApplicationDocumentsDirectory`), leaving `*.hive` and `*.lock` files next to user documents. Move them to `getApplicationSupportDirectory` with a one-time copy before shipping desktop builds.
+
 ## Hive at-rest encryption (plan 040)
 
 - `HiveEncryption` keeps a 32-byte AES key (`hive_encryption_key`, base64) in `flutter_secure_storage`; missing/malformed keys are regenerated and storage failures return `null` (plaintext fallback, matching the old behavior).

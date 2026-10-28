@@ -10,10 +10,9 @@ abstract interface class BiometricService {
 
 @LazySingleton(as: BiometricService)
 class LocalAuthBiometricService implements BiometricService {
-  LocalAuthBiometricService({LocalAuthentication? auth})
-    : _auth = auth ?? LocalAuthentication();
+  LocalAuthBiometricService();
 
-  final LocalAuthentication _auth;
+  final LocalAuthentication _auth = LocalAuthentication();
 
   @override
   Future<bool> isAvailable() async {
