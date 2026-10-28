@@ -420,16 +420,22 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 
 ## Known gaps / next
 
-1. Poblar `categoryId` canónico en transacciones y presupuestos.
-2. Sync savings goals (migration + queue/remote/pull).
-2. Re-run `supabase/verify_rls.sh` against the live project and capture the result; rotate the database password exposed during setup.
-3. Populate canonical `category_id` on transactions and budgets.
-4. Sync receipt metadata; streaming AI responses.
-5. Consider exact alarms or a timezone plugin if reminders need minute precision or correct DST labels.
-6. Money as integer minor units instead of `double`.
-7. Golden/screenshot tests in CI.
-8. Rotate the Groq key and Supabase DB password shared during setup.
-9. Defer non-critical startup loads and due-schedule processing (PERF-02, plan 012).
+Blocked on environment:
+
+1. Samsung test device is unreachable (`192.168.0.2:46105`, `:5555`, mDNS) — install the latest debug APK and add the home widget manually.
+2. Apply `0007_savings_goals.sql` and `0008_receipts.sql` to the hosted Supabase project and run `supabase/verify_rls.sh`; no DB connection string or service token is available in this workspace.
+3. Rotate the Groq key and Supabase DB password shared during setup.
+
+Specified, not implemented (large multi-phase work):
+
+4. Money as integer minor units — see `specs/SPEC-money-minor-units.md`.
+5. Canonical `categoryId` on transactions, budgets, schedules — see `specs/SPEC-category-ids.md`.
+
+Smaller follow-ups:
+
+6. Streaming AI responses and receipt search.
+7. Consider exact alarms or a timezone plugin if reminders need minute precision or correct DST labels.
+8. Additional golden/screenshot coverage beyond the budget alerts card.
 
 ## Conventions to keep
 
