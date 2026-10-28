@@ -48,7 +48,9 @@ import 'package:fin_sight_ai/features/savings/domain/repositories/savings_reposi
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_bloc.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
+import 'package:fin_sight_ai/features/import_data/presentation/bloc/import_csv_cubit.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_event.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:fin_sight_ai/features/savings/presentation/bloc/savings_event.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/datasources/hive_scheduled_payment_local_data_source.dart';
 import 'package:fin_sight_ai/features/scheduled_payments/data/repositories/scheduled_payment_repository_impl.dart';
@@ -176,6 +178,7 @@ class IntegrationHarness {
   late SavingsRepository savingsRepository;
   late SavingsBloc savingsBloc;
   late ReportsBloc reportsBloc;
+  late ImportCsvCubit importCsvCubit;
   late DashboardBloc dashboardBloc;
   late SyncBloc syncBloc;
   late AuthBloc authBloc;
@@ -349,6 +352,9 @@ class IntegrationHarness {
     );
 
     reportsBloc = ReportsBloc(getTransactionsByDateRange, reportExporter);
+    importCsvCubit = ImportCsvCubit(
+      ImportTransactionsCsvUseCase(transactionRepository, addTransaction),
+    );
 
     coachChatBloc = CoachChatBloc(
       AskCoachUseCase(aiCoachRepository),
@@ -482,6 +488,7 @@ class IntegrationHarness {
       coachChatBloc: coachChatBloc,
       savingsBloc: savingsBloc,
       reportsBloc: reportsBloc,
+      importCsvCubit: importCsvCubit,
       onboardingService: onboardingService,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,

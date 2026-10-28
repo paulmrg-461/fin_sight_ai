@@ -35,6 +35,7 @@ import 'features/scheduled_payments/domain/usecases/scheduled_payment_usecases.d
 import 'features/scheduled_payments/presentation/bloc/scheduled_payment_bloc.dart';
 import 'features/savings/presentation/bloc/savings_bloc.dart';
 import 'features/reports/presentation/bloc/reports_bloc.dart';
+import 'features/import_data/presentation/bloc/import_csv_cubit.dart';
 import 'features/reports/presentation/bloc/reports_event.dart';
 import 'features/savings/presentation/bloc/savings_event.dart';
 import 'features/scheduled_payments/presentation/bloc/scheduled_payment_event.dart';
@@ -125,6 +126,7 @@ Future<void> main() async {
       savingsBloc: savingsBloc,
       reportsBloc: reportsBloc,
       onboardingService: getIt<OnboardingService>(),
+      importCsvCubit: getIt<ImportCsvCubit>(),
     ),
   );
 

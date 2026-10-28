@@ -626,5 +626,34 @@
   "onboardingStartBody": "Add a transaction, set a monthly budget, create a savings goal, or schedule a recurring payment. Everything is optional.",
   "onboardingNext": "Next",
   "onboardingSkip": "Skip",
-  "onboardingFinish": "Get started"
+  "onboardingFinish": "Get started",
+  "importCsvTitle": "Import CSV",
+  "importCsvDescription": "Paste a bank export or a CSV with your transactions. Duplicates are skipped.",
+  "importCsvField": "CSV content",
+  "importCsvFormat": "date,type,category,description,amount,wallet\n2026-10-31,expense,Dining,Lunch,25000,wallet-bank",
+  "importCsvAction": "Import transactions",
+  "importCsvImported": "{count, plural, =1{1 imported} other{{count} imported}}",
+  "@importCsvImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCsvSkipped": "{count, plural, =1{1 skipped} other{{count} skipped}}",
+  "@importCsvSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCsvFailed": "{count, plural, =1{1 failed} other{{count} failed}}",
+  "@importCsvFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

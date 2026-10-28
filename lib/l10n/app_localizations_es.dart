@@ -1563,4 +1563,54 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingFinish => 'Comenzar';
+
+  @override
+  String get importCsvTitle => 'Importar CSV';
+
+  @override
+  String get importCsvDescription =>
+      'Pega un extracto bancario o un CSV con tus transacciones. Los duplicados se omiten.';
+
+  @override
+  String get importCsvField => 'Contenido CSV';
+
+  @override
+  String get importCsvFormat =>
+      'fecha,tipo,categoria,descripcion,monto,billetera\n31/10/2026,gasto,Restaurantes,Almuerzo,25000,wallet-bank';
+
+  @override
+  String get importCsvAction => 'Importar transacciones';
+
+  @override
+  String importCsvImported(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count importadas',
+      one: '1 importada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importCsvSkipped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count omitidas',
+      one: '1 omitida',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importCsvFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fallidas',
+      one: '1 fallida',
+    );
+    return '$_temp0';
+  }
 }

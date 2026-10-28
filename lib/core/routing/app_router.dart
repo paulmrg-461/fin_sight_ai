@@ -10,6 +10,7 @@ import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/savings/presentation/screens/savings_goals_screen.dart';
 import '../../features/search/presentation/screens/global_search_screen.dart';
 import '../../features/reports/presentation/screens/reports_screen.dart';
+import '../../features/import_data/presentation/screens/import_csv_screen.dart';
 import '../../features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import '../../features/wallets/presentation/screens/wallet_screen.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
@@ -97,6 +98,11 @@ GoRouter buildRouter({
         path: AppRoutes.ocrPath,
         name: AppRoutes.ocrName,
         builder: (context, state) => OcrScreen(imagePicker: receiptImagePicker),
+      ),
+      GoRoute(
+        path: AppRoutes.importCsvPath,
+        name: AppRoutes.importCsvName,
+        builder: (context, state) => const ImportCsvScreen(),
       ),
       GoRoute(
         path: AppRoutes.reportsPath,

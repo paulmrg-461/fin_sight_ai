@@ -2917,6 +2917,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get started'**
   String get onboardingFinish;
+
+  /// No description provided for @importCsvTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import CSV'**
+  String get importCsvTitle;
+
+  /// No description provided for @importCsvDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste a bank export or a CSV with your transactions. Duplicates are skipped.'**
+  String get importCsvDescription;
+
+  /// No description provided for @importCsvField.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV content'**
+  String get importCsvField;
+
+  /// No description provided for @importCsvFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'date,type,category,description,amount,wallet\n2026-10-31,expense,Dining,Lunch,25000,wallet-bank'**
+  String get importCsvFormat;
+
+  /// No description provided for @importCsvAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import transactions'**
+  String get importCsvAction;
+
+  /// No description provided for @importCsvImported.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 imported} other{{count} imported}}'**
+  String importCsvImported(int count);
+
+  /// No description provided for @importCsvSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 skipped} other{{count} skipped}}'**
+  String importCsvSkipped(int count);
+
+  /// No description provided for @importCsvFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 failed} other{{count} failed}}'**
+  String importCsvFailed(int count);
 }
 
 class _AppLocalizationsDelegate

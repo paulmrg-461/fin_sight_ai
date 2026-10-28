@@ -63,6 +63,13 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## CSV import (plan 036)
+
+- `TransactionCsvImporter` parses EN/ES headers or headerless rows, quotes/newlines, ISO/day-first dates, LatAm thousands/decimals, parentheses negatives, and per-row errors.
+- `ImportTransactionsCsvUseCase` dedupes against the ledger and within the file, imports via `AddTransactionUseCase` (UUID + validation + sync queue), and returns imported/skipped/failed counts.
+- `/import-csv` (drawer) is paste-first; after success it reloads `TransactionBloc`.
+- Tests: parser/dedupe/use case/cubit + integration import and re-import skip.
+
 ## Onboarding (plan 035)
 
 - `OnboardingGate` wraps the router inside `MaterialApp.router`; it reads `OnboardingService.isCompleted()` and shows a 3-page tour until Skip/Get started.

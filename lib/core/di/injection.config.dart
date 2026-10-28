@@ -23,6 +23,7 @@ import 'package:fin_sight_ai/core/locale/presentation/bloc/locale_bloc.dart'
     as _i282;
 import 'package:fin_sight_ai/core/services/app_boxes.dart' as _i422;
 import 'package:fin_sight_ai/core/services/local_data_scope.dart' as _i1041;
+import 'package:fin_sight_ai/core/services/onboarding_service.dart' as _i682;
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
 import 'package:fin_sight_ai/core/services/reminder_scheduler.dart' as _i244;
@@ -124,6 +125,8 @@ import 'package:fin_sight_ai/features/debts/domain/usecases/make_payment_usecase
     as _i978;
 import 'package:fin_sight_ai/features/debts/presentation/bloc/debt_bloc.dart'
     as _i1009;
+import 'package:fin_sight_ai/features/import_data/presentation/bloc/import_csv_cubit.dart'
+    as _i983;
 import 'package:fin_sight_ai/features/ocr/data/datasources/mlkit_ocr_data_source.dart'
     as _i598;
 import 'package:fin_sight_ai/features/ocr/data/datasources/ocr_data_source.dart'
@@ -221,6 +224,8 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transacti
     as _i271;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transactions_usecase.dart'
     as _i1051;
+import 'package:fin_sight_ai/features/transactions/domain/usecases/import_transactions_csv_usecase.dart'
+    as _i320;
 import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart'
     as _i913;
 import 'package:fin_sight_ai/features/transactions/presentation/bloc/transaction_bloc.dart'
@@ -287,6 +292,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i220.HiveInsightCache(gh<_i422.AppBoxes>()),
     );
     gh.lazySingleton<_i441.SessionStorage>(() => _i26.SecureSessionStorage());
+    gh.lazySingleton<_i682.OnboardingService>(
+      () => _i682.HiveOnboardingService(gh<_i422.AppBoxes>()),
+    );
     gh.lazySingleton<_i666.ReceiptImageStore>(
       () => _i666.FileReceiptImageStore(),
     );
@@ -806,6 +814,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i832.ReceiptRepository>(),
         uuid: gh<_i706.Uuid>(),
       ),
+    );
+    gh.lazySingleton<_i320.ImportTransactionsCsvUseCase>(
+      () => _i320.ImportTransactionsCsvUseCase(
+        gh<_i544.TransactionRepository>(),
+        gh<_i362.AddTransactionUseCase>(),
+      ),
+    );
+    gh.factory<_i983.ImportCsvCubit>(
+      () => _i983.ImportCsvCubit(gh<_i320.ImportTransactionsCsvUseCase>()),
     );
     gh.factory<_i872.AiCoachBloc>(
       () => _i872.AiCoachBloc(

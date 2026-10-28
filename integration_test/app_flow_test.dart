@@ -620,6 +620,38 @@ void main() {
     expect(find.text('Food'), findsOneWidget);
   });
 
+  testWidgets('imports transactions from pasted CSV and skips duplicates', (
+    tester,
+  ) async {
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.importCsvName);
+    await pumpUntil(tester, find.text('Import CSV'));
+
+    const csv =
+        'date,type,category,description,amount,wallet\n'
+        '2026-10-31,expense,Dining,Lunch,25000,wallet-bank\n'
+        '2026-11-01,income,Freelance,Invoice,300000,wallet-bank';
+    await tester.enterText(find.byType(TextField).first, csv);
+    await tester.tap(find.text('Import transactions'));
+    await pumpUntil(tester, find.textContaining('2 imported'));
+
+    final stored = await harness.transactionRepository.getTransactions();
+    final transactions = stored.getOrElse(
+      (_) => throw TestFailure('Expected imported transactions'),
+    );
+    expect(transactions, hasLength(2));
+    expect(transactions.map((item) => item.description), contains('Lunch'));
+
+    await tester.tap(find.text('Import transactions'));
+    await pumpUntil(tester, find.textContaining('2 skipped'));
+    expect(
+      (await harness.transactionRepository.getTransactions()).getOrElse(
+        (_) => throw TestFailure('Expected transactions'),
+      ),
+      hasLength(2),
+    );
+  });
+
   testWidgets('builds a monthly report and shares its CSV', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

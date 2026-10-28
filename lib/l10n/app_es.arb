@@ -577,5 +577,34 @@
   "onboardingStartBody": "Agrega una transacción, define un presupuesto mensual, crea una meta de ahorro o programa un pago recurrente. Todo es opcional.",
   "onboardingNext": "Siguiente",
   "onboardingSkip": "Omitir",
-  "onboardingFinish": "Comenzar"
+  "onboardingFinish": "Comenzar",
+  "importCsvTitle": "Importar CSV",
+  "importCsvDescription": "Pega un extracto bancario o un CSV con tus transacciones. Los duplicados se omiten.",
+  "importCsvField": "Contenido CSV",
+  "importCsvFormat": "fecha,tipo,categoria,descripcion,monto,billetera\n31/10/2026,gasto,Restaurantes,Almuerzo,25000,wallet-bank",
+  "importCsvAction": "Importar transacciones",
+  "importCsvImported": "{count, plural, =1{1 importada} other{{count} importadas}}",
+  "@importCsvImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCsvSkipped": "{count, plural, =1{1 omitida} other{{count} omitidas}}",
+  "@importCsvSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importCsvFailed": "{count, plural, =1{1 fallida} other{{count} fallidas}}",
+  "@importCsvFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

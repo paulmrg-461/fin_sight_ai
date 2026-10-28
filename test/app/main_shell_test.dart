@@ -68,6 +68,8 @@ import 'package:fin_sight_ai/features/scheduled_payments/presentation/screens/sc
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
 import 'package:fin_sight_ai/core/services/onboarding_service.dart';
+import 'package:fin_sight_ai/features/import_data/presentation/bloc/import_csv_cubit.dart';
+import 'package:fin_sight_ai/features/transactions/domain/usecases/import_transactions_csv_usecase.dart';
 import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
@@ -111,6 +113,9 @@ class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
 class MockReportExporter extends Mock implements ReportExporter {}
 
 class MockOnboardingService extends Mock implements OnboardingService {}
+
+class MockImportCsvUseCase extends Mock
+    implements ImportTransactionsCsvUseCase {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -418,6 +423,7 @@ void main() {
       aiCoachBloc: aiCoachBloc,
       reportsBloc: ReportsBloc(MockGetByDateRange(), MockReportExporter()),
       onboardingService: _onboarding(),
+      importCsvCubit: ImportCsvCubit(MockImportCsvUseCase()),
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),

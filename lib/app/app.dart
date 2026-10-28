@@ -10,6 +10,7 @@ import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../core/currency/presentation/bloc/currency_bloc.dart';
 import '../core/l10n/l10n.dart';
 import '../core/services/onboarding_service.dart';
+import '../features/import_data/presentation/bloc/import_csv_cubit.dart';
 import '../features/onboarding/presentation/widgets/onboarding_gate.dart';
 import '../core/locale/presentation/bloc/locale_bloc.dart';
 import '../core/locale/presentation/bloc/locale_state.dart';
@@ -55,6 +56,7 @@ class FinSightApp extends StatelessWidget {
     required this.savingsBloc,
     required this.reportsBloc,
     required this.onboardingService,
+    required this.importCsvCubit,
   });
 
   final ThemeController themeController;
@@ -77,6 +79,7 @@ class FinSightApp extends StatelessWidget {
   final SavingsBloc savingsBloc;
   final ReportsBloc reportsBloc;
   final OnboardingService onboardingService;
+  final ImportCsvCubit importCsvCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +102,7 @@ class FinSightApp extends StatelessWidget {
         BlocProvider<ScheduledPaymentBloc>.value(value: scheduledPaymentBloc),
         BlocProvider<SavingsBloc>.value(value: savingsBloc),
         BlocProvider<ReportsBloc>.value(value: reportsBloc),
+        BlocProvider<ImportCsvCubit>.value(value: importCsvCubit),
       ],
       child: MultiBlocListener(
         listeners: [
