@@ -615,5 +615,21 @@
   "unlockApp": "Desbloquear",
   "receiptsLabel": "Recibos",
   "startupStorageErrorTitle": "No se pudieron desbloquear los datos locales",
-  "startupStorageErrorBody": "FinSight AI no pudo abrir tus datos locales cifrados. No se eliminó ningún registro. Si esto sigue ocurriendo después de restaurar una copia de seguridad, borra el almacenamiento de la app en los ajustes del dispositivo y vuelve a iniciar sesión para restaurar los datos sincronizados."
+  "startupStorageErrorBody": "FinSight AI no pudo abrir tus datos locales cifrados. No se eliminó ningún registro. Si esto sigue ocurriendo después de restaurar una copia de seguridad, borra el almacenamiento de la app en los ajustes del dispositivo y vuelve a iniciar sesión para restaurar los datos sincronizados.",
+  "categoryChartSemantics": "Gráfico de gasto por categoría",
+  "comparisonChartSemantics": "Gráfico comparativo de gastos mensuales. Periodo actual frente al anterior.",
+  "syncConflictsResolved": "{count, plural, =1{1 cambio usó la versión más reciente de la nube.} other{{count} cambios usaron la versión más reciente de la nube.}}",
+  "@syncConflictsResolved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthlyReport": "Mensual",
+  "annualReport": "Anual",
+  "monthlyBreakdown": "Desglose mensual",
+  "annualReportDescription": "Ingresos, gastos y balance de cada mes del año.",
+  "shareAnnualReport": "Compartir PDF anual",
+  "annualReportShared": "PDF anual compartido."
 }

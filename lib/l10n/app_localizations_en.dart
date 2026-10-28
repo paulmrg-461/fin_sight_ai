@@ -1635,4 +1635,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get startupStorageErrorBody =>
       'FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data.';
+
+  @override
+  String get categoryChartSemantics => 'Spending by category chart';
+
+  @override
+  String get comparisonChartSemantics =>
+      'Monthly expense comparison chart. Current period versus previous period.';
+
+  @override
+  String syncConflictsResolved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes used the newer cloud version.',
+      one: '1 change used the newer cloud version.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monthlyReport => 'Monthly';
+
+  @override
+  String get annualReport => 'Annual';
+
+  @override
+  String get monthlyBreakdown => 'Monthly breakdown';
+
+  @override
+  String get annualReportDescription =>
+      'Income, expenses, and balance for every month of the year.';
+
+  @override
+  String get shareAnnualReport => 'Share annual PDF';
+
+  @override
+  String get annualReportShared => 'Annual PDF shared.';
 }

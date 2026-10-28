@@ -12,6 +12,8 @@ import '../features/auth/presentation/widgets/account_tile.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_event.dart';
+import '../features/sync/presentation/bloc/sync_bloc.dart';
+import '../features/sync/presentation/bloc/sync_state.dart';
 import '../features/sync/presentation/widgets/sync_status_chip.dart';
 import 'branding/app_logo.dart';
 
@@ -119,49 +121,71 @@ class _MainShellState extends State<MainShell> {
     final l10n = context.l10n;
     final navigationShell = widget.navigationShell;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: AppDrawer(
-        themeController: widget.themeController,
-        currentIndex: navigationShell.currentIndex,
-        onPrimarySelected: _selectBranch,
-        onSecondarySelected: _goToSecondary,
-      ),
-      body: ShellScope(
-        openDrawer: _openDrawer,
-        goToPrimary: _goToPrimary,
-        child: navigationShell,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: _selectBranch,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.dashboard_outlined),
-            selectedIcon: const Icon(Icons.dashboard),
-            label: l10n.dashboard,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.receipt_long_outlined),
-            selectedIcon: const Icon(Icons.receipt_long),
-            label: l10n.transactions,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.pie_chart_outline),
-            selectedIcon: const Icon(Icons.pie_chart),
-            label: l10n.budgets,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.event_repeat_outlined),
-            selectedIcon: const Icon(Icons.event_repeat),
-            label: l10n.scheduledTab,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: const Icon(Icons.account_balance_wallet),
-            label: l10n.money,
-          ),
-        ],
+    return BlocListener<SyncBloc, SyncState>(
+      listenWhen: (previous, current) =>
+          current is SyncSuccess &&
+          current.report.conflictsResolved > 0 &&
+          (previous is! SyncSuccess ||
+              previous.report.completedAt != current.report.completedAt),
+      listener: (context, state) {
+        if (state is! SyncSuccess) {
+          return;
+        }
+        final messenger = ScaffoldMessenger.of(context);
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.syncConflictsResolved(state.report.conflictsResolved),
+              ),
+            ),
+          );
+      },
+      child: Scaffold(
+        key: _scaffoldKey,
+        drawer: AppDrawer(
+          themeController: widget.themeController,
+          currentIndex: navigationShell.currentIndex,
+          onPrimarySelected: _selectBranch,
+          onSecondarySelected: _goToSecondary,
+        ),
+        body: ShellScope(
+          openDrawer: _openDrawer,
+          goToPrimary: _goToPrimary,
+          child: navigationShell,
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: navigationShell.currentIndex,
+          onDestinationSelected: _selectBranch,
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.dashboard_outlined),
+              selectedIcon: const Icon(Icons.dashboard),
+              label: l10n.dashboard,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long),
+              label: l10n.transactions,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.pie_chart_outline),
+              selectedIcon: const Icon(Icons.pie_chart),
+              label: l10n.budgets,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.event_repeat_outlined),
+              selectedIcon: const Icon(Icons.event_repeat),
+              label: l10n.scheduledTab,
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              selectedIcon: const Icon(Icons.account_balance_wallet),
+              label: l10n.money,
+            ),
+          ],
+        ),
       ),
     );
   }

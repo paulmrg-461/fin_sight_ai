@@ -55,79 +55,85 @@ class MonthlyComparisonChart extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 180,
-              child: BarChart(
-                BarChartData(
-                  maxY: maxY,
-                  alignment: BarChartAlignment.spaceAround,
-                  borderData: FlBorderData(show: false),
-                  gridData: FlGridData(
-                    drawVerticalLine: false,
-                    horizontalInterval: maxY / 4,
-                    getDrawingHorizontalLine: (value) => FlLine(
-                      color: theme.colorScheme.outlineVariant.withValues(
-                        alpha: 0.6,
+            Semantics(
+              container: true,
+              label: context.l10n.comparisonChartSemantics,
+              child: ExcludeSemantics(
+                child: SizedBox(
+                  height: 180,
+                  child: BarChart(
+                    BarChartData(
+                      maxY: maxY,
+                      alignment: BarChartAlignment.spaceAround,
+                      borderData: FlBorderData(show: false),
+                      gridData: FlGridData(
+                        drawVerticalLine: false,
+                        horizontalInterval: maxY / 4,
+                        getDrawingHorizontalLine: (value) => FlLine(
+                          color: theme.colorScheme.outlineVariant.withValues(
+                            alpha: 0.6,
+                          ),
+                          strokeWidth: 1,
+                        ),
                       ),
-                      strokeWidth: 1,
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    leftTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final label = value == 0
-                              ? context.l10n.previousPeriod
-                              : context.l10n.currentPeriod;
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              label,
-                              style: theme.textTheme.labelSmall,
+                      titlesData: FlTitlesData(
+                        topTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        rightTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        leftTitles: const AxisTitles(
+                          sideTitles: SideTitles(showTitles: false),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, meta) {
+                              final label = value == 0
+                                  ? context.l10n.previousPeriod
+                                  : context.l10n.currentPeriod;
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Text(
+                                  label,
+                                  style: theme.textTheme.labelSmall,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      barGroups: [
+                        BarChartGroupData(
+                          x: 0,
+                          barRods: [
+                            BarChartRodData(
+                              toY: comparison.previousExpenses,
+                              width: 30,
+                              color: theme.colorScheme.outlineVariant,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(8),
+                              ),
                             ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                        BarChartGroupData(
+                          x: 1,
+                          barRods: [
+                            BarChartRodData(
+                              toY: comparison.currentExpenses,
+                              width: 30,
+                              color: AppColors.emerald,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  barGroups: [
-                    BarChartGroupData(
-                      x: 0,
-                      barRods: [
-                        BarChartRodData(
-                          toY: comparison.previousExpenses,
-                          width: 30,
-                          color: theme.colorScheme.outlineVariant,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(8),
-                          ),
-                        ),
-                      ],
-                    ),
-                    BarChartGroupData(
-                      x: 1,
-                      barRods: [
-                        BarChartRodData(
-                          toY: comparison.currentExpenses,
-                          width: 30,
-                          color: AppColors.emerald,
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ),
               ),
             ),

@@ -20,6 +20,14 @@ class CategoryPieChart extends StatelessWidget {
     Color(0xFF06B6D4),
   ];
 
+  String _semanticsLabel(BuildContext context) {
+    final parts = [
+      for (final category in breakdown)
+        '${category.category} ${category.percentage.round()}%',
+    ];
+    return '${context.l10n.categoryChartSemantics}: ${parts.join(', ')}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -46,45 +54,55 @@ class CategoryPieChart extends StatelessWidget {
                 style: theme.textTheme.bodyMedium,
               )
             else ...[
-              SizedBox(
-                height: 200,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    PieChart(
-                      PieChartData(
-                        pieTouchData: PieTouchData(enabled: false),
-                        sectionsSpace: 3,
-                        centerSpaceRadius: 58,
-                        sections: [
-                          for (var index = 0; index < breakdown.length; index++)
-                            PieChartSectionData(
-                              value: breakdown[index].amount,
-                              color: _palette[index % _palette.length],
-                              radius: 48,
-                              title: '',
+              Semantics(
+                container: true,
+                label: _semanticsLabel(context),
+                child: SizedBox(
+                  height: 200,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      ExcludeSemantics(
+                        child: PieChart(
+                          PieChartData(
+                            pieTouchData: PieTouchData(enabled: false),
+                            sectionsSpace: 3,
+                            centerSpaceRadius: 58,
+                            sections: [
+                              for (
+                                var index = 0;
+                                index < breakdown.length;
+                                index++
+                              )
+                                PieChartSectionData(
+                                  value: breakdown[index].amount,
+                                  color: _palette[index % _palette.length],
+                                  radius: 48,
+                                  title: '',
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            context.l10n.expenses,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
+                          ),
+                          MoneyText(
+                            total,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          context.l10n.expenses,
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        MoneyText(
-                          total,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 8),

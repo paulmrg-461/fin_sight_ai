@@ -1645,4 +1645,41 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get startupStorageErrorBody =>
       'FinSight AI no pudo abrir tus datos locales cifrados. No se eliminó ningún registro. Si esto sigue ocurriendo después de restaurar una copia de seguridad, borra el almacenamiento de la app en los ajustes del dispositivo y vuelve a iniciar sesión para restaurar los datos sincronizados.';
+
+  @override
+  String get categoryChartSemantics => 'Gráfico de gasto por categoría';
+
+  @override
+  String get comparisonChartSemantics =>
+      'Gráfico comparativo de gastos mensuales. Periodo actual frente al anterior.';
+
+  @override
+  String syncConflictsResolved(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios usaron la versión más reciente de la nube.',
+      one: '1 cambio usó la versión más reciente de la nube.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get monthlyReport => 'Mensual';
+
+  @override
+  String get annualReport => 'Anual';
+
+  @override
+  String get monthlyBreakdown => 'Desglose mensual';
+
+  @override
+  String get annualReportDescription =>
+      'Ingresos, gastos y balance de cada mes del año.';
+
+  @override
+  String get shareAnnualReport => 'Compartir PDF anual';
+
+  @override
+  String get annualReportShared => 'PDF anual compartido.';
 }

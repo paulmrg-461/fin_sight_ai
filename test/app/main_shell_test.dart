@@ -749,6 +749,33 @@ void main() {
     expect(find.widgetWithText(ListTile, 'Sign out'), findsNothing);
   });
 
+  testWidgets('announces resolved cloud conflicts after a sync', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+
+    syncBloc.emit(
+      SyncSuccess(
+        SyncReport(
+          pushed: 0,
+          pulled: 1,
+          conflictsResolved: 2,
+          pendingOperations: 0,
+          isConfigured: true,
+          isAuthenticated: true,
+          completedAt: DateTime.utc(2026, 10, 28),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(
+      find.text('2 changes used the newer cloud version.'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('keeps login outside the shell', (tester) async {
     await pumpReady(tester);
 

@@ -664,5 +664,21 @@
   "unlockApp": "Unlock",
   "receiptsLabel": "Receipts",
   "startupStorageErrorTitle": "Local data could not be unlocked",
-  "startupStorageErrorBody": "FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data."
+  "startupStorageErrorBody": "FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data.",
+  "categoryChartSemantics": "Spending by category chart",
+  "comparisonChartSemantics": "Monthly expense comparison chart. Current period versus previous period.",
+  "syncConflictsResolved": "{count, plural, =1{1 change used the newer cloud version.} other{{count} changes used the newer cloud version.}}",
+  "@syncConflictsResolved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "monthlyReport": "Monthly",
+  "annualReport": "Annual",
+  "monthlyBreakdown": "Monthly breakdown",
+  "annualReportDescription": "Income, expenses, and balance for every month of the year.",
+  "shareAnnualReport": "Share annual PDF",
+  "annualReportShared": "Annual PDF shared."
 }

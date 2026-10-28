@@ -3019,6 +3019,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'FinSight AI could not open your encrypted local data. No records were deleted. If this keeps happening after restoring a backup, clear the app storage from your device settings and sign in again to restore synced data.'**
   String get startupStorageErrorBody;
+
+  /// No description provided for @categoryChartSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Spending by category chart'**
+  String get categoryChartSemantics;
+
+  /// No description provided for @comparisonChartSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly expense comparison chart. Current period versus previous period.'**
+  String get comparisonChartSemantics;
+
+  /// No description provided for @syncConflictsResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change used the newer cloud version.} other{{count} changes used the newer cloud version.}}'**
+  String syncConflictsResolved(int count);
+
+  /// No description provided for @monthlyReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthlyReport;
+
+  /// No description provided for @annualReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual'**
+  String get annualReport;
+
+  /// No description provided for @monthlyBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly breakdown'**
+  String get monthlyBreakdown;
+
+  /// No description provided for @annualReportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Income, expenses, and balance for every month of the year.'**
+  String get annualReportDescription;
+
+  /// No description provided for @shareAnnualReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Share annual PDF'**
+  String get shareAnnualReport;
+
+  /// No description provided for @annualReportShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual PDF shared.'**
+  String get annualReportShared;
 }
 
 class _AppLocalizationsDelegate
