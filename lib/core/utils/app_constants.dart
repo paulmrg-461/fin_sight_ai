@@ -5,6 +5,7 @@ abstract final class AppConstants {
   static const String debtsBoxName = 'debts';
   static const String receivablesBoxName = 'receivables';
   static const String receiptsBoxName = 'receipts';
+  static const String storageMetaBoxName = 'storage_meta';
   static const String syncQueueBoxName = 'sync_queue';
   static const String syncMetaBoxName = 'sync_meta';
   static const String budgetsBoxName = 'budgets';

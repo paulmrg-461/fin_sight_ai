@@ -14,6 +14,7 @@ import '../../features/transactions/data/datasources/hive_transaction_local_data
 import '../../features/transactions/data/datasources/transaction_local_data_source.dart';
 import '../routing/app_router.dart';
 import '../services/app_boxes.dart';
+import '../services/box_encryption.dart';
 import '../services/local_data_scope.dart';
 import '../services/local_reminder_scheduler.dart';
 import '../services/reminder_scheduler.dart';
@@ -59,30 +60,38 @@ abstract class StorageModule {
     final directory = await getApplicationDocumentsDirectory();
     await Hive.initFlutter(directory.path);
 
-    return AppBoxes(
-      transactions: await Hive.openBox<dynamic>(
-        AppConstants.transactionsBoxName,
-      ),
-      debts: await Hive.openBox<dynamic>(AppConstants.debtsBoxName),
-      receivables: await Hive.openBox<dynamic>(AppConstants.receivablesBoxName),
-      receipts: await Hive.openBox<dynamic>(AppConstants.receiptsBoxName),
-      syncQueue: await Hive.openBox<dynamic>(AppConstants.syncQueueBoxName),
-      syncMeta: await Hive.openBox<dynamic>(AppConstants.syncMetaBoxName),
-      budgets: await Hive.openBox<dynamic>(AppConstants.budgetsBoxName),
-      wallets: await Hive.openBox<dynamic>(AppConstants.walletsBoxName),
-      walletTransfers: await Hive.openBox<dynamic>(
-        AppConstants.walletTransfersBoxName,
-      ),
-      settings: await Hive.openBox<dynamic>(AppConstants.settingsBoxName),
-      categories: await Hive.openBox<dynamic>(AppConstants.categoriesBoxName),
-      scheduledPayments: await Hive.openBox<dynamic>(
-        AppConstants.scheduledPaymentsBoxName,
-      ),
-      aiInsights: await Hive.openBox<dynamic>(AppConstants.aiInsightsBoxName),
-      savingsGoals: await Hive.openBox<dynamic>(
-        AppConstants.savingsGoalsBoxName,
-      ),
+    final meta = await Hive.openBox<dynamic>(AppConstants.storageMetaBoxName);
+    final alreadyEncrypted = meta.get('encrypted') == true;
+    final cipher = await HiveEncryption().cipher();
+    if (alreadyEncrypted && cipher == null) {
+      throw StateError(
+        'Encrypted storage is enabled but the secure key is unavailable.',
+      );
+    }
+    const opener = EncryptedBoxOpener();
+    Future<Box<dynamic>> openBox(String name) =>
+        opener.open(name, cipher, allowLegacyMigration: !alreadyEncrypted);
+
+    final boxes = AppBoxes(
+      transactions: await openBox(AppConstants.transactionsBoxName),
+      debts: await openBox(AppConstants.debtsBoxName),
+      receivables: await openBox(AppConstants.receivablesBoxName),
+      receipts: await openBox(AppConstants.receiptsBoxName),
+      syncQueue: await openBox(AppConstants.syncQueueBoxName),
+      syncMeta: await openBox(AppConstants.syncMetaBoxName),
+      budgets: await openBox(AppConstants.budgetsBoxName),
+      wallets: await openBox(AppConstants.walletsBoxName),
+      walletTransfers: await openBox(AppConstants.walletTransfersBoxName),
+      settings: await openBox(AppConstants.settingsBoxName),
+      categories: await openBox(AppConstants.categoriesBoxName),
+      scheduledPayments: await openBox(AppConstants.scheduledPaymentsBoxName),
+      aiInsights: await openBox(AppConstants.aiInsightsBoxName),
+      savingsGoals: await openBox(AppConstants.savingsGoalsBoxName),
     );
+    if (cipher != null && !alreadyEncrypted) {
+      await meta.put('encrypted', true);
+    }
+    return boxes;
   }
 }
 

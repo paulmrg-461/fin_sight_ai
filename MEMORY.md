@@ -27,15 +27,24 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Biometric app lock (opt-in, lifecycle-aware) | Done |
 | Receipt metadata sync (queue + Supabase) | Done |
 | Android home-screen widget | Done |
+| Hive at-rest encryption (AES + secure key) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27)
 
-- Gates: `flutter analyze` clean, **1086** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1096** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
 - Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
+
+## Hive at-rest encryption (plan 040)
+
+- `HiveEncryption` keeps a 32-byte AES key (`hive_encryption_key`, base64) in `flutter_secure_storage`; missing/malformed keys are regenerated and storage failures return `null` (plaintext fallback, matching the old behavior).
+- `EncryptedBoxOpener` opens boxes with `HiveAesCipher`, and only migrates plaintext when `allowLegacyMigration` is true: it copies entries, deletes the old file, and reopens encrypted.
+- `StorageModule` reads the unencrypted `storage_meta` flag first. Once `encrypted` is set, a missing/wrong key throws instead of feeding ciphertext to the plaintext reader; on first successful launch the flag is written.
+- Tests cover key generation/reuse/malformed fallback, fresh encrypted boxes, one-time migration, refused legacy fallback, wrong-key safety, and raw-file checks that plaintext no longer appears.
+- **Caveat:** losing the secure-storage key makes local boxes unreadable; the app fails loudly and synced data can be repopulated after clearing app data.
 
 ## Android home-screen widget (plan 039)
 
