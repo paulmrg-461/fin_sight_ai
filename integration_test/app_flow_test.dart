@@ -57,6 +57,17 @@ void main() {
     await harness.dispose();
   });
 
+  testWidgets('shows onboarding once and opens the dashboard', (tester) async {
+    harness.onboardingService.completed = false;
+
+    await harness.pumpApp(tester);
+    await pumpUntil(tester, find.text('Welcome to FinSight AI'));
+
+    await tester.tap(find.text('Skip'));
+    await pumpUntil(tester, find.text('No transactions yet'));
+    expect(harness.onboardingService.completed, isTrue);
+  });
+
   testWidgets('shows an empty dashboard and updates after adding income', (
     tester,
   ) async {

@@ -25,6 +25,7 @@ Offline-first personal finance app built with Flutter. Local Hive storage is the
 - **Sync** — authenticated Supabase PostgREST push/pull for categories, scheduled payments, wallets, transfers, savings goals, transactions, debts, budgets, and receivables, with offline queue, per-operation failure isolation, paginated pulls, last-write-wins conflicts, tombstone compaction, pending-count indicator, and manual/startup sync. Sync failures are isolated per entity and explained in-app.
 - **Reports** — monthly income/expense summary, comparison, category breakdown, month navigation, and CSV sharing through the native share sheet.
 - **Global search** — one field searches transactions, debts, savings goals, scheduled payments, and receivables from the dashboard.
+- **Onboarding** — three-step first-run tour explaining offline-first storage and first actions, persisted per device and skippable.
 - **Foundation** — Clean Architecture, functional `Result` errors, get_it + injectable, GoRouter, typed environment configuration, and emerald light/dark themes.
 - **Performance** — the dashboard derives every section from two range reads per refresh and paints before feature blocs, sync, and due-schedule processing load (`StartupLoader`); the integration benchmark seeds 300 transactions across three months to keep regressions visible.
 

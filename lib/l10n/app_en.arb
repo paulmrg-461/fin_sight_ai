@@ -617,5 +617,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "onboardingWelcomeTitle": "Welcome to FinSight AI",
+  "onboardingWelcomeBody": "Track income, expenses, budgets, debts, and savings goals in one offline-first place.",
+  "onboardingOfflineTitle": "Your ledger lives on this device",
+  "onboardingOfflineBody": "Hive keeps your data available without connection. Cloud sync is optional and requires sign-in.",
+  "onboardingStartTitle": "Start with what matters",
+  "onboardingStartBody": "Add a transaction, set a monthly budget, create a savings goal, or schedule a recurring payment. Everything is optional.",
+  "onboardingNext": "Next",
+  "onboardingSkip": "Skip",
+  "onboardingFinish": "Get started"
 }

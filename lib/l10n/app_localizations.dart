@@ -2863,6 +2863,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{percent}% used'**
   String budgetAlertPercent(int percent);
+
+  /// No description provided for @onboardingWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to FinSight AI'**
+  String get onboardingWelcomeTitle;
+
+  /// No description provided for @onboardingWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Track income, expenses, budgets, debts, and savings goals in one offline-first place.'**
+  String get onboardingWelcomeBody;
+
+  /// No description provided for @onboardingOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ledger lives on this device'**
+  String get onboardingOfflineTitle;
+
+  /// No description provided for @onboardingOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hive keeps your data available without connection. Cloud sync is optional and requires sign-in.'**
+  String get onboardingOfflineBody;
+
+  /// No description provided for @onboardingStartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with what matters'**
+  String get onboardingStartTitle;
+
+  /// No description provided for @onboardingStartBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a transaction, set a monthly budget, create a savings goal, or schedule a recurring payment. Everything is optional.'**
+  String get onboardingStartBody;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get onboardingFinish;
 }
 
 class _AppLocalizationsDelegate

@@ -42,6 +42,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 032 | Monthly reports with native CSV sharing | P2 | M | 010, 015 | DONE (1048 unit, 34 integration) |
 | 033 | Surface budget alerts on the dashboard | P2 | S | 017, 021 | DONE (1050 unit, 34 integration) |
 | 034 | Golden coverage and release APK CI job | P2 | S | 033 | DONE (1051 unit, 34 integration) |
+| 035 | First-run onboarding | P2 | S | 011 | DONE (1053 unit, 35 integration) |
+
+- 035 added a first-run tour behind a persisted settings flag.
 
 - 034 added a tracked golden test and a CI release-APK build with placeholder defines.
 

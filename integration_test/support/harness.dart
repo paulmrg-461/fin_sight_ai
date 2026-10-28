@@ -131,6 +131,7 @@ class IntegrationHarness {
   final FakeOcrDataSource ocr = FakeOcrDataSource();
   final FakeGroqDatasource groq = FakeGroqDatasource();
   final FakeReportExporter reportExporter = FakeReportExporter();
+  final FakeOnboardingService onboardingService = FakeOnboardingService();
   final FakeReceiptImagePicker imagePicker = FakeReceiptImagePicker();
   final FakeAuthRemoteDataSource authRemote = FakeAuthRemoteDataSource();
   final InMemorySessionStorage authStorage = InMemorySessionStorage();
@@ -481,6 +482,7 @@ class IntegrationHarness {
       coachChatBloc: coachChatBloc,
       savingsBloc: savingsBloc,
       reportsBloc: reportsBloc,
+      onboardingService: onboardingService,
       dashboardBloc: dashboardBloc,
       syncBloc: syncBloc,
       authBloc: authBloc,

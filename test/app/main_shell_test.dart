@@ -67,6 +67,7 @@ import 'package:fin_sight_ai/features/scheduled_payments/presentation/bloc/sched
 import 'package:fin_sight_ai/features/scheduled_payments/presentation/screens/scheduled_payment_screen.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/core/services/onboarding_service.dart';
 import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
@@ -108,6 +109,8 @@ class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
 class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
 
 class MockReportExporter extends Mock implements ReportExporter {}
+
+class MockOnboardingService extends Mock implements OnboardingService {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -248,6 +251,12 @@ AuthSession _session() => AuthSession(
   email: 'user@example.com',
   expiresAt: DateTime.now().add(const Duration(days: 1)),
 );
+
+MockOnboardingService _onboarding() {
+  final service = MockOnboardingService();
+  when(() => service.isCompleted()).thenAnswer((_) async => true);
+  return service;
+}
 
 void main() {
   late ThemeController themeController;
@@ -408,6 +417,7 @@ void main() {
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       reportsBloc: ReportsBloc(MockGetByDateRange(), MockReportExporter()),
+      onboardingService: _onboarding(),
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),

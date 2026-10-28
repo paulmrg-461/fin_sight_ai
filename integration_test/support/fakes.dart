@@ -1,6 +1,7 @@
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
+import 'package:fin_sight_ai/core/services/onboarding_service.dart';
 import 'package:fin_sight_ai/core/services/receipt_image_picker.dart';
 import 'package:fin_sight_ai/features/ai_coach/data/datasources/ai_coach_datasource.dart';
 import 'package:fin_sight_ai/features/auth/data/datasources/auth_remote_data_source.dart';
@@ -166,5 +167,20 @@ class FakeReportExporter implements ReportExporter {
       );
     }
     return Right('/tmp/$fileName');
+  }
+}
+
+/// In-memory first-run flag for integration tests.
+class FakeOnboardingService implements OnboardingService {
+  FakeOnboardingService({this.completed = true});
+
+  bool completed;
+
+  @override
+  Future<bool> isCompleted() async => completed;
+
+  @override
+  Future<void> complete() async {
+    completed = true;
   }
 }

@@ -568,5 +568,14 @@
         "type": "int"
       }
     }
-  }
+  },
+  "onboardingWelcomeTitle": "Bienvenido a FinSight AI",
+  "onboardingWelcomeBody": "Controla ingresos, gastos, presupuestos, deudas y metas de ahorro en un solo lugar offline-first.",
+  "onboardingOfflineTitle": "Tu ledger vive en este dispositivo",
+  "onboardingOfflineBody": "Hive mantiene tus datos disponibles sin conexión. La sincronización en la nube es opcional y requiere iniciar sesión.",
+  "onboardingStartTitle": "Empieza por lo importante",
+  "onboardingStartBody": "Agrega una transacción, define un presupuesto mensual, crea una meta de ahorro o programa un pago recurrente. Todo es opcional.",
+  "onboardingNext": "Siguiente",
+  "onboardingSkip": "Omitir",
+  "onboardingFinish": "Comenzar"
 }

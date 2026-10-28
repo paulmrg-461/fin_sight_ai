@@ -63,6 +63,13 @@ _Last updated: 2026-10-26. Read this before starting a new session._
 - `supabase_http_404` maps to “cloud schema is out of date; apply migrations”. This happened on the Samsung because `0007_savings_goals.sql` was not applied; pulls request every table even when no local savings goals exist.
 - Release builds now declare `android.permission.INTERNET` in the main manifest (previously only debug/profile had it).
 
+## Onboarding (plan 035)
+
+- `OnboardingGate` wraps the router inside `MaterialApp.router`; it reads `OnboardingService.isCompleted()` and shows a 3-page tour until Skip/Get started.
+- `HiveOnboardingService` stores `onboarding_completed_v1` in settings; write failures never trap the user.
+- Pages cover welcome, offline-first privacy, and first actions; EN/ES, themed, accessible dots.
+- Tests: widget gate (incomplete/complete) and integration first-launch skip flow.
+
 ## Golden + release CI (plan 034)
 
 - `BudgetAlertsCard` has a committed golden (`test/.../goldens/budget_alerts_card.png`); `.gitignore` re-includes `test/**/goldens/*.png` because the machine-level excludes hide PNGs.

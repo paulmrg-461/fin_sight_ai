@@ -64,6 +64,7 @@ import 'package:fin_sight_ai/features/transactions/domain/usecases/get_transacti
 import 'package:fin_sight_ai/features/transactions/domain/usecases/update_transaction_usecase.dart';
 import 'package:fin_sight_ai/features/sync/domain/entities/sync_entities.dart';
 import 'package:fin_sight_ai/features/sync/domain/usecases/sync_usecases.dart';
+import 'package:fin_sight_ai/core/services/onboarding_service.dart';
 import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
 import 'package:fin_sight_ai/features/reports/presentation/bloc/reports_bloc.dart';
 import 'package:fin_sight_ai/features/savings/domain/usecases/savings_usecases.dart';
@@ -98,6 +99,8 @@ class MockDeleteTransaction extends Mock implements DeleteTransactionUseCase {}
 class MockUpdateTransaction extends Mock implements UpdateTransactionUseCase {}
 
 class MockReportExporter extends Mock implements ReportExporter {}
+
+class MockOnboardingService extends Mock implements OnboardingService {}
 
 class MockGetByDateRange extends Mock
     implements GetTransactionsByDateRangeUseCase {}
@@ -229,6 +232,12 @@ class MockReceiptImageStore extends Mock implements ReceiptImageStore {}
 class _FakeReceiptImagePicker implements ReceiptImagePicker {
   @override
   Future<String?> pick(ReceiptImageSource source) async => null;
+}
+
+MockOnboardingService _onboarding() {
+  final service = MockOnboardingService();
+  when(() => service.isCompleted()).thenAnswer((_) async => true);
+  return service;
 }
 
 void main() {
@@ -384,6 +393,7 @@ void main() {
       ocrBloc: ocrBloc,
       aiCoachBloc: aiCoachBloc,
       reportsBloc: ReportsBloc(MockGetByDateRange(), MockReportExporter()),
+      onboardingService: _onboarding(),
       savingsBloc: SavingsBloc(
         MockGetSavingsGoals(),
         MockCreateSavingsGoal(),

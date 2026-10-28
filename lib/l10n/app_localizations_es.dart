@@ -1533,4 +1533,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String budgetAlertPercent(int percent) {
     return '$percent% usado';
   }
+
+  @override
+  String get onboardingWelcomeTitle => 'Bienvenido a FinSight AI';
+
+  @override
+  String get onboardingWelcomeBody =>
+      'Controla ingresos, gastos, presupuestos, deudas y metas de ahorro en un solo lugar offline-first.';
+
+  @override
+  String get onboardingOfflineTitle => 'Tu ledger vive en este dispositivo';
+
+  @override
+  String get onboardingOfflineBody =>
+      'Hive mantiene tus datos disponibles sin conexión. La sincronización en la nube es opcional y requiere iniciar sesión.';
+
+  @override
+  String get onboardingStartTitle => 'Empieza por lo importante';
+
+  @override
+  String get onboardingStartBody =>
+      'Agrega una transacción, define un presupuesto mensual, crea una meta de ahorro o programa un pago recurrente. Todo es opcional.';
+
+  @override
+  String get onboardingNext => 'Siguiente';
+
+  @override
+  String get onboardingSkip => 'Omitir';
+
+  @override
+  String get onboardingFinish => 'Comenzar';
 }

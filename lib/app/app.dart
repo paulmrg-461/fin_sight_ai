@@ -9,6 +9,8 @@ import '../features/ai_coach/presentation/bloc/coach_chat_bloc.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
 import '../core/currency/presentation/bloc/currency_bloc.dart';
 import '../core/l10n/l10n.dart';
+import '../core/services/onboarding_service.dart';
+import '../features/onboarding/presentation/widgets/onboarding_gate.dart';
 import '../core/locale/presentation/bloc/locale_bloc.dart';
 import '../core/locale/presentation/bloc/locale_state.dart';
 import '../features/budgets/presentation/bloc/budget_bloc.dart';
@@ -52,6 +54,7 @@ class FinSightApp extends StatelessWidget {
     required this.scheduledPaymentBloc,
     required this.savingsBloc,
     required this.reportsBloc,
+    required this.onboardingService,
   });
 
   final ThemeController themeController;
@@ -73,6 +76,7 @@ class FinSightApp extends StatelessWidget {
   final ScheduledPaymentBloc scheduledPaymentBloc;
   final SavingsBloc savingsBloc;
   final ReportsBloc reportsBloc;
+  final OnboardingService onboardingService;
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +137,10 @@ class FinSightApp extends StatelessWidget {
                     localizationsDelegates: appLocalizationsDelegates,
                     supportedLocales: AppLocalizations.supportedLocales,
                     routerConfig: router,
+                    builder: (context, child) => OnboardingGate(
+                      service: onboardingService,
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   );
                 },
               );
