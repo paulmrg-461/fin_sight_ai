@@ -535,6 +535,15 @@ class _AnnualMonthsCard extends StatelessWidget {
     final l10n = context.l10n;
     final formatMonth = MaterialLocalizations.of(context).formatMonthYear;
     final months = report.months.where((month) => !month.isEmpty).toList();
+    var maxFlow = 0.0;
+    for (final month in report.months) {
+      if (month.income > maxFlow) {
+        maxFlow = month.income;
+      }
+      if (month.expenses > maxFlow) {
+        maxFlow = month.expenses;
+      }
+    }
 
     return Card(
       child: Padding(
@@ -545,37 +554,170 @@ class _AnnualMonthsCard extends StatelessWidget {
             Text(l10n.monthlyBreakdown, style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             for (final month in months)
-              ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                title: Text(formatMonth(month.month)),
-                subtitle: Wrap(
-                  spacing: 10,
-                  children: [
-                    Text('${l10n.income}: ', style: theme.textTheme.labelSmall),
-                    MoneyText(month.income, style: theme.textTheme.labelSmall),
-                    Text(
-                      '${l10n.expenses}: ',
-                      style: theme.textTheme.labelSmall,
-                    ),
-                    MoneyText(
-                      month.expenses,
-                      style: theme.textTheme.labelSmall,
-                    ),
-                  ],
-                ),
-                trailing: MoneyText(
-                  month.balance,
-                  signed: true,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: month.balance < 0
-                        ? AppColors.danger
-                        : AppColors.success,
+              _AnnualMonthRow(
+                month: month,
+                label: formatMonth(month.month),
+                maxFlow: maxFlow,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnnualMonthRow extends StatelessWidget {
+  const _AnnualMonthRow({
+    required this.month,
+    required this.label,
+    required this.maxFlow,
+  });
+
+  final AnnualMonthSummary month;
+  final String label;
+  final double maxFlow;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final positive = month.balance >= 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 96,
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-          ],
+              Expanded(
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 2,
+                  children: [
+                    _FlowLabel(
+                      label: l10n.income,
+                      amount: month.income,
+                      color: AppColors.emerald,
+                    ),
+                    _FlowLabel(
+                      label: l10n.expenses,
+                      amount: month.expenses,
+                      color: AppColors.danger,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: MoneyText(
+                    month.balance,
+                    signed: true,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: positive ? AppColors.emerald : AppColors.danger,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Row(
+            children: [
+              Expanded(
+                child: _FlowBar(
+                  value: maxFlow <= 0 ? 0 : month.income / maxFlow,
+                  color: AppColors.emerald,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _FlowBar(
+                  value: maxFlow <= 0 ? 0 : month.expenses / maxFlow,
+                  color: AppColors.danger,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FlowLabel extends StatelessWidget {
+  const _FlowLabel({
+    required this.label,
+    required this.amount,
+    required this.color,
+  });
+
+  final String label;
+  final double amount;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$label ',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        MoneyText(amount, style: theme.textTheme.labelSmall),
+      ],
+    );
+  }
+}
+
+class _FlowBar extends StatelessWidget {
+  const _FlowBar({required this.value, required this.color});
+
+  final double value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      height: 5,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      alignment: Alignment.centerLeft,
+      child: FractionallySizedBox(
+        widthFactor: value.clamp(0.0, 1.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(999),
+          ),
         ),
       ),
     );

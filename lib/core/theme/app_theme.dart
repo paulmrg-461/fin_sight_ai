@@ -113,8 +113,11 @@ abstract final class AppTheme {
         scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: false,
-        toolbarHeight: 64,
-        titleTextStyle: textTheme.titleLarge,
+        toolbarHeight: 66,
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.4,
+        ),
       ),
       cardTheme: CardThemeData(
         color: colorScheme.surface,
@@ -203,6 +206,7 @@ abstract final class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 74,
+        indicatorShape: const StadiumBorder(),
         elevation: 0,
         backgroundColor: isDark
             ? AppColors.darkSurface
@@ -292,6 +296,37 @@ abstract final class AppTheme {
         iconColor: colorScheme.onSurfaceVariant,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+        minVerticalPadding: 6,
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          minimumSize: const WidgetStatePropertyAll(Size(0, 44)),
+          textStyle: WidgetStatePropertyAll(textTheme.labelLarge),
+          side: WidgetStatePropertyAll(
+            BorderSide(color: colorScheme.outlineVariant),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        elevation: 4,
+        focusElevation: 4,
+        hoverElevation: 6,
+        extendedTextStyle: textTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w700,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        textStyle: textTheme.bodyMedium,
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: colorScheme.primary,

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/debt_entity.dart';
 
@@ -63,14 +64,10 @@ class DebtCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: debt.progress,
-                  minHeight: 8,
-                  semanticsLabel: context.l10n.debtRepaymentProgress,
-                  semanticsValue: '${(debt.progress * 100).round()}%',
-                ),
+              AppProgressBar(
+                value: debt.progress,
+                semanticsLabel: context.l10n.debtRepaymentProgress,
+                semanticsValue: '${(debt.progress * 100).round()}%',
               ),
               const SizedBox(height: 8),
               Text(

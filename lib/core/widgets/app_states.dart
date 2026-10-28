@@ -26,35 +26,38 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = compact ? 58.0 : 72.0;
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          width: compact ? 64 : 76,
-          height: compact ? 64 : 76,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primaryContainer.withValues(alpha: 0.7),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            size: compact ? 30 : 36,
-            color: theme.colorScheme.onPrimaryContainer,
-          ),
+        _IconHalo(
+          icon: icon,
+          size: size,
+          background: theme.colorScheme.primaryContainer,
+          foreground: theme.colorScheme.onPrimaryContainer,
+          glow: theme.colorScheme.primary,
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: compact ? 14 : 18),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleMedium,
+          style:
+              (compact
+                      ? theme.textTheme.titleMedium
+                      : theme.textTheme.titleLarge)
+                  ?.copyWith(fontWeight: FontWeight.w700),
         ),
-        const SizedBox(height: 6),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+        const SizedBox(height: 8),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 380),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              height: 1.45,
+            ),
           ),
         ),
         if (actionLabel != null && onAction != null) ...[
@@ -76,9 +79,91 @@ class AppEmptyState extends StatelessWidget {
     }
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.surface,
+              theme.colorScheme.surfaceContainerLow,
+            ],
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 32),
         child: content,
+      ),
+    );
+  }
+}
+
+/// Circular icon with a soft brand glow behind it.
+class _IconHalo extends StatelessWidget {
+  const _IconHalo({
+    required this.icon,
+    required this.size,
+    required this.background,
+    required this.foreground,
+    required this.glow,
+  });
+
+  final IconData icon;
+  final double size;
+  final Color background;
+  final Color foreground;
+  final Color glow;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size + 34,
+      height: size + 34,
+      child: Center(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: size + 34,
+              height: size + 34,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    glow.withValues(alpha: 0.20),
+                    glow.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    background,
+                    Color.lerp(background, glow, 0.22) ?? background,
+                  ],
+                ),
+                border: Border.all(
+                  color: glow.withValues(alpha: 0.22),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: glow.withValues(alpha: 0.22),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Icon(icon, size: size * 0.44, color: foreground),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -106,18 +191,12 @@ class AppErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.errorContainer.withValues(alpha: 0.7),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                size: 34,
-                color: theme.colorScheme.onErrorContainer,
-              ),
+            _IconHalo(
+              icon: icon,
+              size: 64,
+              background: theme.colorScheme.errorContainer,
+              foreground: theme.colorScheme.onErrorContainer,
+              glow: theme.colorScheme.error,
             ),
             const SizedBox(height: 16),
             Text(

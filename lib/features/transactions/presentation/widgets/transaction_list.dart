@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../domain/entities/transaction_entity.dart';
@@ -88,20 +88,131 @@ class _TransactionListState extends State<TransactionList> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 96),
-                  itemCount: visible.length,
-                  itemBuilder: (context, index) {
-                    final transaction = visible[index];
-                    return _TransactionTile(
-                      transaction: transaction,
-                      onDelete: () => widget.onDelete(transaction),
-                      onEdit: () => widget.onEdit(transaction),
+              : Builder(
+                  builder: (context) {
+                    final entries = _entries(context, visible);
+                    return ListView.builder(
+                      padding: const EdgeInsets.only(top: 4, bottom: 96),
+                      itemCount: entries.length,
+                      itemBuilder: (context, index) {
+                        final entry = entries[index];
+                        if (entry is _DateEntry) {
+                          return _DateHeader(entry: entry);
+                        }
+                        final transaction =
+                            (entry as _TransactionEntry).transaction;
+                        return _TransactionTile(
+                          transaction: transaction,
+                          onDelete: () => widget.onDelete(transaction),
+                          onEdit: () => widget.onEdit(transaction),
+                        );
+                      },
                     );
                   },
                 ),
         ),
       ],
+    );
+  }
+}
+
+sealed class _Entry {
+  const _Entry();
+}
+
+class _DateEntry extends _Entry {
+  const _DateEntry({required this.date, required this.net});
+
+  final DateTime date;
+  final double net;
+}
+
+class _TransactionEntry extends _Entry {
+  const _TransactionEntry(this.transaction);
+
+  final TransactionEntity transaction;
+}
+
+List<_Entry> _entries(
+  BuildContext context,
+  List<TransactionEntity> transactions,
+) {
+  final sorted = [...transactions]..sort((a, b) => b.date.compareTo(a.date));
+  final groups = <DateTime, List<TransactionEntity>>{};
+  for (final transaction in sorted) {
+    final day = DateTime(
+      transaction.date.year,
+      transaction.date.month,
+      transaction.date.day,
+    );
+    groups.putIfAbsent(day, () => []).add(transaction);
+  }
+
+  final entries = <_Entry>[];
+  for (final group in groups.entries) {
+    final net = group.value.fold<double>(
+      0,
+      (sum, transaction) => sum + transaction.signedAmount,
+    );
+    entries.add(_DateEntry(date: group.key, net: net));
+    for (final transaction in group.value) {
+      entries.add(_TransactionEntry(transaction));
+    }
+  }
+  return entries;
+}
+
+String _dayLabel(BuildContext context, DateTime date) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+  if (date == today) {
+    return context.l10n.today;
+  }
+  if (date == yesterday) {
+    return context.l10n.yesterday;
+  }
+  return formatDisplayDate(date);
+}
+
+class _DateHeader extends StatelessWidget {
+  const _DateHeader({required this.entry});
+
+  final _DateEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final positive = entry.net >= 0;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+      child: Row(
+        children: [
+          Text(
+            _dayLabel(context, entry.date).toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Divider(
+              color: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(width: 10),
+          MoneyText(
+            entry.net,
+            signed: true,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: positive ? AppColors.emerald : AppColors.danger,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

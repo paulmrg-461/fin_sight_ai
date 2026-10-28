@@ -4,6 +4,7 @@ import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_bloc.dart'
 import 'package:fin_sight_ai/core/currency/presentation/bloc/currency_state.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/l10n/l10n.dart';
+import 'package:fin_sight_ai/core/widgets/app_progress_bar.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/receivables/domain/entities/receivable_entity.dart';
 import 'package:fin_sight_ai/features/receivables/domain/repositories/receivable_repository.dart';
@@ -226,7 +227,7 @@ void main() {
 
     expect(find.text('Ana'), findsOneWidget);
     expect(find.text(money(1000)), findsWidgets);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppProgressBar), findsOneWidget);
     expect(repository.items.single.notes, 'Lunch loan');
     expect(repository.items.single.remainingAmount, 1000);
   });

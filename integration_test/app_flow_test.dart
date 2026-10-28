@@ -1,5 +1,6 @@
 import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/routing/app_routes.dart';
+import 'package:fin_sight_ai/core/widgets/app_progress_bar.dart';
 import 'package:fin_sight_ai/core/utils/date_formatters.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:fin_sight_ai/features/dashboard/presentation/bloc/dashboard_state.dart';
@@ -288,7 +289,7 @@ void main() {
     await pumpUntilGone(tester, find.text('Save debt'));
 
     await pumpUntil(tester, find.text('Bank'));
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppProgressBar), findsOneWidget);
 
     final result = await harness.debtRepository.getDebts();
     final debts = result.getOrElse((_) => const <DebtEntity>[]);
@@ -336,7 +337,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('receivable-save')));
 
     await pumpUntil(tester, find.text('Ana'));
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppProgressBar), findsOneWidget);
     expect(find.text(money(1000)), findsWidgets);
 
     await tester.tap(find.widgetWithText(TextButton, 'Add payment'));

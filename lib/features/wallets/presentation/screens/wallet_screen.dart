@@ -6,6 +6,7 @@ import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_section_header.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/wallet_entity.dart';
@@ -349,14 +350,7 @@ class _WalletCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(99),
-                    child: LinearProgressIndicator(
-                      value: share,
-                      minHeight: 6,
-                      color: accent,
-                    ),
-                  ),
+                  child: AppProgressBar(value: share, height: 6, color: accent),
                 ),
                 const SizedBox(width: 10),
                 Text(

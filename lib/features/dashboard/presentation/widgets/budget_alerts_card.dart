@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../budgets/domain/entities/budget_entity.dart';
 
 /// Categories already near or over their monthly limit.
@@ -93,16 +94,15 @@ class BudgetAlertsCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: (item.spent / item.budget.monthlyLimit).clamp(0, 1),
-                    minHeight: 6,
-                    color: item.spent > item.budget.monthlyLimit
-                        ? AppColors.danger
-                        : theme.colorScheme.primary,
-                    semanticsLabel: item.budget.category,
-                  ),
+                AppProgressBar(
+                  value: item.budget.monthlyLimit <= 0
+                      ? 0
+                      : item.spent / item.budget.monthlyLimit,
+                  height: 6,
+                  color: item.spent > item.budget.monthlyLimit
+                      ? AppColors.danger
+                      : theme.colorScheme.primary,
+                  semanticsLabel: item.budget.category,
                 ),
                 const SizedBox(height: 4),
                 Row(

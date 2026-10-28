@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/failure_text.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
@@ -246,14 +247,11 @@ class _ReceivableSummary extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: receivable.progress,
-                minHeight: 8,
-                semanticsLabel: context.l10n.receivableProgress,
-                semanticsValue: '${(receivable.progress * 100).round()}%',
-              ),
+            AppProgressBar(
+              value: receivable.progress,
+              color: Theme.of(context).colorScheme.tertiary,
+              semanticsLabel: context.l10n.receivableProgress,
+              semanticsValue: '${(receivable.progress * 100).round()}%',
             ),
             const SizedBox(height: 16),
             _InfoRow(

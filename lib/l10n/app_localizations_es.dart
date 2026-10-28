@@ -1682,4 +1682,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get annualReportShared => 'PDF anual compartido.';
+
+  @override
+  String get today => 'Hoy';
+
+  @override
+  String get yesterday => 'Ayer';
 }

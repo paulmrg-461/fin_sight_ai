@@ -631,5 +631,7 @@
   "monthlyBreakdown": "Desglose mensual",
   "annualReportDescription": "Ingresos, gastos y balance de cada mes del año.",
   "shareAnnualReport": "Compartir PDF anual",
-  "annualReportShared": "PDF anual compartido."
+  "annualReportShared": "PDF anual compartido.",
+  "today": "Hoy",
+  "yesterday": "Ayer"
 }

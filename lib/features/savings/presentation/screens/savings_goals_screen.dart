@@ -6,6 +6,7 @@ import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/utils/date_formatters.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/savings_goal_entity.dart';
 import '../../domain/usecases/savings_usecases.dart';
@@ -206,14 +207,7 @@ class _SavingsHero extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 8,
-                semanticsLabel: l10n.totalSaved,
-              ),
-            ),
+            AppProgressBar(value: progress, semanticsLabel: l10n.totalSaved),
           ],
         ),
       ),
@@ -288,14 +282,10 @@ class _GoalCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: goal.progress,
-                minHeight: 8,
-                semanticsLabel: goal.name,
-                semanticsValue: '${(goal.progress * 100).round()}%',
-              ),
+            AppProgressBar(
+              value: goal.progress,
+              semanticsLabel: goal.name,
+              semanticsValue: '${(goal.progress * 100).round()}%',
             ),
             const SizedBox(height: 10),
             Row(

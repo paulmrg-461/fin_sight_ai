@@ -33,12 +33,13 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Screen protection + receipt image cleanup | Done |
 | Annual reports + PDF sharing | Done |
 | Chart semantics, conflict snackbar, drawer/empty goldens | Done |
+| App-wide UI polish (halos, progress bars, day groups, annual bars) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27, latest)
 
 - HEAD: `516e3b8` on `develop` and `main` (both pushed, in sync).
-- Gates: `flutter analyze` clean, **1144** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1145** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
@@ -46,6 +47,15 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - Recent commits (newest first): `516e3b8` money/category specs, `61375a0` startup recovery screen, `0c432d7` Hive encryption, `fd03216` Android widget, `8105180` receipt metadata sync, `e5feb70` biometric app lock, `799dd99` CSV import, `dd5ae34` onboarding, `2627b9d` golden/CI, `809e2dd` budget alerts, `c308ed6` reports/share.
 - Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption.
 - Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GROQ_API_KEY` set. Never print or commit those values; rotate the Groq key and the Supabase DB password that were shared in chat.
+
+## UI polish pass (plan 046)
+
+- Shared empty/error states now use a glowing icon halo and a gradient card wash; section headers gained a gradient accent bar.
+- Theme-level polish: segmented buttons, extended FAB, popup menus, taller app bars, stadium nav indicator, roomier list tiles.
+- New `AppProgressBar` (animated, rounded, gradient, semantics) replaced every raw progress indicator across budgets, savings, debts, receivables, wallets, and budget alerts.
+- Transactions group by day with Today/Yesterday headers and a daily net; budgets show a category badge, percentage pill, animated bar, and remaining/over indicator.
+- Annual reports render two proportional mini bars per month (income vs expenses) for a quick yearly trend.
+- Goldens regenerated (drawer, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.
 
 ## UI, reporting, and primitives (2026-10-28)
 

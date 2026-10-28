@@ -7,6 +7,7 @@ import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_layout.dart';
+import '../../../../core/widgets/app_progress_bar.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../../categories/presentation/bloc/category_bloc.dart';
 import '../../../categories/presentation/bloc/category_state.dart';
@@ -350,29 +351,69 @@ class _BudgetCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      budget.category,
-                      style: theme.textTheme.titleMedium,
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: overBudget
+                          ? theme.colorScheme.errorContainer
+                          : theme.colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.pie_chart_outline_rounded,
+                      size: 20,
+                      color: overBudget
+                          ? theme.colorScheme.onErrorContainer
+                          : theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      MoneyText(
-                        progress.spent,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: overBudget
-                              ? AppColors.danger
-                              : theme.colorScheme.onSurface,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          budget.category,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium,
                         ),
-                      ),
-                      Text(' / ', style: theme.textTheme.labelLarge),
-                      MoneyText(
-                        budget.monthlyLimit,
-                        style: theme.textTheme.labelLarge,
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            MoneyText(
+                              progress.spent,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: overBudget
+                                    ? AppColors.danger
+                                    : theme.colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              ' / ',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            Flexible(
+                              child: MoneyText(
+                                budget.monthlyLimit,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _PercentPill(
+                    percent: (progress.percentage * 100).round(),
+                    overBudget: overBudget,
                   ),
                   IconButton(
                     onPressed: onDelete,
@@ -381,21 +422,32 @@ class _BudgetCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: LinearProgressIndicator(
-                  value: progress.percentage,
-                  minHeight: 8,
-                  color: overBudget ? AppColors.danger : AppColors.emerald,
-                  semanticsLabel: context.l10n.budgetUsage(budget.category),
-                  semanticsValue: '${(progress.percentage * 100).round()}%',
-                ),
+              const SizedBox(height: 12),
+              AppProgressBar(
+                value: progress.percentage,
+                height: 9,
+                color: overBudget
+                    ? AppColors.danger
+                    : progress.percentage >= 0.8
+                    ? AppColors.warning
+                    : AppColors.emerald,
+                semanticsLabel: context.l10n.budgetUsage(budget.category),
+                semanticsValue: '${(progress.percentage * 100).round()}%',
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
+                  Icon(
+                    overBudget
+                        ? Icons.error_outline_rounded
+                        : Icons.savings_outlined,
+                    size: 15,
+                    color: overBudget
+                        ? AppColors.danger
+                        : theme.colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 5),
                   Text(
                     overBudget ? context.l10n.overBudgetBy : '',
                     style: theme.textTheme.bodySmall?.copyWith(
@@ -421,6 +473,38 @@ class _BudgetCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PercentPill extends StatelessWidget {
+  const _PercentPill({required this.percent, required this.overBudget});
+
+  final int percent;
+  final bool overBudget;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = overBudget
+        ? theme.colorScheme.error
+        : percent >= 80
+        ? AppColors.warning
+        : AppColors.emerald;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.35)),
+      ),
+      child: Text(
+        '$percent%',
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
