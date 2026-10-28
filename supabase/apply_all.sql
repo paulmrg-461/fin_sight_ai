@@ -1,4 +1,4 @@
--- FinSight AI — full schema bundle (0001 + 0002 + 0003 + 0004)
+-- FinSight AI — full schema bundle (0001 through 0008)
 -- Apply once in the Supabase SQL Editor or with supabase/apply_all.sh.
 
 -- FinSight AI — initial Supabase schema

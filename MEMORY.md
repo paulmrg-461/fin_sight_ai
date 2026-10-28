@@ -427,7 +427,7 @@ Goal: queue local writes offline, push them to Supabase, pull remote changes, an
 Blocked on environment:
 
 1. Samsung test device is unreachable (`192.168.0.2:46105`, `:5555`, mDNS) — install the latest debug APK and add the home widget manually.
-2. Apply `0007_savings_goals.sql` and `0008_receipts.sql` to the hosted Supabase project and run `supabase/verify_rls.sh`; no DB connection string or service token is available in this workspace.
+2. Apply `0007_savings_goals.sql` and `0008_receipts.sql` to the hosted Supabase project (SQL Editor with `supabase/apply_all.sql`, or `SUPABASE_DB_URL=... ./supabase/apply_all.sh`) and run `verify_rls.sh`; no DB connection string or service token is available in this workspace. `validate_local.sh` applies 0001–0008 and the RLS suite successfully in Docker.
 3. Rotate the Groq key and Supabase DB password shared during setup.
 
 Specified, not implemented (large multi-phase work):
