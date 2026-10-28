@@ -1,6 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../core/currency/app_currency.dart';
+import '../../../../core/currency/presentation/bloc/currency_bloc.dart';
+import '../../../../core/currency/presentation/bloc/currency_state.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
@@ -8,6 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/widgets/app_states.dart';
 import '../../../dashboard/domain/entities/dashboard_entities.dart';
+import '../../domain/entities/annual_report.dart';
 import '../../domain/entities/monthly_report.dart';
 import '../bloc/reports_bloc.dart';
 import '../bloc/reports_event.dart';
@@ -25,15 +29,37 @@ class ReportsScreen extends StatelessWidget {
         actions: [
           BlocBuilder<ReportsBloc, ReportsState>(
             builder: (context, state) {
-              final loaded = state is ReportsLoaded;
+              final loaded =
+                  state is ReportsLoaded || state is ReportsAnnualLoaded;
+              final sharing = switch (state) {
+                ReportsLoaded(:final sharing) => sharing,
+                ReportsAnnualLoaded(:final sharing) => sharing,
+                _ => false,
+              };
               return IconButton(
-                onPressed: loaded && !state.sharing
-                    ? () => context.read<ReportsBloc>().add(
-                        const ShareCurrentReport(),
-                      )
+                onPressed: loaded && !sharing
+                    ? () {
+                        final bloc = context.read<ReportsBloc>();
+                        if (state is ReportsLoaded) {
+                          bloc.add(const ShareCurrentReport());
+                          return;
+                        }
+                        final currencyState = context
+                            .read<CurrencyBloc>()
+                            .state;
+                        bloc.add(
+                          ShareAnnualReport(
+                            currencyState is CurrencyLoaded
+                                ? currencyState.currency
+                                : AppCurrency.cop,
+                          ),
+                        );
+                      }
                     : null,
-                tooltip: l10n.shareReport,
-                icon: state is ReportsLoaded && state.sharing
+                tooltip: state is ReportsAnnualLoaded
+                    ? l10n.shareAnnualReport
+                    : l10n.shareReport,
+                icon: sharing
                     ? const SizedBox(
                         width: 20,
                         height: 20,
@@ -47,13 +73,29 @@ class ReportsScreen extends StatelessWidget {
       ),
       body: BlocConsumer<ReportsBloc, ReportsState>(
         listener: (context, state) {
-          if (state is! ReportsLoaded) {
+          final status = switch (state) {
+            ReportsLoaded(:final shareStatus) => shareStatus,
+            ReportsAnnualLoaded(:final shareStatus) => shareStatus,
+            _ => ReportShareStatus.none,
+          };
+          if (status == ReportShareStatus.none) {
             return;
           }
-          switch (state.shareStatus) {
+          final error = switch (state) {
+            ReportsLoaded(:final shareError) => shareError,
+            ReportsAnnualLoaded(:final shareError) => shareError,
+            _ => null,
+          };
+          switch (status) {
             case ReportShareStatus.success:
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(context.l10n.reportShared)),
+                SnackBar(
+                  content: Text(
+                    state is ReportsAnnualLoaded
+                        ? context.l10n.annualReportShared
+                        : context.l10n.reportShared,
+                  ),
+                ),
               );
               context.read<ReportsBloc>().add(const DismissReportShare());
             case ReportShareStatus.failure:
@@ -61,7 +103,7 @@ class ReportsScreen extends StatelessWidget {
                 SnackBar(
                   content: Text(
                     context.failureText(
-                      state.shareError ?? context.l10n.reportShareFailed,
+                      error ?? context.l10n.reportShareFailed,
                     ),
                   ),
                 ),
@@ -85,6 +127,7 @@ class ReportsScreen extends StatelessWidget {
               maxWidth: 720,
               child: Column(
                 children: [
+                  const _ReportModeSwitch(annual: false),
                   _MonthSelector(month: month),
                   const SizedBox(height: 12),
                   Expanded(
@@ -102,6 +145,7 @@ class ReportsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
                 children: [
+                  const _ReportModeSwitch(annual: false),
                   _MonthSelector(month: report.month),
                   const SizedBox(height: 8),
                   Text(
@@ -110,6 +154,44 @@ class ReportsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _SummaryCard(report: report),
+                  const SizedBox(height: 12),
+                  _BreakdownCard(breakdown: report.breakdown),
+                ],
+              ),
+            ),
+            ReportsAnnualEmpty(:final year) => AppContent(
+              maxWidth: 720,
+              child: Column(
+                children: [
+                  const _ReportModeSwitch(annual: true),
+                  _YearSelector(year: year),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: AppEmptyState(
+                      icon: Icons.insert_chart_outlined,
+                      title: context.l10n.noReportData,
+                      message: context.l10n.noReportDataBody,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            ReportsAnnualLoaded(:final report) => AppContent(
+              padding: EdgeInsets.zero,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+                children: [
+                  const _ReportModeSwitch(annual: true),
+                  _YearSelector(year: report.year),
+                  const SizedBox(height: 8),
+                  Text(
+                    context.l10n.annualReportDescription,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  _AnnualSummaryCard(report: report),
+                  const SizedBox(height: 12),
+                  _AnnualMonthsCard(report: report),
                   const SizedBox(height: 12),
                   _BreakdownCard(breakdown: report.breakdown),
                 ],
@@ -246,11 +328,15 @@ class _Metric extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: theme.textTheme.labelSmall),
-          MoneyText(
-            amount,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: MoneyText(
+              amount,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -308,6 +394,187 @@ class _BreakdownCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReportModeSwitch extends StatelessWidget {
+  const _ReportModeSwitch({required this.annual});
+
+  final bool annual;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: SegmentedButton<bool>(
+        showSelectedIcon: false,
+        segments: [
+          ButtonSegment(
+            value: false,
+            icon: const Icon(Icons.calendar_month_outlined),
+            label: Text(l10n.monthlyReport),
+          ),
+          ButtonSegment(
+            value: true,
+            icon: const Icon(Icons.calendar_today_outlined),
+            label: Text(l10n.annualReport),
+          ),
+        ],
+        selected: {annual},
+        onSelectionChanged: (selection) {
+          context.read<ReportsBloc>().add(
+            selection.first
+                ? const ShowAnnualReport()
+                : const ShowMonthlyReport(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _YearSelector extends StatelessWidget {
+  const _YearSelector({required this.year});
+
+  final int year;
+
+  void _change(BuildContext context, int offset) {
+    context.read<ReportsBloc>().add(ChangeReportYear(year + offset));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          onPressed: () => _change(context, -1),
+          tooltip: MaterialLocalizations.of(context).previousPageTooltip,
+          icon: const Icon(Icons.chevron_left),
+        ),
+        Text(
+          '$year',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        IconButton(
+          onPressed: () => _change(context, 1),
+          tooltip: MaterialLocalizations.of(context).nextPageTooltip,
+          icon: const Icon(Icons.chevron_right),
+        ),
+      ],
+    );
+  }
+}
+
+class _AnnualSummaryCard extends StatelessWidget {
+  const _AnnualSummaryCard({required this.report});
+
+  final AnnualReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${l10n.annualReport} ${report.year}',
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _Metric(
+                  label: l10n.income,
+                  amount: report.summary.totalIncome,
+                  color: AppColors.success,
+                ),
+                const SizedBox(width: 12),
+                _Metric(
+                  label: l10n.expenses,
+                  amount: report.summary.totalExpenses,
+                  color: AppColors.danger,
+                ),
+                const SizedBox(width: 12),
+                _Metric(
+                  label: l10n.balance,
+                  amount: report.summary.balance,
+                  color: report.summary.balance < 0
+                      ? AppColors.danger
+                      : AppColors.success,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AnnualMonthsCard extends StatelessWidget {
+  const _AnnualMonthsCard({required this.report});
+
+  final AnnualReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final formatMonth = MaterialLocalizations.of(context).formatMonthYear;
+    final months = report.months.where((month) => !month.isEmpty).toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.monthlyBreakdown, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            for (final month in months)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(formatMonth(month.month)),
+                subtitle: Wrap(
+                  spacing: 10,
+                  children: [
+                    Text('${l10n.income}: ', style: theme.textTheme.labelSmall),
+                    MoneyText(month.income, style: theme.textTheme.labelSmall),
+                    Text(
+                      '${l10n.expenses}: ',
+                      style: theme.textTheme.labelSmall,
+                    ),
+                    MoneyText(
+                      month.expenses,
+                      style: theme.textTheme.labelSmall,
+                    ),
+                  ],
+                ),
+                trailing: MoneyText(
+                  month.balance,
+                  signed: true,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: month.balance < 0
+                        ? AppColors.danger
+                        : AppColors.success,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

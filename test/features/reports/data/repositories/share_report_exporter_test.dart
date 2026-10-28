@@ -45,6 +45,21 @@ void main() {
     expect(shares.single.files?.single.path, path);
   });
 
+  test('writes a PDF and shares it with the pdf mime type', () async {
+    final bytes = Uint8List.fromList([37, 80, 68, 70]);
+
+    final result = await exporter().sharePdf(
+      fileName: 'annual.pdf',
+      bytes: bytes,
+      subject: 'FinSight annual',
+    );
+
+    final path = result.getOrElse((_) => fail('Expected path'));
+    expect(await File(path).readAsBytes(), bytes);
+    expect(shares.single.files?.single.mimeType, 'application/pdf');
+    expect(shares.single.subject, 'FinSight annual');
+  });
+
   test('uses the platform share sheet by default', () async {
     const pathChannel = MethodChannel('plugins.flutter.io/path_provider');
     const shareChannel = MethodChannel('dev.fluttercommunity.plus/share');

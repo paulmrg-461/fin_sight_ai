@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:fpdart/fpdart.dart';
@@ -39,6 +40,33 @@ class ShareReportExporter implements ReportExporter {
       await _share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'text/csv')],
+          subject: subject,
+        ),
+      );
+      return Right(file.path);
+    } catch (_) {
+      return const Left(
+        CacheFailure(
+          'Unable to share the report.',
+          code: 'report_share_failed',
+        ),
+      );
+    }
+  }
+
+  @override
+  ResultFuture<String> sharePdf({
+    required String fileName,
+    required Uint8List bytes,
+    required String subject,
+  }) async {
+    try {
+      final directory = await _tempDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+      await _share(
+        ShareParams(
+          files: [XFile(file.path, mimeType: 'application/pdf')],
           subject: subject,
         ),
       );

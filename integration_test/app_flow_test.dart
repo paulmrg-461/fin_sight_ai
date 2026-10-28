@@ -740,6 +740,43 @@ void main() {
     await pumpUntil(tester, find.text('Nothing recorded this month'));
   });
 
+  testWidgets('builds an annual report and shares its PDF', (tester) async {
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 300,
+        type: TransactionType.income,
+        category: 'Freelance',
+        description: 'Invoice',
+        date: DateTime.now(),
+      ),
+    );
+    await harness.addTransaction(
+      AddTransactionParams(
+        amount: 100,
+        type: TransactionType.expense,
+        category: 'Dining',
+        description: 'Dinner',
+        date: DateTime.now(),
+      ),
+    );
+
+    await harness.pumpApp(tester);
+    harness.router.goNamed(AppRoutes.reportsName);
+    await pumpUntil(tester, find.text('Reports'));
+
+    await pumpUntil(tester, find.text('Monthly'));
+    await tester.tap(find.text('Annual'));
+    await pumpUntil(tester, find.text('Annual ${DateTime.now().year}'));
+
+    await tester.tap(find.byTooltip('Share annual PDF'));
+    await pumpUntil(tester, find.text('Annual PDF shared.'));
+
+    final pdf = harness.reportExporter.lastPdf;
+    expect(pdf, isNotNull);
+    expect(String.fromCharCodes(pdf!.take(4)), '%PDF');
+    expect(harness.reportExporter.lastFileName, endsWith('.pdf'));
+  });
+
   testWidgets('searches across transactions, debts, and goals', (tester) async {
     await harness.addTransaction(
       AddTransactionParams(

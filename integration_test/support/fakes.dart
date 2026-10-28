@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/core/error/exceptions.dart';
@@ -151,6 +153,7 @@ class FakeReportExporter implements ReportExporter {
   bool shouldFail = false;
   String? lastCsv;
   String? lastFileName;
+  Uint8List? lastPdf;
 
   @override
   ResultFuture<String> shareCsv({
@@ -160,6 +163,25 @@ class FakeReportExporter implements ReportExporter {
   }) async {
     lastFileName = fileName;
     lastCsv = csv;
+    if (shouldFail) {
+      return const Left(
+        CacheFailure(
+          'Unable to share the report.',
+          code: 'report_share_failed',
+        ),
+      );
+    }
+    return Right('/tmp/$fileName');
+  }
+
+  @override
+  ResultFuture<String> sharePdf({
+    required String fileName,
+    required Uint8List bytes,
+    required String subject,
+  }) async {
+    lastFileName = fileName;
+    lastPdf = bytes;
     if (shouldFail) {
       return const Left(
         CacheFailure(

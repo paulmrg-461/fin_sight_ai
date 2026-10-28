@@ -1,4 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
+
+import 'dart:typed_data';
+
+import 'package:fin_sight_ai/core/currency/app_currency.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/reports/domain/repositories/report_exporter.dart';
@@ -36,6 +40,7 @@ void main() {
     registerFallbackValue(
       DateRangeParams(start: DateTime(2026), end: DateTime(2026, 2)),
     );
+    registerFallbackValue(Uint8List(0));
   });
 
   setUp(() {
@@ -49,6 +54,13 @@ void main() {
         subject: any(named: 'subject'),
       ),
     ).thenAnswer((_) async => const Right('/tmp/report.csv'));
+    when(
+      () => exporter.sharePdf(
+        fileName: any(named: 'fileName'),
+        bytes: any(named: 'bytes'),
+        subject: any(named: 'subject'),
+      ),
+    ).thenAnswer((_) async => const Right('/tmp/report.pdf'));
   });
 
   ReportsBloc buildBloc() => ReportsBloc(getByRange, exporter);
@@ -72,6 +84,66 @@ void main() {
               100,
             ),
       ],
+    );
+
+    blocTest<ReportsBloc, ReportsState>(
+      'loads an annual report with twelve month buckets',
+      build: buildBloc,
+      act: (bloc) => bloc.add(ChangeReportYear(now.year)),
+      expect: () => [
+        const ReportsLoading(),
+        isA<ReportsAnnualLoaded>()
+            .having((state) => state.report.year, 'year', now.year)
+            .having((state) => state.report.months, 'months', hasLength(12))
+            .having(
+              (state) => state.report.summary.totalExpenses,
+              'expenses',
+              100,
+            ),
+      ],
+    );
+
+    blocTest<ReportsBloc, ReportsState>(
+      'emits an annual empty state without transactions',
+      setUp: () {
+        when(() => getByRange(any())).thenAnswer((_) async => const Right([]));
+      },
+      build: buildBloc,
+      act: (bloc) => bloc.add(ChangeReportYear(now.year)),
+      expect: () => [const ReportsLoading(), ReportsAnnualEmpty(now.year)],
+    );
+
+    blocTest<ReportsBloc, ReportsState>(
+      'shares the annual report as a PDF',
+      build: buildBloc,
+      act: (bloc) => bloc
+        ..add(ChangeReportYear(now.year))
+        ..add(const ShareAnnualReport(AppCurrency.cop)),
+      expect: () => [
+        const ReportsLoading(),
+        isA<ReportsAnnualLoaded>(),
+        isA<ReportsAnnualLoaded>().having(
+          (state) => state.sharing,
+          'sharing',
+          isTrue,
+        ),
+        isA<ReportsAnnualLoaded>()
+            .having((state) => state.sharing, 'sharing', isFalse)
+            .having(
+              (state) => state.shareStatus,
+              'status',
+              ReportShareStatus.success,
+            ),
+      ],
+      verify: (_) {
+        verify(
+          () => exporter.sharePdf(
+            fileName: 'finsight-${now.year}.pdf',
+            bytes: any(named: 'bytes'),
+            subject: 'FinSight AI annual report',
+          ),
+        ).called(1);
+      },
     );
 
     blocTest<ReportsBloc, ReportsState>(

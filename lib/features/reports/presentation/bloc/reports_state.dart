@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/annual_report.dart';
 import '../../domain/entities/monthly_report.dart';
 
 enum ReportShareStatus { none, success, failure }
@@ -47,6 +48,45 @@ final class ReportsLoaded extends ReportsState {
 
   @override
   List<Object?> get props => [report, sharing, shareStatus, shareError];
+}
+
+final class ReportsAnnualLoaded extends ReportsState {
+  const ReportsAnnualLoaded(
+    this.report, {
+    this.sharing = false,
+    this.shareStatus = ReportShareStatus.none,
+    this.shareError,
+  });
+
+  final AnnualReport report;
+  final bool sharing;
+  final ReportShareStatus shareStatus;
+  final String? shareError;
+
+  ReportsAnnualLoaded copyWith({
+    bool? sharing,
+    ReportShareStatus? shareStatus,
+    String? shareError,
+  }) {
+    return ReportsAnnualLoaded(
+      report,
+      sharing: sharing ?? this.sharing,
+      shareStatus: shareStatus ?? this.shareStatus,
+      shareError: shareError ?? this.shareError,
+    );
+  }
+
+  @override
+  List<Object?> get props => [report, sharing, shareStatus, shareError];
+}
+
+final class ReportsAnnualEmpty extends ReportsState {
+  const ReportsAnnualEmpty(this.year);
+
+  final int year;
+
+  @override
+  List<Object?> get props => [year];
 }
 
 final class ReportsEmpty extends ReportsState {
