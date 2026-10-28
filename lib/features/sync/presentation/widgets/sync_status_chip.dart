@@ -13,9 +13,14 @@ import '../bloc/sync_event.dart';
 import '../../domain/entities/sync_entities.dart';
 import '../bloc/sync_state.dart';
 
-/// App-bar control showing pending changes and triggering a manual sync.
+/// Control showing pending changes and triggering a manual sync.
+///
+/// Renders an icon button by default and a labelled [ListTile] when
+/// [expanded], which is how it appears in the navigation drawer.
 class SyncStatusChip extends StatelessWidget {
-  const SyncStatusChip({super.key});
+  const SyncStatusChip({super.key, this.expanded = false});
+
+  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
@@ -63,27 +68,39 @@ class SyncStatusChip extends StatelessWidget {
             ? context.l10n.syncNowPending(pending)
             : context.l10n.allChangesSynced;
 
+        final onPressed = isSyncing
+            ? null
+            : () => _handleTap(
+                context,
+                state: state,
+                configured: configured,
+                authenticated: authenticated,
+              );
+        final leading = isSyncing
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Badge(
+                isLabelVisible: pending > 0,
+                label: Text('$pending'),
+                child: Icon(icon),
+              );
+
+        if (expanded) {
+          return ListTile(
+            leading: leading,
+            title: Text(context.l10n.sync),
+            subtitle: Text(tooltip),
+            onTap: onPressed,
+          );
+        }
+
         return IconButton(
-          onPressed: isSyncing
-              ? null
-              : () => _handleTap(
-                  context,
-                  state: state,
-                  configured: configured,
-                  authenticated: authenticated,
-                ),
+          onPressed: onPressed,
           tooltip: tooltip,
-          icon: isSyncing
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Badge(
-                  isLabelVisible: pending > 0,
-                  label: Text('$pending'),
-                  child: Icon(icon),
-                ),
+          icon: leading,
         );
       },
     );

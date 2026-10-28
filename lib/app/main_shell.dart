@@ -8,6 +8,7 @@ import '../core/routing/app_routes.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/theme_controller.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
+import '../features/auth/presentation/widgets/account_tile.dart';
 import '../features/auth/presentation/bloc/auth_state.dart';
 import '../features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import '../features/dashboard/presentation/bloc/dashboard_event.dart';
@@ -315,13 +316,9 @@ class AppDrawer extends StatelessWidget {
               },
             ),
             const Divider(),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: SyncStatusChip(),
-              ),
-            ),
+            const SyncStatusChip(expanded: true),
+            const AccountTile(),
+            const SizedBox(height: 8),
           ],
         ),
       ),

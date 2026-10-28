@@ -702,6 +702,53 @@ void main() {
     expect(find.text('user@example.com'), findsOneWidget);
   });
 
+  testWidgets('keeps sign-out and sync out of the dashboard app bar', (
+    tester,
+  ) async {
+    await pumpReady(tester);
+    authBloc.emit(AuthAuthenticated(_session()));
+    await tester.pump();
+
+    expect(find.byIcon(Icons.logout), findsNothing);
+    expect(find.byIcon(Icons.cloud_done_outlined), findsNothing);
+    expect(find.byIcon(Icons.cloud_off_outlined), findsNothing);
+    expect(find.byIcon(Icons.cloud_upload_outlined), findsNothing);
+    expect(find.byIcon(Icons.cloud_sync_outlined), findsNothing);
+  });
+
+  testWidgets('moves sync and sign-out into the drawer', (tester) async {
+    await pumpReady(tester);
+    authBloc.emit(AuthAuthenticated(_session()));
+
+    await openDrawer(tester);
+    await scrollDrawerTo(tester, find.text('Sign out'));
+
+    expect(find.widgetWithText(ListTile, 'Sync'), findsOneWidget);
+    expect(find.widgetWithText(ListTile, 'Sign out'), findsOneWidget);
+  });
+
+  testWidgets('confirms sign-out from the drawer', (tester) async {
+    await pumpReady(tester);
+    authBloc.emit(AuthAuthenticated(_session()));
+
+    await openDrawer(tester);
+    await scrollDrawerTo(tester, find.text('Sign out'));
+    await tester.tap(find.text('Sign out'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sign out and erase local data?'), findsOneWidget);
+  });
+
+  testWidgets('offers sign-in in the drawer when signed out', (tester) async {
+    await pumpReady(tester);
+
+    await openDrawer(tester);
+    await scrollDrawerTo(tester, find.text('Sign in'));
+
+    expect(find.widgetWithText(ListTile, 'Sign in'), findsOneWidget);
+    expect(find.widgetWithText(ListTile, 'Sign out'), findsNothing);
+  });
+
   testWidgets('keeps login outside the shell', (tester) async {
     await pumpReady(tester);
 

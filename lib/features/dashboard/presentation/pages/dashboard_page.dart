@@ -24,8 +24,6 @@ import '../widgets/debts_summary_card.dart';
 import '../widgets/savings_summary_card.dart';
 import '../widgets/monthly_comparison_chart.dart';
 import '../widgets/recent_transactions_list.dart';
-import '../../../auth/presentation/widgets/account_button.dart';
-import '../../../sync/presentation/widgets/sync_status_chip.dart';
 import '../../../wallets/domain/entities/wallet_entity.dart';
 import '../../../wallets/presentation/bloc/wallet_bloc.dart';
 import '../../../wallets/presentation/bloc/wallet_state.dart';
@@ -95,8 +93,6 @@ class DashboardPage extends StatelessWidget {
             tooltip: context.l10n.globalSearch,
             icon: const Icon(Icons.search_rounded),
           ),
-          const AccountButton(),
-          const SyncStatusChip(),
           IconButton(
             onPressed: () => _pickRange(context),
             tooltip: context.l10n.changePeriod,

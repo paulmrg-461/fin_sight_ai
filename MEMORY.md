@@ -29,12 +29,13 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Android home-screen widget | Done |
 | Hive at-rest encryption (AES + secure key) | Done |
 | Desktop storage in app support (one-time copy) | Done |
+| Drawer account and sync rows (app bar simplified) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27, latest)
 
 - HEAD: `516e3b8` on `develop` and `main` (both pushed, in sync).
-- Gates: `flutter analyze` clean, **1103** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1107** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
@@ -42,6 +43,13 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - Recent commits (newest first): `516e3b8` money/category specs, `61375a0` startup recovery screen, `0c432d7` Hive encryption, `fd03216` Android widget, `8105180` receipt metadata sync, `e5feb70` biometric app lock, `799dd99` CSV import, `dd5ae34` onboarding, `2627b9d` golden/CI, `809e2dd` budget alerts, `c308ed6` reports/share.
 - Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption.
 - Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `GROQ_API_KEY` set. Never print or commit those values; rotate the Groq key and the Supabase DB password that were shared in chat.
+
+## Drawer account and sync (plan 042)
+
+- Dashboard app bar now has only the menu, logo, search, and period picker.
+- `AccountTile` replaces `AccountButton`: **Sign in** (subtitle "Sign in to sync") or **Sign out** with the existing confirmation, closing the drawer before dispatching `SignOutRequested`.
+- `SyncStatusChip(expanded: true)` renders a **Sync** ListTile in the drawer with the status text as subtitle; tapping keeps the login/retry/sync behaviour and the entity-failure dialog.
+- Integration helpers `openDrawer`, `scrollDrawerTo`, `tapDrawerItem`, and `closeDrawer` drive the new flows; the sync-offline diagnosis test now reads the drawer subtitle.
 
 ## Desktop run fix (2026-10-28)
 

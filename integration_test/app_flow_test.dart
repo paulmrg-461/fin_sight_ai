@@ -44,6 +44,41 @@ Future<void> waitForCondition(
   throw TestFailure('Timed out waiting for condition.');
 }
 
+Future<void> openDrawer(WidgetTester tester) async {
+  await pumpUntil(tester, find.byTooltip('Open menu'));
+  if (find.byType(Drawer).evaluate().isEmpty) {
+    await tester.tap(find.byTooltip('Open menu'));
+    await tester.pumpAndSettle();
+  }
+}
+
+Future<void> scrollDrawerTo(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    150,
+    scrollable: find.descendant(
+      of: find.byType(Drawer),
+      matching: find.byType(Scrollable),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> closeDrawer(WidgetTester tester) async {
+  if (find.byType(Drawer).evaluate().isEmpty) {
+    return;
+  }
+  Scaffold.of(tester.element(find.byType(Drawer))).closeDrawer();
+  await tester.pumpAndSettle();
+}
+
+Future<void> tapDrawerItem(WidgetTester tester, String label) async {
+  await openDrawer(tester);
+  await scrollDrawerTo(tester, find.text(label));
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -89,10 +124,16 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('FinSight AI'), findsOneWidget);
+    await openDrawer(tester);
+    await scrollDrawerTo(
+      tester,
+      find.text('Sync offline: Supabase is not configured'),
+    );
     expect(
-      find.byTooltip('Sync offline: Supabase is not configured'),
+      find.text('Sync offline: Supabase is not configured'),
       findsOneWidget,
     );
+    await closeDrawer(tester);
     expect(
       find.descendant(
         of: find.byType(NavigationBar),
@@ -797,11 +838,9 @@ void main() {
     expect(edited.single.savedAmount, 400);
   });
 
-  testWidgets('signs in and out from the dashboard', (tester) async {
+  testWidgets('signs in and out from the drawer', (tester) async {
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.byIcon(Icons.person_outline));
-
-    await tester.tap(find.byIcon(Icons.person_outline));
+    await tapDrawerItem(tester, 'Sign in');
     await pumpUntil(tester, find.text('Welcome back'));
 
     final fields = find.byType(TextFormField);
@@ -809,11 +848,14 @@ void main() {
     await tester.enterText(fields.at(1), 'secret1');
     await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
 
-    await pumpUntil(tester, find.byIcon(Icons.logout));
-    await tester.tap(find.byIcon(Icons.logout));
+    await waitForCondition(
+      tester,
+      () => harness.authRepository.isAuthenticated,
+    );
+    await tapDrawerItem(tester, 'Sign out');
     await pumpUntil(tester, find.text('Sign out and erase local data?'));
     await tester.tap(find.widgetWithText(TextButton, 'Sign out'));
-    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+    await pumpUntil(tester, find.text('No transactions yet'));
   });
 
   testWidgets('signing out erases local data before another sign-in', (
@@ -821,18 +863,21 @@ void main() {
   ) async {
     Future<void> signIn() async {
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.person_outline));
+      await tapDrawerItem(tester, 'Sign in');
       await pumpUntil(tester, find.text('Welcome back'));
 
       final fields = find.byType(TextFormField);
       await tester.enterText(fields.at(0), 'user@example.com');
       await tester.enterText(fields.at(1), 'secret1');
       await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
-      await pumpUntil(tester, find.byIcon(Icons.logout));
+      await waitForCondition(
+        tester,
+        () => harness.authRepository.isAuthenticated,
+      );
     }
 
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+    await pumpUntil(tester, find.byTooltip('Open menu'));
 
     await signIn();
     await harness.addTransaction(
@@ -850,12 +895,9 @@ void main() {
     await pumpUntil(tester, find.text('Private salary'));
 
     harness.router.goNamed(AppRoutes.dashboardName);
-    await pumpUntil(tester, find.byIcon(Icons.logout));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.logout));
+    await tapDrawerItem(tester, 'Sign out');
     await pumpUntil(tester, find.text('Sign out and erase local data?'));
     await tester.tap(find.widgetWithText(TextButton, 'Sign out'));
-    await pumpUntil(tester, find.byIcon(Icons.person_outline));
     await pumpUntil(tester, find.text('No transactions yet'));
 
     harness.router.goNamed(AppRoutes.transactionsName);
@@ -863,7 +905,10 @@ void main() {
     expect(find.text('Private salary'), findsNothing);
 
     harness.router.goNamed(AppRoutes.dashboardName);
-    await pumpUntil(tester, find.byIcon(Icons.person_outline));
+    await waitForCondition(
+      tester,
+      () => !harness.authRepository.isAuthenticated,
+    );
     await signIn();
 
     harness.router.goNamed(AppRoutes.transactionsName);
@@ -875,9 +920,11 @@ void main() {
     harness.seedOfflineExpiredSession();
 
     await harness.pumpApp(tester);
-    await pumpUntil(tester, find.byIcon(Icons.logout));
+    await openDrawer(tester);
+    await scrollDrawerTo(tester, find.text('Sign out'));
 
-    expect(find.byIcon(Icons.person_outline), findsNothing);
+    expect(find.text('Sign out'), findsOneWidget);
+    expect(find.text('Sign in'), findsNothing);
     expect(harness.authRemote.refreshCount, 1);
     // Offline sync waits for a usable token, but the ledger stays readable.
     expect(harness.authRepository.accessToken, isNull);
@@ -888,7 +935,10 @@ void main() {
       tester,
       () => harness.authRepository.accessToken == 'refreshed-access-2',
     );
-    await pumpUntil(tester, find.byIcon(Icons.logout));
+    expect(
+      find.descendant(of: find.byType(Drawer), matching: find.text('Sign out')),
+      findsOneWidget,
+    );
 
     expect(harness.authStorage.session?.refreshToken, 'refreshed-refresh-2');
   });
