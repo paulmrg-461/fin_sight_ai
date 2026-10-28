@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_title">FinSight AI · This month</string>
+    <string name="widget_description">Balance and spending for the current month.</string>
+    <string name="widget_empty">Open FinSight AI to refresh</string>
+    <string name="widget_spent">Spent %1$s</string>
+</resources>

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 
+import '../../../../core/services/widget_data_bridge.dart';
 import '../../../scheduled_payments/domain/entities/committed_cashflow.dart';
 import '../../../scheduled_payments/domain/usecases/committed_cashflow_usecase.dart';
 import '../../domain/entities/dashboard_entities.dart';
@@ -11,7 +12,7 @@ import 'dashboard_state.dart';
 /// Loads summary, charts, and recent activity for a period.
 @injectable
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
-  DashboardBloc(this._getDashboard, this._getCommitted)
+  DashboardBloc(this._getDashboard, this._getCommitted, {this.widgetBridge})
     : super(const DashboardInitial()) {
     on<LoadDashboard>(_onLoad);
     on<RefreshData>(_onRefresh);
@@ -24,6 +25,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
   final GetDashboardDataUseCase _getDashboard;
   final GetCommittedCashflowUseCase _getCommitted;
+  final WidgetDataBridge? widgetBridge;
 
   late DateTime _start;
   late DateTime _end;
@@ -81,6 +83,25 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         committed30: committed,
       ),
     );
+    await _publish(loaded.summary);
+  }
+
+  Future<void> _publish(DashboardSummaryEntity summary) async {
+    final bridge = widgetBridge;
+    if (bridge == null) {
+      return;
+    }
+    try {
+      await bridge.publish(
+        DashboardWidgetSnapshot(
+          balance: summary.balance,
+          monthlyExpenses: summary.totalExpenses,
+          generatedAt: DateTime.now(),
+        ),
+      );
+    } catch (_) {
+      // The home-screen widget is best effort and must not fail the dashboard.
+    }
   }
 
   Future<CommittedCashflow?> _projection() async {

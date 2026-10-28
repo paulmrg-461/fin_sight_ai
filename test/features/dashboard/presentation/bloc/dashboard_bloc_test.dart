@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fin_sight_ai/core/domain/failure.dart';
+import 'package:fin_sight_ai/core/services/widget_data_bridge.dart';
 import 'package:fin_sight_ai/core/usecase/usecase.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/entities/dashboard_entities.dart';
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart';
@@ -17,9 +18,23 @@ class MockGetDashboardData extends Mock implements GetDashboardDataUseCase {}
 
 class MockGetCommitted extends Mock implements GetCommittedCashflowUseCase {}
 
+class FakeWidgetBridge implements WidgetDataBridge {
+  DashboardWidgetSnapshot? lastSnapshot;
+  bool shouldThrow = false;
+
+  @override
+  Future<void> publish(DashboardWidgetSnapshot snapshot) async {
+    if (shouldThrow) {
+      throw StateError('widget bridge down');
+    }
+    lastSnapshot = snapshot;
+  }
+}
+
 void main() {
   late MockGetDashboardData getDashboard;
   late MockGetCommitted getCommitted;
+  late FakeWidgetBridge bridge;
 
   const summary = DashboardSummaryEntity(
     totalIncome: 1000,
@@ -103,7 +118,8 @@ void main() {
     });
   });
 
-  DashboardBloc buildBloc() => DashboardBloc(getDashboard, getCommitted);
+  DashboardBloc buildBloc({WidgetDataBridge? bridge}) =>
+      DashboardBloc(getDashboard, getCommitted, widgetBridge: bridge);
 
   group('DashboardBloc', () {
     test('initial state is DashboardInitial', () {
@@ -128,6 +144,29 @@ void main() {
       verify: (_) {
         verify(() => getDashboard(any())).called(1);
       },
+    );
+
+    blocTest<DashboardBloc, DashboardState>(
+      'publishes the summary to the home-screen widget',
+      build: () {
+        bridge = FakeWidgetBridge();
+        return buildBloc(bridge: bridge);
+      },
+      act: (bloc) => bloc.add(const LoadDashboard()),
+      verify: (_) {
+        expect(bridge.lastSnapshot?.balance, 600);
+        expect(bridge.lastSnapshot?.monthlyExpenses, 400);
+      },
+    );
+
+    blocTest<DashboardBloc, DashboardState>(
+      'keeps the dashboard loaded when the widget bridge fails',
+      build: () {
+        bridge = FakeWidgetBridge()..shouldThrow = true;
+        return buildBloc(bridge: bridge);
+      },
+      act: (bloc) => bloc.add(const LoadDashboard()),
+      expect: () => [const DashboardLoading(), isA<DashboardLoaded>()],
     );
 
     blocTest<DashboardBloc, DashboardState>(

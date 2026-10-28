@@ -26,15 +26,25 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Platform scaffolds tracked (Android/iOS/Linux/macOS/Windows/web) | Done |
 | Biometric app lock (opt-in, lifecycle-aware) | Done |
 | Receipt metadata sync (queue + Supabase) | Done |
+| Android home-screen widget | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27)
 
-- Gates: `flutter analyze` clean, **1081** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1086** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
 - Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
+
+## Android home-screen widget (plan 039)
+
+- `WidgetDataBridge` publishes a `DashboardWidgetSnapshot` over `devpaul.fin_sight_ai/widget`; `AndroidWidgetDataBridge` formats with the persisted currency and swallows missing-plugin failures.
+- `DashboardBloc` takes an optional bridge and publishes after `DashboardLoaded`; bridge failures never alter dashboard state, and existing tests construct the bloc without one.
+- `MainActivity` stores the snapshot in `fin_sight_widget` preferences (`WidgetStore`) and triggers `FinanceWidgetProvider.refreshAll`.
+- `FinanceWidgetProvider` renders a resizable 4×2 RemoteViews card (balance, "Spent", currency) and opens the app on tap; resources live in `res/layout`, `res/xml`, `res/drawable`, and `values/strings.xml`.
+- Tests: channel payload/formatting, graceful no-channel behavior, and dashboard publish/failure paths. APK debug build compiles the Kotlin side.
+- Manual installation pending while the Samsung device is unreachable on the LAN.
 
 ## Receipt metadata sync (plan 038)
 

@@ -29,6 +29,7 @@ import 'package:fin_sight_ai/core/services/receipt_image_picker.dart' as _i147;
 import 'package:fin_sight_ai/core/services/receipt_image_store.dart' as _i666;
 import 'package:fin_sight_ai/core/services/reminder_scheduler.dart' as _i244;
 import 'package:fin_sight_ai/core/services/security_preferences.dart' as _i44;
+import 'package:fin_sight_ai/core/services/widget_data_bridge.dart' as _i270;
 import 'package:fin_sight_ai/core/sync/sync_operation.dart' as _i588;
 import 'package:fin_sight_ai/core/theme/theme_controller.dart' as _i32;
 import 'package:fin_sight_ai/core/utils/app_env.dart' as _i1042;
@@ -467,6 +468,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i119.DeleteSavingsGoalUseCase>(
       () => _i119.DeleteSavingsGoalUseCase(gh<_i361.SavingsRepository>()),
     );
+    gh.lazySingleton<_i270.WidgetDataBridge>(
+      () => _i270.AndroidWidgetDataBridge(gh<_i1029.CurrencyRepository>()),
+    );
     gh.lazySingleton<_i588.SyncQueue>(
       () => syncModule.provideSyncQueue(gh<_i921.SyncLocalDataSource>()),
     );
@@ -781,12 +785,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1045.CalculatePayoffUseCase>(),
       ),
     );
-    gh.factory<_i850.DashboardBloc>(
-      () => _i850.DashboardBloc(
-        gh<_i905.GetDashboardDataUseCase>(),
-        gh<_i387.GetCommittedCashflowUseCase>(),
-      ),
-    );
     gh.lazySingleton<_i160.AddScheduledPaymentUseCase>(
       () => _i160.AddScheduledPaymentUseCase(
         gh<_i312.ScheduledPaymentRepository>(),
@@ -829,6 +827,13 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i983.ImportCsvCubit>(
       () => _i983.ImportCsvCubit(gh<_i320.ImportTransactionsCsvUseCase>()),
+    );
+    gh.factory<_i850.DashboardBloc>(
+      () => _i850.DashboardBloc(
+        gh<_i905.GetDashboardDataUseCase>(),
+        gh<_i387.GetCommittedCashflowUseCase>(),
+        widgetBridge: gh<_i270.WidgetDataBridge>(),
+      ),
     );
     gh.lazySingleton<_i272.SyncRepository>(
       () => _i1020.SyncRepositoryImpl(

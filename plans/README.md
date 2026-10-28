@@ -46,6 +46,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 036 | Import transactions from CSV | P2 | M | 015 | DONE (1064 unit, 36 integration) |
 | 037 | App lock with biometrics | P1 | M | 004, 035 | DONE (1072 unit, 37 integration) |
 | 038 | Sync receipt metadata | P2 | M | 005, 007, 028 | DONE (1081 unit, 37 integration) |
+| 039 | Android home-screen widget | P2 | M | 010, 021 | DONE (1086 unit, 37 integration) |
+
+- 039 added a resizable Android widget fed by dashboard snapshots over a method channel.
 
 - 038 synced receipt metadata through the queue, remote table, and pull merge.
 
