@@ -167,6 +167,7 @@ class SyncStatusChip extends StatelessWidget {
       SyncEntityType.debt => l10n.debts,
       SyncEntityType.budget => l10n.budgets,
       SyncEntityType.receivable => l10n.receivablesTitle,
+      SyncEntityType.receipt => l10n.receiptsLabel,
     };
   }
 }

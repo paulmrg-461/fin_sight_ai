@@ -25,15 +25,26 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Localized failures + AI output language | Done |
 | Platform scaffolds tracked (Android/iOS/Linux/macOS/Windows/web) | Done |
 | Biometric app lock (opt-in, lifecycle-aware) | Done |
+| Receipt metadata sync (queue + Supabase) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27)
 
-- Gates: `flutter analyze` clean, **1072** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1081** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
 - Recent commits (newest first): `fab8193` local reminders, `7b7d168` platform scaffolds, `d070227` duplicate transaction, `dc565ee` dashboard committed card, `6fff33b` AI insight cache, `0e355ea` AI language, `53e3fd4` localized failures, `7e4e609` copy previous budgets, `c79884d` budget months, `5e3e73b` CSV copy, `e65ec1b` transaction search, `89b181e` schedule editing.
+
+## Receipt metadata sync (plan 038)
+
+- `ReceiptEntity` gained `updatedAt` / `isSynced` with `lastModified = updatedAt ?? date`; business equality ignores sync metadata and old local rows still parse.
+- `ReceiptRepositoryImpl` stamps writes and enqueues `SyncEntityType.receipt`; a queue failure never rolls back the local save.
+- `SyncRepositoryImpl` pushes receipts with remote LWT/LWW, pulls with an isolated entity failure, and merges only newer rows. Receipts are never hard-deleted.
+- `SupabaseRestSyncDataSource` maps `receipt_date`, `merchant_name`, `total_amount`, `currency`, `items`, `image_path`, and `updated_at`.
+- Migration `0008_receipts.sql` adds owner-only RLS and grants, mirrored in `apply_all.sql` and the RLS test.
+- Images do not sync; a pulled receipt points at a device-local path and the preview hides the missing file.
+- **Pending:** 0007 and 0008 must still be applied to the hosted Supabase project; no DB connection string is available here.
 
 ## App lock with biometrics (plan 037)
 

@@ -14,6 +14,8 @@ import '../../../categories/data/models/category_model.dart';
 import '../../../budgets/data/models/budget_model.dart';
 import '../../../debts/data/datasources/debt_local_data_source.dart';
 import '../../../debts/data/models/debt_model.dart';
+import '../../../ocr/data/datasources/receipt_local_data_source.dart';
+import '../../../ocr/data/models/receipt_model.dart';
 import '../../../receivables/data/datasources/receivable_local_data_source.dart';
 import '../../../receivables/data/models/receivable_model.dart';
 import '../../../savings/data/datasources/savings_local_data_source.dart';
@@ -43,6 +45,7 @@ class SyncRepositoryImpl implements SyncRepository {
     this._scheduledPaymentLocalDataSource,
     this._walletLocalDataSource,
     this._savingsGoalLocalDataSource,
+    this._receiptLocalDataSource,
     this._env,
     this._auth, {
     this.clock = const Clock(),
@@ -63,6 +66,7 @@ class SyncRepositoryImpl implements SyncRepository {
   final ScheduledPaymentLocalDataSource _scheduledPaymentLocalDataSource;
   final WalletLocalDataSource _walletLocalDataSource;
   final SavingsLocalDataSource _savingsGoalLocalDataSource;
+  final ReceiptLocalDataSource _receiptLocalDataSource;
   final AppEnv _env;
   final AuthRepository _auth;
   final Clock clock;
@@ -209,6 +213,7 @@ class SyncRepositoryImpl implements SyncRepository {
       SyncEntityType.debt => _pushDebt(operation),
       SyncEntityType.budget => _pushBudget(operation),
       SyncEntityType.receivable => _pushReceivable(operation),
+      SyncEntityType.receipt => _pushReceipt(operation),
     };
   }
 
@@ -442,6 +447,30 @@ class SyncRepositoryImpl implements SyncRepository {
     return false;
   }
 
+  Future<bool> _pushReceipt(SyncOperation operation) async {
+    if (operation.operationType == SyncOperationType.delete) {
+      return false;
+    }
+
+    final remoteRow = await _remoteDataSource.fetchReceipt(operation.entityId);
+    if (remoteRow != null) {
+      final remote = ReceiptModel.fromJson(remoteRow);
+      if (remote.lastModified.isAfter(_payloadUpdatedAt(operation.payload))) {
+        await _receiptLocalDataSource.saveReceipt(
+          ReceiptModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        return true;
+      }
+    }
+
+    await _remoteDataSource.upsertReceipt(operation.payload);
+    final local = ReceiptModel.fromJson(operation.payload);
+    await _receiptLocalDataSource.saveReceipt(
+      ReceiptModel.fromEntity(local.copyWith(isSynced: true)),
+    );
+    return false;
+  }
+
   Future<_PullResult> _pull() async {
     final lastSyncedAt = await _localDataSource.lastSyncedAt();
     var pulled = 0;
@@ -566,6 +595,15 @@ class SyncRepositoryImpl implements SyncRepository {
         offset: offset,
       ),
       merge: _mergeReceivables,
+    );
+    await pullEntity(
+      entityType: SyncEntityType.receipt,
+      fetch: (limit, offset) => _remoteDataSource.fetchReceipts(
+        updatedAfter: lastSyncedAt,
+        limit: limit,
+        offset: offset,
+      ),
+      merge: _mergeReceipts,
     );
 
     return _PullResult(
@@ -819,6 +857,30 @@ class SyncRepositoryImpl implements SyncRepository {
       if (local == null || remote.lastModified.isAfter(local.lastModified)) {
         await _receivableLocalDataSource.saveReceivable(
           ReceivableModel.fromEntity(remote.copyWith(isSynced: true)),
+        );
+        pulled++;
+      }
+    }
+    return pulled;
+  }
+
+  Future<int> _mergeReceipts(List<Map<String, dynamic>> rows) async {
+    if (rows.isEmpty) {
+      return 0;
+    }
+
+    final localModels = await _receiptLocalDataSource.getReceipts();
+    final byId = <String, ReceiptModel>{
+      for (final model in localModels) model.id: model,
+    };
+    var pulled = 0;
+
+    for (final row in rows) {
+      final remote = ReceiptModel.fromJson(row);
+      final local = byId[remote.id];
+      if (local == null || remote.lastModified.isAfter(local.lastModified)) {
+        await _receiptLocalDataSource.saveReceipt(
+          ReceiptModel.fromEntity(remote.copyWith(isSynced: true)),
         );
         pulled++;
       }

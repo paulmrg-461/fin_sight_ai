@@ -255,9 +255,11 @@ class IntegrationHarness {
       HiveReceivableLocalDataSource(_receivablesBox),
       syncQueue: syncLocal,
     );
+    final receiptLocal = HiveReceiptLocalDataSource(_receiptsBox);
     receiptRepository = ReceiptRepositoryImpl(
-      HiveReceiptLocalDataSource(_receiptsBox),
+      receiptLocal,
       ocr,
+      syncQueue: syncLocal,
     );
     categoryRepository = CategoryRepositoryImpl(
       HiveCategoryLocalDataSource(_categoriesBox),
@@ -387,6 +389,7 @@ class IntegrationHarness {
       HiveScheduledPaymentLocalDataSource(_scheduledPaymentsBox),
       HiveWalletLocalDataSource(_walletsBox, _walletTransfersBox),
       HiveSavingsLocalDataSource(_savingsGoalsBox),
+      receiptLocal,
       appEnv,
       authRepository,
     );

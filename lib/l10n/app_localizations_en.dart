@@ -1625,4 +1625,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlockApp => 'Unlock';
+
+  @override
+  String get receiptsLabel => 'Receipts';
 }

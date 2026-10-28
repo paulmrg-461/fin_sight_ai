@@ -935,6 +935,27 @@ void main() {
   });
 
   testWidgets('copies the visible transactions as CSV', (tester) async {
+    // The Linux embedder clipboard needs a live display server; route the
+    // platform channel through an in-memory handler so the assertion stays
+    // deterministic on headless CI.
+    String? clipboardText;
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'Clipboard.setData') {
+        clipboardText = (call.arguments as Map)['text'] as String?;
+        return null;
+      }
+      if (call.method == 'Clipboard.getData') {
+        final text = clipboardText;
+        return text == null ? null : <String, dynamic>{'text': text};
+      }
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+
     await harness.addTransaction(
       AddTransactionParams(
         amount: 12.5,

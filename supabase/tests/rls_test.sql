@@ -237,4 +237,43 @@ begin
 end $$;
 
 reset role;
+-- Receipt metadata: same owner isolation.
+reset role;
+set local role authenticated;
+set local request.jwt.claims =
+  '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+
+insert into public.receipts
+  (id, image_path, merchant_name, receipt_date, total_amount, currency, items)
+values
+  ('rls-receipt-a', '', 'Store', now(), 12.5, 'USD', '[]'::jsonb);
+
+do $$
+begin
+  if (select count(*) from public.receipts where id = 'rls-receipt-a') <> 1 then
+    raise exception 'RLS failure: owner cannot read their own receipt';
+  end if;
+end $$;
+
+reset role;
+set local role authenticated;
+set local request.jwt.claims =
+  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+
+do $$
+begin
+  if (select count(*) from public.receipts where id = 'rls-receipt-a') <> 0 then
+    raise exception 'RLS failure: user B can read user A receipts';
+  end if;
+end $$;
+
+update public.receipts set total_amount = 0 where id = 'rls-receipt-a';
+
+do $$
+begin
+  if (select count(*) from public.receipts where id = 'rls-receipt-a' and total_amount = 0) <> 0 then
+    raise exception 'RLS failure: user B can update user A receipts';
+  end if;
+end $$;
+
 rollback;

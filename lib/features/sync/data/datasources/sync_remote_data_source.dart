@@ -100,4 +100,14 @@ abstract interface class SyncRemoteDataSource {
   Future<void> upsertReceivable(Map<String, dynamic> json);
 
   Future<void> deleteReceivable(String id);
+
+  Future<Map<String, dynamic>?> fetchReceipt(String id);
+
+  Future<List<Map<String, dynamic>>> fetchReceipts({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  });
+
+  Future<void> upsertReceipt(Map<String, dynamic> json);
 }

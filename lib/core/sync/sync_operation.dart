@@ -9,6 +9,7 @@ enum SyncEntityType {
   debt,
   budget,
   receivable,
+  receipt,
 }
 
 /// Operations queued while offline.

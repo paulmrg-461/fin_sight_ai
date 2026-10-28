@@ -45,6 +45,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 035 | First-run onboarding | P2 | S | 011 | DONE (1053 unit, 35 integration) |
 | 036 | Import transactions from CSV | P2 | M | 015 | DONE (1064 unit, 36 integration) |
 | 037 | App lock with biometrics | P1 | M | 004, 035 | DONE (1072 unit, 37 integration) |
+| 038 | Sync receipt metadata | P2 | M | 005, 007, 028 | DONE (1081 unit, 37 integration) |
+
+- 038 synced receipt metadata through the queue, remote table, and pull merge.
 
 - 037 added an opt-in biometric app lock with a lifecycle-aware gate and localized settings copy.
 

@@ -311,6 +311,33 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
     await _delete('receivables', id);
   }
 
+  @override
+  Future<Map<String, dynamic>?> fetchReceipt(String id) async {
+    final rows = await _fetch('receipts', {'id': 'eq.$id', 'select': '*'});
+    if (rows.isEmpty) {
+      return null;
+    }
+    return _receiptFromRow(rows.first);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchReceipts({
+    DateTime? updatedAfter,
+    int limit = 500,
+    int offset = 0,
+  }) async {
+    final rows = await _fetch(
+      'receipts',
+      _updatedQuery(updatedAfter, limit: limit, offset: offset),
+    );
+    return rows.map(_receiptFromRow).toList(growable: false);
+  }
+
+  @override
+  Future<void> upsertReceipt(Map<String, dynamic> json) async {
+    await _upsert('receipts', _receiptToRow(json));
+  }
+
   Map<String, String> _updatedQuery(
     DateTime? updatedAfter, {
     required int limit,
@@ -679,6 +706,34 @@ class SupabaseRestSyncDataSource implements SyncRemoteDataSource {
       'createdAt': row['created_at'],
       'updatedAt': row['updated_at'],
       'deletedAt': row['deleted_at'],
+      'isSynced': true,
+    };
+  }
+
+  Map<String, dynamic> _receiptToRow(Map<String, dynamic> json) {
+    return <String, dynamic>{
+      'id': json['id'],
+      'image_path': json['imagePath'] ?? '',
+      'merchant_name': json['merchantName'] ?? '',
+      'receipt_date': json['date'],
+      'total_amount': json['totalAmount'],
+      'currency': json['currency'],
+      'items': json['items'] ?? const [],
+      'created_at': json['updatedAt'] ?? json['date'],
+      'updated_at': json['updatedAt'] ?? json['date'],
+    };
+  }
+
+  Map<String, dynamic> _receiptFromRow(Map<String, dynamic> row) {
+    return <String, dynamic>{
+      'id': row['id'],
+      'imagePath': row['image_path'] ?? '',
+      'merchantName': row['merchant_name'] ?? '',
+      'date': row['receipt_date'],
+      'totalAmount': row['total_amount'],
+      'currency': row['currency'],
+      'items': row['items'] ?? const [],
+      'updatedAt': row['updated_at'],
       'isSynced': true,
     };
   }

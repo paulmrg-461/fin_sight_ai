@@ -1634,4 +1634,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get unlockApp => 'Desbloquear';
+
+  @override
+  String get receiptsLabel => 'Recibos';
 }

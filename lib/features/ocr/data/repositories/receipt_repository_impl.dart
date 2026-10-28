@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../../core/domain/failure.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/sync/sync_operation.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/clock.dart';
 import '../../domain/entities/receipt_entity.dart';
@@ -19,6 +20,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   const ReceiptRepositoryImpl(
     this._localDataSource,
     this._ocrDataSource, {
+    this.syncQueue,
     this.uuid = const Uuid(),
     this.clock = const Clock(),
   });
@@ -27,6 +29,7 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
 
   final ReceiptLocalDataSource _localDataSource;
   final OcrDataSource _ocrDataSource;
+  final SyncQueue? syncQueue;
   final Uuid uuid;
   final Clock clock;
 
@@ -72,8 +75,11 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
   @override
   ResultFuture<ReceiptEntity> saveReceipt(ReceiptEntity receipt) async {
     try {
-      final model = ReceiptModel.fromEntity(receipt);
+      final model = ReceiptModel.fromEntity(
+        receipt.copyWith(updatedAt: clock.now(), isSynced: false),
+      );
       await _localDataSource.saveReceipt(model);
+      await _enqueue(model);
       return Right(model.toEntity());
     } on CacheException catch (exception) {
       return Left(_toCacheFailure(exception));
@@ -105,6 +111,25 @@ class ReceiptRepositoryImpl implements ReceiptRepository {
           code: 'cache_read_failed',
         ),
       );
+    }
+  }
+
+  Future<void> _enqueue(ReceiptModel model) async {
+    final queue = syncQueue;
+    if (queue == null) {
+      return;
+    }
+    try {
+      await queue.enqueue(
+        SyncOperation.upsert(
+          entityType: SyncEntityType.receipt,
+          entityId: model.id,
+          payload: model.toJson(),
+          queuedAt: clock.now(),
+        ),
+      );
+    } catch (_) {
+      // The local write is authoritative; a queue failure must not lose it.
     }
   }
 

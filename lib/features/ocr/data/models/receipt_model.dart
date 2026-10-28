@@ -10,6 +10,8 @@ class ReceiptModel extends ReceiptEntity {
     required super.totalAmount,
     required super.items,
     required super.currency,
+    super.updatedAt,
+    super.isSynced,
   });
 
   factory ReceiptModel.fromEntity(ReceiptEntity receipt) {
@@ -21,6 +23,8 @@ class ReceiptModel extends ReceiptEntity {
       totalAmount: receipt.totalAmount,
       items: receipt.items,
       currency: receipt.currency,
+      updatedAt: receipt.updatedAt,
+      isSynced: receipt.isSynced,
     );
   }
 
@@ -71,6 +75,10 @@ class ReceiptModel extends ReceiptEntity {
       totalAmount: totalAmount.toDouble(),
       items: List<ReceiptItem>.unmodifiable(parsedItems),
       currency: currency,
+      updatedAt: json['updatedAt'] is String
+          ? DateTime.tryParse(json['updatedAt'] as String)
+          : null,
+      isSynced: json['isSynced'] is bool ? json['isSynced'] as bool : false,
     );
   }
 
@@ -103,6 +111,8 @@ class ReceiptModel extends ReceiptEntity {
       'date': date.toUtc().toIso8601String(),
       'totalAmount': totalAmount,
       'currency': currency,
+      'updatedAt': updatedAt?.toUtc().toIso8601String(),
+      'isSynced': isSynced,
       'items': items
           .map(
             (item) => <String, dynamic>{
@@ -124,6 +134,8 @@ class ReceiptModel extends ReceiptEntity {
       totalAmount: totalAmount,
       items: items,
       currency: currency,
+      updatedAt: updatedAt,
+      isSynced: isSynced,
     );
   }
 }

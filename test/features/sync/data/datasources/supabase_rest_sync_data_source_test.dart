@@ -492,6 +492,87 @@ void main() {
       expect(captured.url.queryParameters['id'], 'eq.receivable-1');
     });
 
+    test('fetches and maps receipt metadata', () async {
+      final client = MockClient(
+        (request) async => http.Response(
+          jsonEncode([
+            {
+              'id': 'receipt-1',
+              'image_path': '/tmp/r.jpg',
+              'merchant_name': 'ACME',
+              'receipt_date': '2026-10-20T00:00:00.000Z',
+              'total_amount': 11.5,
+              'currency': 'USD',
+              'items': [
+                {'name': 'Milk', 'quantity': 2, 'price': 3.5},
+              ],
+              'updated_at': '2026-10-20T12:00:00.000Z',
+            },
+          ]),
+          200,
+        ),
+      );
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      final row = await datasource.fetchReceipt('receipt-1');
+
+      expect(row!['merchantName'], 'ACME');
+      expect(row['date'], '2026-10-20T00:00:00.000Z');
+      expect(row['totalAmount'], 11.5);
+      expect(row['items'], hasLength(1));
+      expect(row['isSynced'], isTrue);
+    });
+
+    test('returns null when a receipt is missing', () async {
+      final client = MockClient(
+        (request) async => http.Response(jsonEncode([]), 200),
+      );
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      expect(await datasource.fetchReceipt('missing'), isNull);
+    });
+
+    test('upserts a receipt using snake_case columns', () async {
+      late http.Request captured;
+      final client = MockClient((request) async {
+        captured = request;
+        return http.Response('', 201);
+      });
+      final datasource = SupabaseRestSyncDataSource(
+        client,
+        configuredEnv(),
+        auth,
+      );
+
+      await datasource.upsertReceipt({
+        'id': 'receipt-1',
+        'imagePath': '/tmp/r.jpg',
+        'merchantName': 'ACME',
+        'date': '2026-10-20T00:00:00.000Z',
+        'totalAmount': 11.5,
+        'currency': 'USD',
+        'items': const [],
+        'updatedAt': '2026-10-20T12:00:00.000Z',
+        'isSynced': false,
+      });
+
+      final body = jsonDecode(captured.body) as Map<String, dynamic>;
+      expect(body['image_path'], '/tmp/r.jpg');
+      expect(body['merchant_name'], 'ACME');
+      expect(body['receipt_date'], '2026-10-20T00:00:00.000Z');
+      expect(body['total_amount'], 11.5);
+      expect(body['updated_at'], '2026-10-20T12:00:00.000Z');
+      expect(body.containsKey('isSynced'), isFalse);
+    });
+
     test('maps non-2xx responses to an HTTP failure', () async {
       final client = MockClient(
         (request) async => http.Response('forbidden', 403),

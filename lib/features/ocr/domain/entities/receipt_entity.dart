@@ -50,6 +50,8 @@ class ReceiptEntity extends Entity {
     required this.totalAmount,
     required this.items,
     required this.currency,
+    this.updatedAt,
+    this.isSynced = false,
   });
 
   @override
@@ -64,6 +66,13 @@ class ReceiptEntity extends Entity {
   /// ISO-4217 code, normalized to uppercase.
   final String currency;
 
+  final DateTime? updatedAt;
+
+  /// Whether the remote backend already accepted this record.
+  final bool isSynced;
+
+  DateTime get lastModified => updatedAt ?? date;
+
   double get itemsTotal =>
       items.fold(0, (total, item) => total + item.lineTotal);
 
@@ -75,6 +84,8 @@ class ReceiptEntity extends Entity {
     double? totalAmount,
     List<ReceiptItem>? items,
     String? currency,
+    DateTime? updatedAt,
+    bool? isSynced,
   }) {
     return ReceiptEntity(
       id: id ?? this.id,
@@ -84,6 +95,8 @@ class ReceiptEntity extends Entity {
       totalAmount: totalAmount ?? this.totalAmount,
       items: items ?? this.items,
       currency: currency ?? this.currency,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 

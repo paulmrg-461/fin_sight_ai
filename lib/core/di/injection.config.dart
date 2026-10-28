@@ -102,7 +102,7 @@ import 'package:fin_sight_ai/features/categories/domain/usecases/category_usecas
 import 'package:fin_sight_ai/features/categories/presentation/bloc/category_bloc.dart'
     as _i968;
 import 'package:fin_sight_ai/features/dashboard/data/repositories/dashboard_repository_impl.dart'
-    as _i366;
+    as _i367;
 import 'package:fin_sight_ai/features/dashboard/domain/repositories/dashboard_repository.dart'
     as _i864;
 import 'package:fin_sight_ai/features/dashboard/domain/usecases/dashboard_usecases.dart'
@@ -137,7 +137,7 @@ import 'package:fin_sight_ai/features/ocr/data/datasources/receipt_local_data_so
     as _i783;
 import 'package:fin_sight_ai/features/ocr/data/ocr_module.dart' as _i600;
 import 'package:fin_sight_ai/features/ocr/data/repositories/receipt_repository_impl.dart'
-    as _i367;
+    as _i366;
 import 'package:fin_sight_ai/features/ocr/domain/repositories/receipt_repository.dart'
     as _i832;
 import 'package:fin_sight_ai/features/ocr/domain/usecases/get_receipts_usecase.dart'
@@ -525,6 +525,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i192.SetCurrencyUseCase>(
       () => _i192.SetCurrencyUseCase(gh<_i1029.CurrencyRepository>()),
     );
+    gh.lazySingleton<_i832.ReceiptRepository>(
+      () => _i366.ReceiptRepositoryImpl(
+        gh<_i783.ReceiptLocalDataSource>(),
+        gh<_i880.OcrDataSource>(),
+        syncQueue: gh<_i588.SyncQueue>(),
+        uuid: gh<_i706.Uuid>(),
+        clock: gh<_i956.Clock>(),
+      ),
+    );
     gh.lazySingleton<_i268.DebtRepository>(
       () => _i140.DebtRepositoryImpl(
         gh<_i1035.DebtLocalDataSource>(),
@@ -533,14 +542,12 @@ extension GetItInjectableX on _i174.GetIt {
       ),
     );
     gh.lazySingleton<_i864.DashboardRepository>(
-      () => _i366.DashboardRepositoryImpl(gh<_i544.TransactionRepository>()),
+      () => _i367.DashboardRepositoryImpl(gh<_i544.TransactionRepository>()),
     );
-    gh.lazySingleton<_i832.ReceiptRepository>(
-      () => _i367.ReceiptRepositoryImpl(
-        gh<_i783.ReceiptLocalDataSource>(),
-        gh<_i880.OcrDataSource>(),
+    gh.lazySingleton<_i292.SaveReceiptUseCase>(
+      () => _i292.SaveReceiptUseCase(
+        gh<_i832.ReceiptRepository>(),
         uuid: gh<_i706.Uuid>(),
-        clock: gh<_i956.Clock>(),
       ),
     );
     gh.lazySingleton<_i69.DeleteTransactionUseCase>(
@@ -697,23 +704,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i268.DebtRepository>(),
       ),
     );
-    gh.lazySingleton<_i272.SyncRepository>(
-      () => _i1020.SyncRepositoryImpl(
-        gh<_i921.SyncLocalDataSource>(),
-        gh<_i984.SyncRemoteDataSource>(),
-        gh<_i228.TransactionLocalDataSource>(),
-        gh<_i1035.DebtLocalDataSource>(),
-        gh<_i8.BudgetLocalDataSource>(),
-        gh<_i315.ReceivableLocalDataSource>(),
-        gh<_i65.CategoryLocalDataSource>(),
-        gh<_i462.ScheduledPaymentLocalDataSource>(),
-        gh<_i261.WalletLocalDataSource>(),
-        gh<_i703.SavingsLocalDataSource>(),
-        gh<_i1042.AppEnv>(),
-        gh<_i993.AuthRepository>(),
-        clock: gh<_i956.Clock>(),
-      ),
-    );
     gh.lazySingleton<_i642.UpdateReceivableUseCase>(
       () => _i642.UpdateReceivableUseCase(
         gh<_i554.ReceivableRepository>(),
@@ -734,12 +724,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i243.GetDebtsUseCase>(
       () => _i243.GetDebtsUseCase(gh<_i268.DebtRepository>()),
-    );
-    gh.lazySingleton<_i558.SyncNowUseCase>(
-      () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
-    );
-    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
-      () => _i558.GetSyncStatusUseCase(gh<_i272.SyncRepository>()),
     );
     gh.lazySingleton<_i195.GetCategoryCatalogUseCase>(
       () => _i195.GetCategoryCatalogUseCase(gh<_i888.CategoryRepository>()),
@@ -828,10 +812,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i195.SetCategoryArchivedUseCase>(),
       ),
     );
-    gh.lazySingleton<_i292.SaveReceiptUseCase>(
-      () => _i292.SaveReceiptUseCase(
-        gh<_i832.ReceiptRepository>(),
-        uuid: gh<_i706.Uuid>(),
+    gh.factory<_i1031.OcrBloc>(
+      () => _i1031.OcrBloc(
+        gh<_i826.ScanReceiptUseCase>(),
+        gh<_i292.SaveReceiptUseCase>(),
+        gh<_i937.GetReceiptsUseCase>(),
+        gh<_i362.AddTransactionUseCase>(),
+        gh<_i666.ReceiptImageStore>(),
       ),
     );
     gh.lazySingleton<_i320.ImportTransactionsCsvUseCase>(
@@ -842,6 +829,24 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i983.ImportCsvCubit>(
       () => _i983.ImportCsvCubit(gh<_i320.ImportTransactionsCsvUseCase>()),
+    );
+    gh.lazySingleton<_i272.SyncRepository>(
+      () => _i1020.SyncRepositoryImpl(
+        gh<_i921.SyncLocalDataSource>(),
+        gh<_i984.SyncRemoteDataSource>(),
+        gh<_i228.TransactionLocalDataSource>(),
+        gh<_i1035.DebtLocalDataSource>(),
+        gh<_i8.BudgetLocalDataSource>(),
+        gh<_i315.ReceivableLocalDataSource>(),
+        gh<_i65.CategoryLocalDataSource>(),
+        gh<_i462.ScheduledPaymentLocalDataSource>(),
+        gh<_i261.WalletLocalDataSource>(),
+        gh<_i703.SavingsLocalDataSource>(),
+        gh<_i783.ReceiptLocalDataSource>(),
+        gh<_i1042.AppEnv>(),
+        gh<_i993.AuthRepository>(),
+        clock: gh<_i956.Clock>(),
+      ),
     );
     gh.factory<_i872.AiCoachBloc>(
       () => _i872.AiCoachBloc(
@@ -863,12 +868,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i279.DeleteReceivableUseCase>(),
       ),
     );
-    gh.factory<_i470.SyncBloc>(
-      () => _i470.SyncBloc(
-        gh<_i558.SyncNowUseCase>(),
-        gh<_i558.GetSyncStatusUseCase>(),
-      ),
-    );
     gh.factory<_i200.ScheduledPaymentBloc>(
       () => _i200.ScheduledPaymentBloc(
         gh<_i160.GetScheduledPaymentsUseCase>(),
@@ -882,13 +881,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i244.ReminderScheduler>(),
       ),
     );
-    gh.factory<_i1031.OcrBloc>(
-      () => _i1031.OcrBloc(
-        gh<_i826.ScanReceiptUseCase>(),
-        gh<_i292.SaveReceiptUseCase>(),
-        gh<_i937.GetReceiptsUseCase>(),
-        gh<_i362.AddTransactionUseCase>(),
-        gh<_i666.ReceiptImageStore>(),
+    gh.lazySingleton<_i558.SyncNowUseCase>(
+      () => _i558.SyncNowUseCase(gh<_i272.SyncRepository>()),
+    );
+    gh.lazySingleton<_i558.GetSyncStatusUseCase>(
+      () => _i558.GetSyncStatusUseCase(gh<_i272.SyncRepository>()),
+    );
+    gh.factory<_i470.SyncBloc>(
+      () => _i470.SyncBloc(
+        gh<_i558.SyncNowUseCase>(),
+        gh<_i558.GetSyncStatusUseCase>(),
       ),
     );
     return this;

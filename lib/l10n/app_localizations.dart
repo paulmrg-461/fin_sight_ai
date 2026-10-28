@@ -3001,6 +3001,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unlock'**
   String get unlockApp;
+
+  /// No description provided for @receiptsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipts'**
+  String get receiptsLabel;
 }
 
 class _AppLocalizationsDelegate

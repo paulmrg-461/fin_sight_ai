@@ -11,6 +11,8 @@ import 'package:fin_sight_ai/features/categories/data/models/category_model.dart
 import 'package:fin_sight_ai/features/budgets/data/models/budget_model.dart';
 import 'package:fin_sight_ai/features/debts/data/datasources/debt_local_data_source.dart';
 import 'package:fin_sight_ai/features/debts/data/models/debt_model.dart';
+import 'package:fin_sight_ai/features/ocr/data/datasources/receipt_local_data_source.dart';
+import 'package:fin_sight_ai/features/ocr/data/models/receipt_model.dart';
 import 'package:fin_sight_ai/features/receivables/data/datasources/receivable_local_data_source.dart';
 import 'package:fin_sight_ai/features/receivables/data/models/receivable_model.dart';
 import 'package:fin_sight_ai/features/savings/data/datasources/savings_local_data_source.dart';
@@ -56,6 +58,9 @@ class MockWalletLocalDataSource extends Mock implements WalletLocalDataSource {}
 
 class MockSavingsLocalDataSource extends Mock
     implements SavingsLocalDataSource {}
+
+class MockReceiptLocalDataSource extends Mock
+    implements ReceiptLocalDataSource {}
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -178,6 +183,7 @@ void main() {
   late MockScheduledPaymentLocalDataSource scheduledPaymentLocal;
   late MockWalletLocalDataSource walletLocal;
   late MockSavingsLocalDataSource savingsLocal;
+  late MockReceiptLocalDataSource receiptLocal;
   late MockAuthRepository auth;
 
   SyncRepositoryImpl buildRepository({
@@ -199,6 +205,7 @@ void main() {
       scheduledPaymentLocal,
       walletLocal,
       savingsLocal,
+      receiptLocal,
       env,
       auth,
       clock: FixedClock(now),
@@ -233,6 +240,17 @@ void main() {
         createdAt: DateTime.utc(2026),
       ),
     );
+    registerFallbackValue(
+      ReceiptModel(
+        id: 'receipt-fallback',
+        imagePath: '/tmp/receipt.jpg',
+        merchantName: 'Fallback',
+        date: DateTime.utc(2026),
+        totalAmount: 0,
+        items: const [],
+        currency: 'USD',
+      ),
+    );
     registerFallbackValue(buildCategory());
     registerFallbackValue(buildSchedule());
     registerFallbackValue(
@@ -265,6 +283,7 @@ void main() {
     scheduledPaymentLocal = MockScheduledPaymentLocalDataSource();
     walletLocal = MockWalletLocalDataSource();
     savingsLocal = MockSavingsLocalDataSource();
+    receiptLocal = MockReceiptLocalDataSource();
 
     when(() => categoryLocal.getAllCategories()).thenAnswer((_) async => []);
     when(() => scheduledPaymentLocal.getAllPayments())
@@ -329,6 +348,17 @@ void main() {
     ).thenAnswer((_) async => const []);
     when(() => remote.fetchSavingsGoal(any())).thenAnswer((_) async => null);
     when(() => remote.upsertSavingsGoal(any())).thenAnswer((_) async {});
+    when(() => receiptLocal.getReceipts()).thenAnswer((_) async => []);
+    when(() => receiptLocal.saveReceipt(any())).thenAnswer((_) async {});
+    when(() => remote.fetchReceipt(any())).thenAnswer((_) async => null);
+    when(() => remote.upsertReceipt(any())).thenAnswer((_) async {});
+    when(
+      () => remote.fetchReceipts(
+        updatedAfter: any(named: 'updatedAfter'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenAnswer((_) async => const []);
     auth = MockAuthRepository();
 
     when(() => local.pending()).thenAnswer((_) async => const []);
@@ -1090,6 +1120,96 @@ void main() {
               as SavingsGoalModel;
       expect(saved.isDeleted, isTrue);
       expect(saved.isSynced, isTrue);
+    });
+  });
+
+  group('receipt sync', () {
+    ReceiptModel buildReceipt({String id = 'receipt-1'}) {
+      return ReceiptModel(
+        id: id,
+        imagePath: '/tmp/receipt.jpg',
+        merchantName: 'ACME',
+        date: DateTime.utc(2026, 10, 20),
+        totalAmount: 11.5,
+        currency: 'USD',
+        items: const [],
+        updatedAt: DateTime.utc(2026, 10, 20, 12),
+      );
+    }
+
+    test('pushes a receipt upsert and marks it synced', () async {
+      final receipt = buildReceipt();
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.receipt,
+            entityId: receipt.id,
+            payload: receipt.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pushed, 1);
+      verify(() => remote.upsertReceipt(any())).called(1);
+      final saved =
+          verify(() => receiptLocal.saveReceipt(captureAny())).captured.single
+              as ReceiptModel;
+      expect(saved.isSynced, isTrue);
+      expect(saved.totalAmount, 11.5);
+    });
+
+    test('lets a newer remote receipt win', () async {
+      final receipt = buildReceipt();
+      when(() => local.pending()).thenAnswer(
+        (_) async => [
+          SyncOperation.upsert(
+            entityType: SyncEntityType.receipt,
+            entityId: receipt.id,
+            payload: receipt.toJson(),
+            queuedAt: now,
+          ),
+        ],
+      );
+      when(() => remote.fetchReceipt(receipt.id)).thenAnswer(
+        (_) async => ReceiptModel.fromEntity(
+          receipt.copyWith(updatedAt: DateTime.utc(2026, 10, 21)),
+        ).toJson(),
+      );
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.conflictsResolved, 1);
+      verifyNever(() => remote.upsertReceipt(any()));
+      verify(() => receiptLocal.saveReceipt(any())).called(1);
+    });
+
+    test('pulls receipts from the server', () async {
+      final receipt = buildReceipt();
+      when(
+        () => remote.fetchReceipts(
+          updatedAfter: any(named: 'updatedAfter'),
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+        ),
+      ).thenAnswer((_) async => [receipt.toJson()]);
+
+      final report = (await buildRepository(
+        env: configuredEnv(),
+      ).syncNow()).getOrElse((_) => fail('Expected report'));
+
+      expect(report.pulled, 1);
+      final saved =
+          verify(() => receiptLocal.saveReceipt(captureAny())).captured.single
+              as ReceiptModel;
+      expect(saved.isSynced, isTrue);
+      expect(saved.merchantName, 'ACME');
     });
   });
 

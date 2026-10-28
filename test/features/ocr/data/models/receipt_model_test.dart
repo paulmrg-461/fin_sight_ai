@@ -56,6 +56,28 @@ void main() {
       expect(entity.currency, model.currency);
     });
 
+    test('round-trips sync metadata', () {
+      final model = ReceiptModel(
+        id: 'receipt-1',
+        imagePath: '/tmp/receipt.jpg',
+        merchantName: 'ACME',
+        date: date,
+        totalAmount: 11.5,
+        currency: 'USD',
+        items: const [],
+        updatedAt: DateTime.utc(2026, 10, 23, 9),
+        isSynced: true,
+      );
+
+      final restored = ReceiptModel.fromJson(
+        jsonDecode(jsonEncode(model.toJson())) as Map<String, dynamic>,
+      );
+
+      expect(restored.updatedAt, DateTime.utc(2026, 10, 23, 9));
+      expect(restored.isSynced, isTrue);
+      expect(restored.lastModified, DateTime.utc(2026, 10, 23, 9));
+    });
+
     test('serializes dates as UTC ISO-8601', () {
       final json = buildModel().toJson();
 
