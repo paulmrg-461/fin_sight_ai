@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../features/debts/data/datasources/debt_local_data_source.dart';
@@ -15,6 +14,7 @@ import '../../features/transactions/data/datasources/transaction_local_data_sour
 import '../routing/app_router.dart';
 import '../services/app_boxes.dart';
 import '../services/box_encryption.dart';
+import '../services/hive_storage_location.dart';
 import '../services/local_data_scope.dart';
 import '../services/local_reminder_scheduler.dart';
 import '../services/reminder_scheduler.dart';
@@ -57,7 +57,7 @@ abstract class CoreModule {
 abstract class StorageModule {
   @preResolve
   Future<AppBoxes> provideAppBoxes() async {
-    final directory = await getApplicationDocumentsDirectory();
+    final directory = await const HiveStorageLocation().resolve();
     await Hive.initFlutter(directory.path);
 
     final meta = await Hive.openBox<dynamic>(AppConstants.storageMetaBoxName);

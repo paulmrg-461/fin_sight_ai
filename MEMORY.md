@@ -28,12 +28,13 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 | Receipt metadata sync (queue + Supabase) | Done |
 | Android home-screen widget | Done |
 | Hive at-rest encryption (AES + secure key) | Done |
+| Desktop storage in app support (one-time copy) | Done |
 | Integration suite (37 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-27, latest)
 
 - HEAD: `516e3b8` on `develop` and `main` (both pushed, in sync).
-- Gates: `flutter analyze` clean, **1097** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1103** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
@@ -45,7 +46,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 ## Desktop run fix (2026-10-28)
 
 - Running `flutter run -d linux` exposed a DI bug: injectable tried to resolve `LocalAuthentication` for `LocalAuthBiometricService` because its constructor took an optional plugin instance. The service now creates the plugin internally, and `injection_test` asserts `BiometricService`, `SecurityPreferences`, and `SecurityCubit` resolve.
-- Linux boxes currently live in `~/Documents` (`getApplicationDocumentsDirectory`), leaving `*.hive` and `*.lock` files next to user documents. Move them to `getApplicationSupportDirectory` with a one-time copy before shipping desktop builds.
+- Linux boxes moved to `~/.local/share/pro.devpaul.fin_sight_ai` (plan 041); the first desktop launch copies legacy `*.hive` files from `~/Documents` without deleting the originals or copying `.lock` files. Receipt images still live under the documents directory.
 
 ## Hive at-rest encryption (plan 040)
 

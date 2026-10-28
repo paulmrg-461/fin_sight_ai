@@ -48,6 +48,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 038 | Sync receipt metadata | P2 | M | 005, 007, 028 | DONE (1081 unit, 37 integration) |
 | 039 | Android home-screen widget | P2 | M | 010, 021 | DONE (1086 unit, 37 integration) |
 | 040 | Encrypt Hive boxes at rest | P1 | M | 002, 037, 039 | DONE (1097 unit, 37 integration) |
+| 041 | Move desktop Hive storage to app support with migration | P2 | S | 040 | DONE (1103 unit, 37 integration) |
+
+- 041 moved desktop boxes to the application support directory and copied legacy `~/Documents` Hive files once.
 
 - 040 encrypted every Hive box with an AES key held in platform secure storage and a guarded one-time plaintext migration.
 
