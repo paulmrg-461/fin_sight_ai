@@ -50,6 +50,9 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 040 | Encrypt Hive boxes at rest | P1 | M | 002, 037, 039 | DONE (1097 unit, 37 integration) |
 | 041 | Move desktop Hive storage to app support with migration | P2 | S | 040 | DONE (1103 unit, 37 integration) |
 | 042 | Move account and sync controls into the drawer | P2 | S | 011, 028 | DONE (1107 unit, 37 integration) |
+| 043 | Chart semantics, sync conflict feedback, and goldens | P2 | S | 033, 042 | DONE (1112 unit, 38 integration) |
+| 044 | Annual reports with PDF sharing | P2 | M | 032 | DONE (1144 unit, 38 integration) |
+| 045 | Integer money and category resolver primitives | P1 | M | — | PHASE 1 DONE (1144 unit) |
 
 - 042 removed sign-out and sync from the dashboard app bar and gave both labelled rows in the drawer.
 
