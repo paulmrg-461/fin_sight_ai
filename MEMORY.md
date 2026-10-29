@@ -41,14 +41,14 @@ _Last updated: 2026-10-28. Read this before starting a new session._
 
 ### Current checkpoint (2026-10-28, latest)
 
-- HEAD: `d107c44` plus the developer-profile commit on `develop` and `main` (pushed, in sync).
+- HEAD: `01fa90e` on `develop` and `main` (both pushed, in sync).
 - Gates: `flutter analyze` clean, **1154** unit/widget tests, coverage gate green, **39** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~226 ms, transactions render ~182 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
 - Local run command: `flutter run -d linux --dart-define-from-file=.env`. The app is **not running** right now (last session closed with `Lost connection to device`).
 - Branch policy: work on `develop`, commit + push every feature, fast-forward into `main` and push.
-- Recent commits (newest first): `d107c44` animated tabs, `1e6723b` transaction form + contrast, `4931fe5` settings/coach/OCR/schedules/wide layouts, `8e53f62` percent pills, `7a1eb6c` UI polish pass, `3300944` money/category primitives, `3310e91` annual PDF, `b9c4d11` chart semantics/conflicts/goldens, `9b08815` FLAG_SECURE + receipt images, `34d77de` drawer account/sync, `c7c3553` desktop storage, `13b66e8` DI biometric fix, `5a4c80d` hosted schema memory, `35af517` Supabase scripts.
+- Recent commits (newest first): `01fa90e` developer profile, `d107c44` animated tabs, `1e6723b` transaction form + contrast, `4931fe5` settings/coach/OCR/schedules/wide layouts, `8e53f62` percent pills, `7a1eb6c` UI polish pass, `3300944` money/category primitives, `3310e91` annual PDF, `b9c4d11` chart semantics/conflicts/goldens, `9b08815` FLAG_SECURE + receipt images, `34d77de` drawer account/sync, `c7c3553` desktop storage, `13b66e8` DI biometric fix, `5a4c80d` hosted schema memory, `35af517` Supabase scripts.
 - Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption, `041` desktop storage, `042` drawer account/sync, `043` a11y/conflicts/goldens, `044` annual PDF, `045` money/category primitives, `046` UI polish.
 - Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY` (publishable), and `GROQ_API_KEY` set. The **Groq key has been pasted in chat twice and must be rotated**; the Supabase publishable key is safe to expose. Never print or commit these values.
 - Hosted Supabase schema (`0001`–`0008`) is applied; the receipts/savings tables resolve (401 for `anon`, not PGRST205). A database-level `verify_rls.sh` run is still pending because no DB URL is stored.
