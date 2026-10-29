@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../app/main_shell.dart';
 import '../../features/ai_coach/presentation/screens/ai_coach_screen.dart';
@@ -31,11 +32,16 @@ GoRouter buildRouter({
   return GoRouter(
     initialLocation: AppRoutes.dashboardPath,
     routes: [
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
         builder: (context, state, navigationShell) => MainShell(
           navigationShell: navigationShell,
           themeController: themeController,
         ),
+        navigatorContainerBuilder: (context, navigationShell, children) =>
+            _AnimatedBranchContainer(
+              index: navigationShell.currentIndex,
+              children: children,
+            ),
         branches: [
           StatefulShellBranch(
             routes: [
@@ -146,4 +152,83 @@ GoRouter buildRouter({
       ),
     ],
   );
+}
+
+/// Keeps every branch mounted (state preserved) and fades/slides the newly
+/// selected one into view. Inactive branches stay offstage so finders, focus,
+/// and semantics behave exactly like the default indexed stack.
+class _AnimatedBranchContainer extends StatefulWidget {
+  const _AnimatedBranchContainer({required this.index, required this.children});
+
+  final int index;
+  final List<Widget> children;
+
+  @override
+  State<_AnimatedBranchContainer> createState() =>
+      _AnimatedBranchContainerState();
+}
+
+class _AnimatedBranchContainerState extends State<_AnimatedBranchContainer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<Offset> _offset;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+      value: 1,
+    );
+    final curved = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    );
+    _opacity = curved;
+    _offset = Tween<Offset>(
+      begin: const Offset(0, 0.015),
+      end: Offset.zero,
+    ).animate(curved);
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedBranchContainer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (var index = 0; index < widget.children.length; index++)
+          Offstage(
+            offstage: index != widget.index,
+            child: TickerMode(
+              enabled: index == widget.index,
+              child: index == widget.index
+                  ? FadeTransition(
+                      opacity: _opacity,
+                      child: SlideTransition(
+                        position: _offset,
+                        child: widget.children[index],
+                      ),
+                    )
+                  : widget.children[index],
+            ),
+          ),
+      ],
+    );
+  }
 }

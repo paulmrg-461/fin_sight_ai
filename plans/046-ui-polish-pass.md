@@ -36,6 +36,8 @@ progress visuals, calmer hierarchy, and less plain list content.
 - Scheduled payments are grouped into Overdue / Today / This week / Upcoming /
   Paused with counted headers.
 - The dashboard switches to a two-column layout at 900 px and wider.
+- Shell tabs fade and slide the incoming branch (220 ms) while inactive
+  branches stay mounted offstage, preserving state and finder semantics.
 - Transaction form: close action, a two-option expense/income selector with
   brand-tinted states, and a hero amount field with a large numeric style.
 - Contrast audit: light filled buttons use a deep ink label on emerald, and

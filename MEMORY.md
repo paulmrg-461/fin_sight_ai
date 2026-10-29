@@ -57,6 +57,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - Annual reports render two proportional mini bars per month (income vs expenses) for a quick yearly trend.
 - Settings gained icon badges and section labels; AI Coach a gradient header; OCR shared empty/error states; schedules group into Overdue/Today/Week/Upcoming/Paused; the dashboard is two-column at ≥900 px.
 - Transaction form has a hero amount field and tinted expense/income selector; the theme now passes a WCAG AA contrast test (deep ink on emerald, accessible error pairs).
+- Shell navigation uses a custom `StatefulShellRoute` container: the active branch fades/slides in, inactive branches stay mounted offstage, so state and test semantics are preserved.
 - Goldens regenerated (drawer at full height, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.
 
 ## UI, reporting, and primitives (2026-10-28)
