@@ -1688,4 +1688,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get yesterday => 'Ayer';
+
+  @override
+  String get dataSection => 'Datos';
+
+  @override
+  String get scheduledOverdue => 'Vencidos';
+
+  @override
+  String get scheduledThisWeek => 'Esta semana';
+
+  @override
+  String get scheduledUpcoming => 'Próximos';
+
+  @override
+  String get scheduledPaused => 'En pausa';
 }

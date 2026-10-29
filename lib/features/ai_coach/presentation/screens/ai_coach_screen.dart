@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../core/l10n/failure_text.dart';
+import '../../../../core/widgets/app_layout.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../bloc/ai_coach_bloc.dart';
@@ -50,14 +51,47 @@ class AiCoachScreen extends StatelessWidget {
               ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 children: [
-                  Text(
-                    context.l10n.yourFinancialCoach,
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.l10n.insightsDisclaimer,
-                    style: Theme.of(context).textTheme.bodySmall,
+                  BrandGradientCard(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              color: Colors.white70,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              context.l10n.aiCoach.toUpperCase(),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          context.l10n.yourFinancialCoach,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          context.l10n.insightsDisclaimer,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.white70),
+                        ),
+                      ],
+                    ),
                   ),
                   if (fromCache) ...[
                     const SizedBox(height: 12),

@@ -3085,6 +3085,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yesterday'**
   String get yesterday;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get dataSection;
+
+  /// No description provided for @scheduledOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get scheduledOverdue;
+
+  /// No description provided for @scheduledThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get scheduledThisWeek;
+
+  /// No description provided for @scheduledUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get scheduledUpcoming;
+
+  /// No description provided for @scheduledPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get scheduledPaused;
 }
 
 class _AppLocalizationsDelegate

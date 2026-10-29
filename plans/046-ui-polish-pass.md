@@ -30,6 +30,12 @@ progress visuals, calmer hierarchy, and less plain list content.
 - All progress surfaces now share height, radius, animation, and semantics.
 - New `AppPercentPill` gives budgets, savings goals, and debts the same
   percentage badge; savings and debt cards also gained leading icon badges.
+- Settings sections use icon badges and uppercase section labels.
+- AI Coach opens with a gradient brand header; OCR reuses the shared
+  empty/error states and adds a receipt chevron and card-based busy state.
+- Scheduled payments are grouped into Overdue / Today / This week / Upcoming /
+  Paused with counted headers.
+- The dashboard switches to a two-column layout at 900 px and wider.
 
 ## Verification
 

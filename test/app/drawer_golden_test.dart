@@ -29,7 +29,7 @@ class MockGetSyncStatus extends Mock implements GetSyncStatusUseCase {}
 
 void main() {
   testWidgets('drawer golden', (tester) async {
-    tester.view.physicalSize = const Size(360, 1100);
+    tester.view.physicalSize = const Size(360, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -79,7 +79,7 @@ void main() {
           home: Scaffold(
             body: SizedBox(
               width: 340,
-              height: 1100,
+              height: 1600,
               child: AppDrawer(
                 themeController: themeController,
                 currentIndex: 0,

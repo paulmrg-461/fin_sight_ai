@@ -55,7 +55,8 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - New `AppProgressBar` (animated, rounded, gradient, semantics) replaced every raw progress indicator across budgets, savings, debts, receivables, wallets, and budget alerts; `AppPercentPill` unifies budget/savings/debt percentages.
 - Transactions group by day with Today/Yesterday headers and a daily net; budgets show a category badge, percentage pill, animated bar, and remaining/over indicator.
 - Annual reports render two proportional mini bars per month (income vs expenses) for a quick yearly trend.
-- Goldens regenerated (drawer, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.
+- Settings gained icon badges and section labels; AI Coach a gradient header; OCR shared empty/error states; schedules group into Overdue/Today/Week/Upcoming/Paused; the dashboard is two-column at ≥900 px.
+- Goldens regenerated (drawer at full height, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.
 
 ## UI, reporting, and primitives (2026-10-28)
 

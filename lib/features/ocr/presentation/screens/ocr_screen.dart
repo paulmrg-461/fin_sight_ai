@@ -6,6 +6,7 @@ import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/services/receipt_image_picker.dart';
 import '../../../../core/utils/date_formatters.dart';
+import '../../../../core/widgets/app_states.dart';
 import '../../domain/entities/receipt_entity.dart';
 import '../bloc/ocr_bloc.dart';
 import '../bloc/ocr_event.dart';
@@ -125,7 +126,7 @@ class OcrScreen extends StatelessWidget {
       OcrScanSuccess() ||
       OcrSaved() ||
       OcrTransactionFailure() => _BusyState(message: context.l10n.finishingUp),
-      OcrFailure(:final message) => _ErrorState(
+      OcrFailure(:final message) => AppErrorState(
         message: context.failureText(message),
         onRetry: () => context.read<OcrBloc>().add(const LoadReceipts()),
       ),
@@ -159,8 +160,13 @@ class _ReceiptTile extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        leading: CircleAvatar(
-          backgroundColor: theme.colorScheme.primaryContainer,
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer,
+            borderRadius: BorderRadius.circular(13),
+          ),
           child: Icon(
             Icons.receipt_long_outlined,
             color: theme.colorScheme.onPrimaryContainer,
@@ -175,11 +181,21 @@ class _ReceiptTile extends StatelessWidget {
           '${formatDisplayDate(receipt.date)} • '
           '${context.l10n.itemsCount(receipt.items.length)}',
         ),
-        trailing: MoneyText(
-          receipt.totalAmount,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            MoneyText(
+              receipt.totalAmount,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ],
         ),
       ),
     );
@@ -193,37 +209,16 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.document_scanner_outlined,
-              size: 56,
-              color: theme.colorScheme.primary,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              context.l10n.noReceiptsYet,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              context.l10n.noReceiptsBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onScan,
-              icon: const Icon(Icons.document_scanner_outlined),
-              label: Text(context.l10n.scanAReceipt),
-            ),
-          ],
+        padding: const EdgeInsets.all(20),
+        child: AppEmptyState(
+          icon: Icons.document_scanner_outlined,
+          title: context.l10n.noReceiptsYet,
+          message: context.l10n.noReceiptsBody,
+          actionLabel: context.l10n.scanAReceipt,
+          actionIcon: Icons.document_scanner_outlined,
+          onAction: onScan,
         ),
       ),
     );
@@ -237,52 +232,30 @@ class _BusyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircularProgressIndicator(),
-          const SizedBox(height: 16),
-          Text(
-            context.failureText(message),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: theme.colorScheme.error),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.retry),
-            ),
-          ],
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 26),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 46,
+                height: 46,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  semanticsLabel: message,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                context.failureText(message),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium,
+              ),
+            ],
+          ),
         ),
       ),
     );

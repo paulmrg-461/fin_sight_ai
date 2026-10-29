@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../app/main_shell.dart';
 import '../../../../core/currency/presentation/widgets/money_text.dart';
 import '../../../../core/l10n/failure_text.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/l10n/l10n.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/utils/date_formatters.dart';
@@ -65,6 +66,73 @@ class ScheduledPaymentScreen extends StatelessWidget {
     if (confirmed == true) {
       bloc.add(DeleteScheduledPayment(payment.id));
     }
+  }
+
+  List<Widget> _paymentRows(
+    BuildContext context,
+    List<ScheduledPaymentEntity> payments,
+  ) {
+    final l10n = context.l10n;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekEnd = today.add(const Duration(days: 7));
+
+    DateTime day(DateTime value) =>
+        DateTime(value.year, value.month, value.day);
+
+    final active = payments.where((payment) => payment.isActive).toList()
+      ..sort((a, b) => a.nextDueDate.compareTo(b.nextDueDate));
+    final paused = payments.where((payment) => !payment.isActive).toList()
+      ..sort((a, b) => a.nextDueDate.compareTo(b.nextDueDate));
+
+    final overdue = active
+        .where((payment) => day(payment.nextDueDate).isBefore(today))
+        .toList();
+    final dueToday = active
+        .where((payment) => day(payment.nextDueDate) == today)
+        .toList();
+    final thisWeek = active.where((payment) {
+      final due = day(payment.nextDueDate);
+      return due.isAfter(today) && due.isBefore(weekEnd);
+    }).toList();
+    final upcoming = active.where((payment) {
+      final due = day(payment.nextDueDate);
+      return due.isAfter(today) && !due.isBefore(weekEnd);
+    }).toList();
+
+    Widget card(ScheduledPaymentEntity payment) => ScheduledPaymentCard(
+      payment: payment,
+      onPayNow: () => context.read<ScheduledPaymentBloc>().add(
+        PayScheduledPayment(payment.id),
+      ),
+      onEdit: () => _openForm(context, initial: payment),
+      onToggleActive: () => context.read<ScheduledPaymentBloc>().add(
+        SetScheduledPaymentActive(id: payment.id, isActive: !payment.isActive),
+      ),
+      onDelete: () => _delete(context, payment),
+    );
+
+    List<Widget> group(
+      String label,
+      List<ScheduledPaymentEntity> rows, {
+      Color? color,
+    }) {
+      if (rows.isEmpty) {
+        return const [];
+      }
+      return [
+        _ScheduledGroupHeader(label: label, count: rows.length, color: color),
+        for (final payment in rows) card(payment),
+      ];
+    }
+
+    return [
+      ...group(l10n.scheduledOverdue, overdue, color: AppColors.danger),
+      ...group(l10n.today, dueToday),
+      ...group(l10n.scheduledThisWeek, thisWeek),
+      ...group(l10n.scheduledUpcoming, upcoming),
+      ...group(l10n.scheduledPaused, paused),
+    ];
   }
 
   @override
@@ -172,22 +240,7 @@ class ScheduledPaymentScreen extends StatelessWidget {
                       thirtyDays: committed30,
                       ninetyDays: committed90,
                     ),
-                    for (final payment in payments)
-                      ScheduledPaymentCard(
-                        payment: payment,
-                        onPayNow: () => context
-                            .read<ScheduledPaymentBloc>()
-                            .add(PayScheduledPayment(payment.id)),
-                        onEdit: () => _openForm(context, initial: payment),
-                        onToggleActive: () =>
-                            context.read<ScheduledPaymentBloc>().add(
-                              SetScheduledPaymentActive(
-                                id: payment.id,
-                                isActive: !payment.isActive,
-                              ),
-                            ),
-                        onDelete: () => _delete(context, payment),
-                      ),
+                    ..._paymentRows(context, payments),
                   ],
                 ),
               ),
@@ -343,6 +396,60 @@ class _ErrorBanner extends StatelessWidget {
               message,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onErrorContainer,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScheduledGroupHeader extends StatelessWidget {
+  const _ScheduledGroupHeader({
+    required this.label,
+    required this.count,
+    this.color,
+  });
+
+  final String label;
+  final int count;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final accent = color ?? theme.colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+      child: Row(
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: accent,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.7,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              '$count',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: accent,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),

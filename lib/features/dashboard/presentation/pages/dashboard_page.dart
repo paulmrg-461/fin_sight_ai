@@ -76,6 +76,27 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
+  List<Widget> _responsiveSections(
+    BuildContext context, {
+    required List<Widget> summary,
+    required List<Widget> insights,
+  }) {
+    final wide = MediaQuery.sizeOf(context).width >= 900;
+    if (!wide) {
+      return [...summary, ...insights];
+    }
+    return [
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: Column(children: summary)),
+          const SizedBox(width: 16),
+          Expanded(child: Column(children: insights)),
+        ],
+      ),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,69 +198,83 @@ class DashboardPage extends StatelessWidget {
                         onTap: () => _pickRange(context),
                       ),
                       const SizedBox(height: 14),
-                      _BalanceHero(summary: summary),
-                      const SizedBox(height: 12),
-                      const _AccountsOverview(),
-                      const SizedBox(height: 14),
-                      ReceivablesSummaryCard(
-                        onTap: () =>
-                            _openFeature(context, AppRoutes.receivablesName),
-                      ),
-                      BlocBuilder<DebtBloc, DebtState>(
-                        builder: (context, debtState) {
-                          final debts = debtState is DebtLoaded
-                              ? debtState.debts
-                              : const <DebtEntity>[];
-                          return DebtsSummaryCard(
-                            debts: debts,
-                            onTap: () =>
-                                _openFeature(context, AppRoutes.debtsName),
-                          );
-                        },
-                      ),
-                      BlocBuilder<BudgetBloc, BudgetState>(
-                        builder: (context, budgetState) {
-                          final progress = budgetState is BudgetLoaded
-                              ? budgetState.progress
-                              : const <BudgetProgress>[];
-                          return BudgetAlertsCard(
-                            progress: progress,
-                            onTap: () =>
-                                _openFeature(context, AppRoutes.budgetsName),
-                          );
-                        },
-                      ),
-                      BlocBuilder<SavingsBloc, SavingsState>(
-                        builder: (context, savingsState) {
-                          final goals = savingsState is SavingsLoaded
-                              ? savingsState.goals
-                              : const <SavingsGoalEntity>[];
-                          return SavingsSummaryCard(
-                            goals: goals,
-                            onTap: () =>
-                                _openFeature(context, AppRoutes.savingsName),
-                          );
-                        },
-                      ),
-                      if (committed30 != null && !committed30.isEmpty)
-                        Committed30DaysCard(
-                          cashflow: committed30,
-                          onTap: () => _openFeature(
-                            context,
-                            AppRoutes.scheduledPaymentsName,
+                      ..._responsiveSections(
+                        context,
+                        summary: [
+                          _BalanceHero(summary: summary),
+                          const SizedBox(height: 12),
+                          const _AccountsOverview(),
+                          const SizedBox(height: 14),
+                          ReceivablesSummaryCard(
+                            onTap: () => _openFeature(
+                              context,
+                              AppRoutes.receivablesName,
+                            ),
                           ),
-                        ),
-                      const SizedBox(height: 16),
-                      CategoryPieChart(breakdown: breakdown),
-                      MonthlyComparisonChart(comparison: comparison),
-                      RecentTransactionsList(transactions: recentTransactions),
-                      const SizedBox(height: 20),
-                      AppSectionHeader(
-                        title: context.l10n.quickActions,
-                        subtitle: context.l10n.quickActionsSubtitle,
-                      ),
-                      _QuickActions(
-                        onOpen: (route) => _openFeature(context, route),
+                          BlocBuilder<DebtBloc, DebtState>(
+                            builder: (context, debtState) {
+                              final debts = debtState is DebtLoaded
+                                  ? debtState.debts
+                                  : const <DebtEntity>[];
+                              return DebtsSummaryCard(
+                                debts: debts,
+                                onTap: () =>
+                                    _openFeature(context, AppRoutes.debtsName),
+                              );
+                            },
+                          ),
+                          BlocBuilder<BudgetBloc, BudgetState>(
+                            builder: (context, budgetState) {
+                              final progress = budgetState is BudgetLoaded
+                                  ? budgetState.progress
+                                  : const <BudgetProgress>[];
+                              return BudgetAlertsCard(
+                                progress: progress,
+                                onTap: () => _openFeature(
+                                  context,
+                                  AppRoutes.budgetsName,
+                                ),
+                              );
+                            },
+                          ),
+                          BlocBuilder<SavingsBloc, SavingsState>(
+                            builder: (context, savingsState) {
+                              final goals = savingsState is SavingsLoaded
+                                  ? savingsState.goals
+                                  : const <SavingsGoalEntity>[];
+                              return SavingsSummaryCard(
+                                goals: goals,
+                                onTap: () => _openFeature(
+                                  context,
+                                  AppRoutes.savingsName,
+                                ),
+                              );
+                            },
+                          ),
+                          if (committed30 != null && !committed30.isEmpty)
+                            Committed30DaysCard(
+                              cashflow: committed30,
+                              onTap: () => _openFeature(
+                                context,
+                                AppRoutes.scheduledPaymentsName,
+                              ),
+                            ),
+                        ],
+                        insights: [
+                          CategoryPieChart(breakdown: breakdown),
+                          MonthlyComparisonChart(comparison: comparison),
+                          RecentTransactionsList(
+                            transactions: recentTransactions,
+                          ),
+                          const SizedBox(height: 20),
+                          AppSectionHeader(
+                            title: context.l10n.quickActions,
+                            subtitle: context.l10n.quickActionsSubtitle,
+                          ),
+                          _QuickActions(
+                            onOpen: (route) => _openFeature(context, route),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 24),
                     ],

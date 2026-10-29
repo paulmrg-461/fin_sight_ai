@@ -682,5 +682,10 @@
   "shareAnnualReport": "Share annual PDF",
   "annualReportShared": "Annual PDF shared.",
   "today": "Today",
-  "yesterday": "Yesterday"
+  "yesterday": "Yesterday",
+  "dataSection": "Data",
+  "scheduledOverdue": "Overdue",
+  "scheduledThisWeek": "This week",
+  "scheduledUpcoming": "Upcoming",
+  "scheduledPaused": "Paused"
 }

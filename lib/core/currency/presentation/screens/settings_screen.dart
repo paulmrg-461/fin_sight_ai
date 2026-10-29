@@ -43,6 +43,7 @@ class SettingsScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
                   children: [
+                    _SettingsLabel(text: l10n.preferences),
                     _SettingsSection(
                       icon: Icons.payments_outlined,
                       title: l10n.currency,
@@ -159,6 +160,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 14),
+                    _SettingsLabel(text: l10n.dataSection),
                     _SettingsSection(
                       icon: Icons.label_outline_rounded,
                       title: l10n.categoriesTitle,
@@ -217,6 +219,28 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
+class _SettingsLabel extends StatelessWidget {
+  const _SettingsLabel({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+      child: Text(
+        text.toUpperCase(),
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingsSection extends StatelessWidget {
   const _SettingsSection({
     required this.icon,
@@ -241,10 +265,27 @@ class _SettingsSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(icon, size: 20, color: theme.colorScheme.primary),
-                const SizedBox(width: 8),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 19,
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(title, style: theme.textTheme.titleMedium),
+                  child: Text(
+                    title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
               ],
             ),

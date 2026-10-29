@@ -1244,6 +1244,12 @@ void main() {
     await tester.tap(find.text('Español'));
     await pumpUntil(tester, find.text('Ajustes'));
     expect(find.text('Idioma'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Moneda'),
+      -160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Moneda'), findsOneWidget);
 
     await tester.tap(find.text('English'));
