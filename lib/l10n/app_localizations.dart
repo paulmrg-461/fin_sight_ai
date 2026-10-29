@@ -3115,6 +3115,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Paused'**
   String get scheduledPaused;
+
+  /// No description provided for @developerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About the developer'**
+  String get developerTitle;
+
+  /// No description provided for @developerRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Flutter engineer · Product builder'**
+  String get developerRole;
+
+  /// No description provided for @developerAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get developerAbout;
+
+  /// No description provided for @developerBio.
+  ///
+  /// In en, this message translates to:
+  /// **'I build calm, offline-first apps that make everyday money easier to understand. FinSight AI is one of them: private by default, fast without a connection, and honest about what matters.'**
+  String get developerBio;
+
+  /// No description provided for @developerFindMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Find me online'**
+  String get developerFindMe;
+
+  /// No description provided for @developerVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String developerVersion(String version);
+
+  /// No description provided for @developerRights.
+  ///
+  /// In en, this message translates to:
+  /// **'© {year} DevPaul. All rights reserved.'**
+  String developerRights(int year);
+
+  /// No description provided for @developerLegalShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Made by DevPaul · All rights reserved.'**
+  String get developerLegalShort;
+
+  /// No description provided for @developerLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link.'**
+  String get developerLinkFailed;
+
+  /// No description provided for @developerVisitSite.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit devpaul.pro'**
+  String get developerVisitSite;
+
+  /// No description provided for @developerBioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Independent developer'**
+  String get developerBioTitle;
 }
 
 class _AppLocalizationsDelegate

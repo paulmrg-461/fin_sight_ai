@@ -687,5 +687,30 @@
   "scheduledOverdue": "Overdue",
   "scheduledThisWeek": "This week",
   "scheduledUpcoming": "Upcoming",
-  "scheduledPaused": "Paused"
+  "scheduledPaused": "Paused",
+  "developerTitle": "About the developer",
+  "developerRole": "Flutter engineer · Product builder",
+  "developerAbout": "About me",
+  "developerBio": "I build calm, offline-first apps that make everyday money easier to understand. FinSight AI is one of them: private by default, fast without a connection, and honest about what matters.",
+  "developerFindMe": "Find me online",
+  "developerVersion": "Version {version}",
+  "@developerVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "developerRights": "© {year} DevPaul. All rights reserved.",
+  "@developerRights": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "developerLegalShort": "Made by DevPaul · All rights reserved.",
+  "developerLinkFailed": "Could not open the link.",
+  "developerVisitSite": "Visit devpaul.pro",
+  "developerBioTitle": "Independent developer"
 }

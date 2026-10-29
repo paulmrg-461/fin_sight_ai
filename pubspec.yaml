@@ -59,6 +59,9 @@ dependencies:
   share_plus: ^13.3.1
   local_auth: ^3.0.2
   pdf: ^3.13.1
+  url_launcher: ^6.3.3
+  package_info_plus: ^10.2.2
+  flutter_svg: ^2.3.2
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +96,8 @@ flutter:
 
   assets:
     - assets/branding/logo_mark_512.png
+    - assets/branding/devpaul_logo.jpeg
+    - assets/social/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

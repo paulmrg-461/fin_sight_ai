@@ -54,6 +54,7 @@ read the whole plan, honor its STOP conditions, and keep the status row updated.
 | 044 | Annual reports with PDF sharing | P2 | M | 032 | DONE (1144 unit, 38 integration) |
 | 045 | Integer money and category resolver primitives | P1 | M | — | PHASE 1 DONE (1144 unit) |
 | 046 | UI polish pass across modules | P2 | M | 042 | DONE (1145 unit, 38 integration) |
+| 047 | Developer profile and legal attribution | P2 | S/M | 042 | DONE (1154 unit, 39 integration) |
 
 - 042 removed sign-out and sync from the dashboard app bar and gave both labelled rows in the drawer.
 

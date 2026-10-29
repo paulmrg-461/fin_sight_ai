@@ -189,6 +189,28 @@ class SettingsScreen extends StatelessWidget {
                             context.pushNamed(AppRoutes.categoriesName),
                       ),
                     ),
+                    const SizedBox(height: 14),
+                    _SettingsLabel(text: l10n.developerTitle),
+                    _SettingsSection(
+                      icon: Icons.person_pin_outlined,
+                      title: l10n.developerTitle,
+                      description: l10n.developerRole,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            'assets/branding/devpaul_logo.jpeg',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        title: const Text('DevPaul'),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => context.pushNamed(AppRoutes.developerName),
+                      ),
+                    ),
                     const SizedBox(height: 32),
                     Center(
                       child: Column(

@@ -1693,4 +1693,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scheduledPaused => 'Paused';
+
+  @override
+  String get developerTitle => 'About the developer';
+
+  @override
+  String get developerRole => 'Flutter engineer · Product builder';
+
+  @override
+  String get developerAbout => 'About me';
+
+  @override
+  String get developerBio =>
+      'I build calm, offline-first apps that make everyday money easier to understand. FinSight AI is one of them: private by default, fast without a connection, and honest about what matters.';
+
+  @override
+  String get developerFindMe => 'Find me online';
+
+  @override
+  String developerVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String developerRights(int year) {
+    return '© $year DevPaul. All rights reserved.';
+  }
+
+  @override
+  String get developerLegalShort => 'Made by DevPaul · All rights reserved.';
+
+  @override
+  String get developerLinkFailed => 'Could not open the link.';
+
+  @override
+  String get developerVisitSite => 'Visit devpaul.pro';
+
+  @override
+  String get developerBioTitle => 'Independent developer';
 }

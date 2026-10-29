@@ -323,6 +323,11 @@ class AppDrawer extends StatelessWidget {
               title: Text(l10n.settings),
               onTap: () => onSecondarySelected(AppRoutes.settingsName),
             ),
+            ListTile(
+              leading: const Icon(Icons.person_pin_outlined),
+              title: Text(l10n.developerTitle),
+              onTap: () => onSecondarySelected(AppRoutes.developerName),
+            ),
             ListenableBuilder(
               listenable: themeController,
               builder: (context, _) {
@@ -342,7 +347,19 @@ class AppDrawer extends StatelessWidget {
             const Divider(),
             const SyncStatusChip(expanded: true),
             const AccountTile(),
-            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => onSecondarySelected(AppRoutes.developerName),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 18),
+                child: Text(
+                  l10n.developerLegalShort,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

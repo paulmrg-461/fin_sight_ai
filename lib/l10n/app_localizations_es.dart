@@ -1703,4 +1703,43 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get scheduledPaused => 'En pausa';
+
+  @override
+  String get developerTitle => 'Sobre el desarrollador';
+
+  @override
+  String get developerRole => 'Ingeniero Flutter · Creador de productos';
+
+  @override
+  String get developerAbout => 'Sobre mí';
+
+  @override
+  String get developerBio =>
+      'Construyo apps tranquilas y offline-first que hacen más fácil entender el dinero del día a día. FinSight AI es una de ellas: privada por defecto, rápida sin conexión y honesta con lo que importa.';
+
+  @override
+  String get developerFindMe => 'Encuéntrame en línea';
+
+  @override
+  String developerVersion(String version) {
+    return 'Versión $version';
+  }
+
+  @override
+  String developerRights(int year) {
+    return '© $year DevPaul. Todos los derechos reservados.';
+  }
+
+  @override
+  String get developerLegalShort =>
+      'Hecho por DevPaul · Todos los derechos reservados.';
+
+  @override
+  String get developerLinkFailed => 'No se pudo abrir el enlace.';
+
+  @override
+  String get developerVisitSite => 'Visitar devpaul.pro';
+
+  @override
+  String get developerBioTitle => 'Desarrollador independiente';
 }

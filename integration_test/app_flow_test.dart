@@ -1234,6 +1234,22 @@ void main() {
     expect(find.text(money(-25)), findsWidgets);
   });
 
+  testWidgets('opens the developer profile from the drawer', (tester) async {
+    await harness.pumpApp(tester);
+    await tapDrawerItem(tester, 'About the developer');
+    await pumpUntil(tester, find.text('Flutter engineer · Product builder'));
+
+    expect(find.text('DevPaul'), findsOneWidget);
+    expect(find.text('About me'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.textContaining('All rights reserved'),
+      220,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('All rights reserved'), findsOneWidget);
+  });
+
   testWidgets('switches between English and Spanish', (tester) async {
     await harness.pumpApp(tester);
     harness.router.goNamed(AppRoutes.settingsName);

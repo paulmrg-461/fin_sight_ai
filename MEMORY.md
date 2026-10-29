@@ -36,12 +36,13 @@ _Last updated: 2026-10-28. Read this before starting a new session._
 | App-wide UI polish (halos, progress bars, day groups, annual bars) | Done |
 | WCAG AA contrast audit + regression test | Done |
 | Animated shell tab transitions | Done |
-| Integration suite (38 flows + benchmarks) | Done |
+| Developer profile + DevPaul attribution | Done |
+| Integration suite (39 flows + benchmarks) | Done |
 
 ### Current checkpoint (2026-10-28, latest)
 
-- HEAD: `d107c44` on `develop` and `main` (both pushed, in sync).
-- Gates: `flutter analyze` clean, **1147** unit/widget tests, coverage gate green, **38** Linux integration tests.
+- HEAD: `d107c44` plus the developer-profile commit on `develop` and `main` (pushed, in sync).
+- Gates: `flutter analyze` clean, **1154** unit/widget tests, coverage gate green, **39** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~226 ms, transactions render ~182 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
@@ -51,6 +52,14 @@ _Last updated: 2026-10-28. Read this before starting a new session._
 - Latest plans: `037` app lock, `038` receipt sync, `039` Android widget, `040` Hive encryption, `041` desktop storage, `042` drawer account/sync, `043` a11y/conflicts/goldens, `044` annual PDF, `045` money/category primitives, `046` UI polish.
 - Environment: `.env` exists locally, is gitignored, and has `SUPABASE_URL`, `SUPABASE_ANON_KEY` (publishable), and `GROQ_API_KEY` set. The **Groq key has been pasted in chat twice and must be rotated**; the Supabase publishable key is safe to expose. Never print or commit these values.
 - Hosted Supabase schema (`0001`–`0008`) is applied; the receipts/savings tables resolve (401 for `anon`, not PGRST205). A database-level `verify_rls.sh` run is still pending because no DB URL is stored.
+
+## Developer profile (plan 047)
+
+- `/developer` shows a brand-gradient DevPaul hero (logo, role, app version), a short bio, six social links (GitHub, LinkedIn, Facebook, X, Instagram, devpaul.pro), and `© {year} DevPaul. All rights reserved.`
+- `LinkLauncher` wraps `url_launcher`, accepts only http/https, and returns `false` for malformed URLs or platform failures; the UI shows a localized snackbar.
+- Attribution also appears in the Settings footer, the login footer (tappable), and the drawer bottom caption.
+- New dependencies `url_launcher`, `package_info_plus`, and `flutter_svg`; brand assets under `assets/branding` and `assets/social`.
+- Tests: launcher behavior, profile render/version/links/failure snackbar, integration route from the drawer, drawer golden refresh. Gates: 1154 unit, 39 integration, coverage green.
 
 ## UI polish pass (plan 046)
 

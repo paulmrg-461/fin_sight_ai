@@ -1,9 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../app/branding/app_logo.dart';
 import '../../../../core/l10n/failure_text.dart';
 import '../../../../core/l10n/l10n.dart';
+import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../sync/presentation/bloc/sync_bloc.dart';
 import '../../../sync/presentation/bloc/sync_event.dart';
@@ -93,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Center(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.fromLTRB(24, 64, 24, 24),
+                        padding: const EdgeInsets.fromLTRB(24, 64, 24, 76),
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 440),
                           child: Card(
@@ -280,6 +282,25 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 8,
+                child: SafeArea(
+                  top: false,
+                  child: TextButton(
+                    onPressed: () => context.pushNamed(AppRoutes.developerName),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                    ),
+                    child: Text(
+                      context.l10n.developerLegalShort,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
                 ),
               ),
             ],

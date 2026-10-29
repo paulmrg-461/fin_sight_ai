@@ -45,6 +45,9 @@ abstract final class AppRoutes {
   static const String reportsName = 'reports';
   static const String reportsPath = '/reports';
 
+  static const String developerName = 'developer';
+  static const String developerPath = '/developer';
+
   static const String importCsvName = 'import-csv';
   static const String importCsvPath = '/import-csv';
 
