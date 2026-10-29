@@ -17,9 +17,13 @@ abstract final class AppTheme {
           primary: AppColors.emerald,
           secondary: AppColors.teal,
           tertiary: AppColors.sky,
-          error: AppColors.danger,
+          error: isDark ? const Color(0xFFF87171) : const Color(0xFFB91C1C),
+          onError: isDark ? const Color(0xFF3B0A0A) : Colors.white,
           surface: isDark ? AppColors.darkSurface : AppColors.lightSurface,
         ).copyWith(
+          // Emerald is bright; white labels on it fall below WCAG AA. A deep
+          // ink label keeps filled buttons readable without dimming the brand.
+          onPrimary: isDark ? null : const Color(0xFF052E22),
           surfaceContainerLowest: isDark
               ? AppColors.darkBackground
               : AppColors.lightBackground,

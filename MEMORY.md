@@ -39,7 +39,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 ### Current checkpoint (2026-10-27, latest)
 
 - HEAD: `516e3b8` on `develop` and `main` (both pushed, in sync).
-- Gates: `flutter analyze` clean, **1145** unit/widget tests, coverage gate green, **37** Linux integration tests.
+- Gates: `flutter analyze` clean, **1147** unit/widget tests, coverage gate green, **37** Linux integration tests.
 - Android debug APK builds with biometrics, widget, encryption, and `--dart-define-from-file=.env`.
 - Benchmarks: launch/dashboard ~224 ms, transactions render ~183 ms with 300 seeded transactions.
 - Integration command: `flutter test -d linux integration_test/app_flow_test.dart`.
@@ -56,6 +56,7 @@ _Last updated: 2026-10-27. Read this before starting a new session._
 - Transactions group by day with Today/Yesterday headers and a daily net; budgets show a category badge, percentage pill, animated bar, and remaining/over indicator.
 - Annual reports render two proportional mini bars per month (income vs expenses) for a quick yearly trend.
 - Settings gained icon badges and section labels; AI Coach a gradient header; OCR shared empty/error states; schedules group into Overdue/Today/Week/Upcoming/Paused; the dashboard is two-column at ≥900 px.
+- Transaction form has a hero amount field and tinted expense/income selector; the theme now passes a WCAG AA contrast test (deep ink on emerald, accessible error pairs).
 - Goldens regenerated (drawer at full height, empty state, budget alerts) and verified stable; a new widget test covers the day grouping.
 
 ## UI, reporting, and primitives (2026-10-28)

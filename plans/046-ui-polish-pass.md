@@ -36,6 +36,11 @@ progress visuals, calmer hierarchy, and less plain list content.
 - Scheduled payments are grouped into Overdue / Today / This week / Upcoming /
   Paused with counted headers.
 - The dashboard switches to a two-column layout at 900 px and wider.
+- Transaction form: close action, a two-option expense/income selector with
+  brand-tinted states, and a hero amount field with a large numeric style.
+- Contrast audit: light filled buttons use a deep ink label on emerald, and
+  the error role uses accessible red pairs in both themes. A regression test
+  enforces WCAG AA (4.5:1) for key text pairs.
 
 ## Verification
 

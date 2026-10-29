@@ -166,30 +166,28 @@ class _TransactionFormState extends State<TransactionForm> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                widget.isEditing
-                    ? context.l10n.editTransaction
-                    : context.l10n.newTransaction,
-                style: theme.textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              SegmentedButton<TransactionType>(
-                segments: [
-                  ButtonSegment(
-                    value: TransactionType.expense,
-                    label: Text(context.l10n.expense),
-                    icon: Icon(Icons.arrow_upward),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.isEditing
+                          ? context.l10n.editTransaction
+                          : context.l10n.newTransaction,
+                      style: theme.textTheme.titleLarge,
+                    ),
                   ),
-                  ButtonSegment(
-                    value: TransactionType.income,
-                    label: Text(context.l10n.incomeShort),
-                    icon: Icon(Icons.arrow_downward),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    icon: const Icon(Icons.close_rounded),
                   ),
                 ],
-                selected: {_type},
-                onSelectionChanged: (selection) {
-                  setState(() => _type = selection.first);
-                },
+              ),
+              const SizedBox(height: 12),
+              _TypeSelector(
+                value: _type,
+                onChanged: (value) => setState(() => _type = value),
               ),
               const SizedBox(height: 16),
               BlocBuilder<WalletBloc, WalletState>(
@@ -221,22 +219,64 @@ class _TransactionFormState extends State<TransactionForm> {
                   );
                 },
               ),
-              TextFormField(
-                controller: _amountController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: theme.colorScheme.outlineVariant),
                 ),
-                decoration: InputDecoration(
-                  labelText: context.l10n.amount,
-                  prefixText: '\$ ',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          context.l10n.amount.toUpperCase(),
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '\$',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextFormField(
+                      controller: _amountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.8,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: '0.00',
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                      ),
+                      validator: (value) {
+                        final amount = double.tryParse(value?.trim() ?? '');
+                        if (amount == null || !amount.isFinite || amount <= 0) {
+                          return context.l10n.enterAmountGreaterThanZero;
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  final amount = double.tryParse(value?.trim() ?? '');
-                  if (amount == null || !amount.isFinite || amount <= 0) {
-                    return context.l10n.enterAmountGreaterThanZero;
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 12),
               CategoryDropdown(
@@ -286,6 +326,104 @@ class _TransactionFormState extends State<TransactionForm> {
                 ),
               ],
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TypeSelector extends StatelessWidget {
+  const _TypeSelector({required this.value, required this.onChanged});
+
+  final TransactionType value;
+  final ValueChanged<TransactionType> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _TypeOption(
+            label: context.l10n.expense,
+            icon: Icons.arrow_upward_rounded,
+            selected: value == TransactionType.expense,
+            selectedColor: Theme.of(context).colorScheme.error,
+            onTap: () => onChanged(TransactionType.expense),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _TypeOption(
+            label: context.l10n.incomeShort,
+            icon: Icons.arrow_downward_rounded,
+            selected: value == TransactionType.income,
+            selectedColor: Theme.of(context).colorScheme.primary,
+            onTap: () => onChanged(TransactionType.income),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TypeOption extends StatelessWidget {
+  const _TypeOption({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.selectedColor,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color selectedColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final foreground = selected
+        ? selectedColor
+        : theme.colorScheme.onSurfaceVariant;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected
+            ? selectedColor.withValues(alpha: 0.12)
+            : theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: selected
+                    ? selectedColor.withValues(alpha: 0.55)
+                    : theme.colorScheme.outlineVariant,
+                width: selected ? 1.4 : 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18, color: foreground),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: foreground,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
